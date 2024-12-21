@@ -36,7 +36,7 @@ class ProjectWishlist(APIView):
     permission_classes = [AllowAny]  # Allow any user to access the post request
 
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = UserProfile.objects.get(user=request.user[0])
         
         # logger.error('\n \n Error 1 \n \n ')
         mentee = Mentee.objects.get(user=user_profile)
@@ -52,7 +52,9 @@ class ProjectWishlist(APIView):
     def post(self, request):
         # logger.error('\n \n Error 6 \n \n ')
         # print("HI")
-        user_profile = UserProfile.objects.get(user=request.user)
+        print(request.user)
+        user_profile = UserProfile.objects.get(user=request.user[0])
+
         # logger.error('\n \n Error 7 \n \n ')
         mentee = Mentee.objects.get(user=user_profile)
         # logger.error('\n \n Error 8 \n \n ')
@@ -67,7 +69,7 @@ class ProjectWishlist(APIView):
         return Response({"message": "Project added to wishlist."})
     
     def delete(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = UserProfile.objects.get(user=request.user[0])
         mentee = Mentee.objects.get(user=user_profile)
         project_id = request.GET['project_id']
         project = Project.objects.get(pk=project_id)
@@ -79,14 +81,14 @@ class ProjectPreference(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = UserProfile.objects.get(user=request.user[0])
         mentee = Mentee.objects.get(user=user_profile)
         preferences = MenteePreference.objects.filter(mentee=mentee)
         serializer = MenteePreferenceSerializer(preferences, many=True)
         return Response(serializer.data)
     
     def post(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = UserProfile.objects.get(user=request.user[0])
         mentee = Mentee.objects.get(user=user_profile)
         project_id = request.data["project"]
         preference = request.data["preference"]
@@ -99,7 +101,7 @@ class ProjectPreference(APIView):
         return Response(serializer.errors, status=400)
     
     def delete(self, request):
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = UserProfile.objects.get(user=request.user[0])
         mentee = Mentee.objects.get(user=user_profile)
         project_id = request.data["project_id"]
         project = Project.objects.get(pk=project_id)
