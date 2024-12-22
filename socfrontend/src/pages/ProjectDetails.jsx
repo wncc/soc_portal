@@ -1,9 +1,8 @@
 import React from 'react';
-import ProjectTimeline from '../components/ProjectTimeline';
+//import ProjectTimeline from '../components/ProjectTimeline';
 import { useState , useEffect } from 'react';
 import api from '../utils/api';
 import ProjectTitle from '../components/ProjectTitle';
-import WishlistButton from '../components/WishlistButton'
 import { useParams } from 'react-router-dom';
 
 
@@ -38,6 +37,11 @@ export default function ProjectDetails() {
         .then((response) => {
             // Assuming the response contains the image URL
             console.log(response.data);
+
+            if (response.data.banner_image) {
+                response.data.banner_image = `http://127.0.0.1:8000${response.data.banner_image}`;
+            }
+
             response.data.description = response.data.description.split("\\r\\n").join("<br>");
             response.data.description = response.data.description.replace(
                 /(https?:\/\/[^\s]+)/g,
@@ -106,70 +110,7 @@ export default function ProjectDetails() {
     };
     
     let buttonMessage = Added ? "Remove From Wishlist" : "Add To Wishlist";
-    // const details = {
-    //     "id": 1,//no use
-    //     "created": "2024-04-11T23:04:23.019867Z",// no use
-    //     "title": "Speech emotion recognition", //done
-    //     "mentor": "Advait Patole(210020008)",//done
-    //     "general_category": "ML",//no use
-    //     "specific_category": "Machine Learning",//done
-    //     "mentee_max": "10",//done
-    //     "description": "https://github.com/x4nth055/emotion-recognition-using-speech  \\r\\nWork invovled in the project:\\r\\n1. Gathering and preprocessing a diverse dataset of speech samples with labeled emotions.\\r\\n2. Extracting relevant features from the speech signals, such as pitch, intensity, and spectral features.\\r\\n3. Training machine learning models, such as SVMs and Neural Networks, on the labeled dataset.\\r\\n4. Tuning hyperparameters to optimize model performance through techniques like cross-validation.\\r\\n5. Evaluating performance using accuracy.\\r\\n6. Iteratively refining the model architecture and feature selection process based on evaluation results.\\r\\n7. Testing the model on unseen data to assess its generalization capability.\\r\\n8. Fine-tuning the model based on feedback and insights from testing.\\r\\n9. Documenting the entire process, including data collection, preprocessing, model training, and evaluation.\\r\\n10. Continuously learning and updating the model to adapt to new speech patterns and emotions.\\r\\nLearning outcomes:\\r\\n1.Understanding of the fundamentals of machine learning.\\r\\n2.Learning regression and classification models like RNN, random forest classifier etc.\\r\\n3. Strengthing ML concepts and implementing it on real life situation",//done
-    //     "timeline": "Week 1 : Basic python skill development and python libraries like numpy, pandas and matplotlib\\r\\nWeek 2: Implementation of regression model from scratch\\r\\nWeek 3: Neural Networks theory and implementation\\r\\nWeek 4: RNN theory and implementation using pkl dataset\\r\\nWeek 5-7 : final project\\r\\nWeek 8: Project documentation + buffer",
-    //     "checkpoints": "Checkpoint 1: Learning of python libraries numpy, pandas and matplotlib.\\r\\nCheckpoint 2: Implementation of neural networks and regression models from scratch and using it against a dataset\\r\\nCheckpoint 3:Building strong foundation of other additional libraries tensorflow, librosa and scikit- learn\\r\\nCheckpoint 4: Ideation and basic structure designing of final project\\r\\nCheckpoint 5: Code implementation and accuracy refinement",
-    //     "prereuisites": "Basics of python and loads of enthusiasm",//done
-    //     "co_mentor_info": "Aryaman Angurana(22b1043)\\r\\nAryan Adinath Popalghhat(210020080)",//done
-    //     "banner_image": "https://itc.gymkhana.iitb.ac.in/wncc/assets/images/soc/2023/item222.jpg",//done
-    //     "code": "34d591dd",//no use
-    //     "season": 1//no use
-    // }
-    // const req_details = {
-    //     "id": details.id,
-    //     "title": details.title,
-    //     "banner_image": details.banner_image,
-    //     "general_category": details.general_category
-    // }
-
    
-
-    //if project is in users wishlist then return true, else false
-    // const search = () =>{
-    //     api.get(`api/user/wishlist/:${details.id}`)
-    //     .then(res => {
-    //         setAdded(res)
-    //     })
-    //     .catch(err => console.log(err))
-    // }
-    // search();
-    // const buttonMessage = Added ? "Remove From Wishlist" : "Add To Wishlist";
-    // const [str, setStr] = useState([buttonMessage]);
-    // let title = details.title;
-
-
-    // const WishlistAdd = (e) => {
-        // console.log(details);
-        // if(!Added){
-        //     api.post('/api/user/wishlist/', )
-        //         .then(res => {
-        //             console.log(res)
-        //             setAdded(true)
-        //             setStr([`mv ${title.replace(/\s+/g, '_')}.txt ./Wishlist`, "Remove From Wishlist"]);
-        //         })
-        //         .catch(err => console.log(err))
-        //     }
-        //     else{
-        //         api.delete(`/api/user/wishlist/:${details.id}`)
-        //         .then(res => {
-        //             console.log(res)
-        //             setAdded(false)
-        //             setStr(["cd ./Wishlist", `rm ${title}.txt`, "Add To Wishlist"]);
-        //         })
-        //         .catch(err => console.log(err))
-        //     }
-    // }
-
-    
-
 
     return (  
         <>
@@ -257,17 +198,6 @@ export default function ProjectDetails() {
                         </button>
                     </div>
                 </div>
-                {/* <div className="rounded-lg">
-                    <h2 className="text-2xl text-indigo-600 sm:text-3xl">Description:</h2>
-                    <p dangerouslySetInnerHTML={{ __html: descriptionWithLinks.replace(/\\r\\n/g, "<br>") }}></p>
-                    <h2 className="text-2xl pt-3 text-indigo-600 sm:text-3xl">Prerequisites:</h2>
-                    <p>{details.prereuisites}</p>
-                    <h2 className="text-2xl pt-3 text-indigo-600 sm:text-3xl">Timeline:</h2>
-                    <p dangerouslySetInnerHTML={{ __html: details.timeline.replace(/\\r\\n/g, "<br>") }}></p>
-                    <h2 className="text-2xl pt-3 text-indigo-600 sm:text-3xl">Checkpoints:</h2>
-                    <p dangerouslySetInnerHTML={{ __html: details.checkpoints.replace(/\\r\\n/g, "<br>") }}></p>
-
-                </div> */}
 
                 <div className="flow-root">
                     <dl className="-my-3 divide-y divide-gray-100 text-sm">

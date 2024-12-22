@@ -10,20 +10,7 @@ import {Link} from 'react-router-dom'
 export default function Wishlist() {
 
   const [details, setDetails] = useState([]);
-  // const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // useEffect(() => {
-  //   // Make an HTTP request to fetch the card image from the backend
-  //   api.get('/api/projects/wishlist')
-  //     .then((response) => {
-  //       // Assuming the response contains the image URL
-  //       console.log(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching card image:', error);
-  //     });
-  //   }, []);
     
     useEffect(() => {
       setIsLoading(true);
@@ -42,54 +29,6 @@ export default function Wishlist() {
         setIsLoading(false);
       });
   }, []);
-
-  // const filteredDetails = details.filter(
-  //   (detail) => !wishlist.some((item) => item.id === detail.id)
-  // );
-  // console.log(filteredDetails);
-
-//   const details = [
-//     {
-//       "id": 1,
-//       "title": "Speech emotion recognition",
-//       "general_category": "ML",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/emotion_detection.png"
-//   },
-//   {
-//       "id": 2,
-//       "title": "Test Project",
-//       "general_category": "Development",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/For_his_participation_in_the_5-day_Grand_Entrepreneur_Workshop_held_by_Liceria__Co..png"
-//     },
-//     {
-//       "id": 3,
-//       "title": "Speech emotion recognition",
-//       "general_category": "Blockchain",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/emotion_detection.png"
-//   },
-//   {
-//       "id": 4,
-//       "title": "Test Project",
-//       "general_category": "CP",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/For_his_participation_in_the_5-day_Grand_Entrepreneur_Workshop_held_by_Liceria__Co..png"
-//     },
-//   {
-//       "id": 5,
-//       "title": "Test Project",
-//       "general_category": "Others",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/For_his_participation_in_the_5-day_Grand_Entrepreneur_Workshop_held_by_Liceria__Co..png"
-//     }
-//   ]
-
-// GeneralCategoryChoices = (
-//   ('ML', 'ML'),
-//   ('Developement', 'Development'),
-//   ('Blockchain', 'Blockchain'),
-//   ('CP', 'CP'),
-//   ('Others', 'Others'),
-//     )
-
-
   
   const [filterValue, setFilterValue] = useState('All');
 
@@ -223,7 +162,8 @@ export default function Wishlist() {
         </div>
         {isLoading ?( <p>Loading...</p>) : (<div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 py-20">
         {filteredProjects.map((project, index) =>(
-          <div key={index}>
+          project.banner_image = `http://127.0.0.1:8000${project.banner_image}`,
+          <div key={index}> 
             <ProjectCard ProjectId={project.id} link={project.banner_image} title={project.title} general_category={project.general_category} isInWishlist={details.some((item) => item.id === project.id)}/>
           </div>
         ))}

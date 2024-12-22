@@ -1,10 +1,6 @@
 import React from "react";
 import api from '../utils/api';
 import { useState } from "react";
-// import MyComponent from "../components/MyComponent";
-// import MyComponent2 from "../components/MyComponent2";
-
-
 
 export default function ProjectForm() {
 
@@ -25,7 +21,6 @@ export default function ProjectForm() {
         setProjectlist({
             ...projectlist,
             [id]: value,
-            // console.log(projectlist)
         })
         console.log('id:', id);
         console.log('value:', value);
@@ -64,10 +59,6 @@ export default function ProjectForm() {
 
     }
 
-    const handleRollSubmit = (e) => {
-        e.preventDefault();
-
-    }
     return (
         <>
             <h1>Project Form</h1>

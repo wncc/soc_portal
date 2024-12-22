@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { useMemo } from "react";
 import "../components/ProjectCard.css";
-import {Outlet} from 'react-router-dom'
+//import {Outlet} from 'react-router-dom'
 
 export default function Projects() {
 
@@ -41,54 +41,6 @@ export default function Projects() {
       });
   }, []);
 
-  // const filteredDetails = details.filter(
-  //   (detail) => !wishlist.some((item) => item.id === detail.id)
-  // );
-  // console.log(filteredDetails);
-
-//   const details = [
-//     {
-//       "id": 1,
-//       "title": "Speech emotion recognition",
-//       "general_category": "ML",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/emotion_detection.png"
-//   },
-//   {
-//       "id": 2,
-//       "title": "Test Project",
-//       "general_category": "Development",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/For_his_participation_in_the_5-day_Grand_Entrepreneur_Workshop_held_by_Liceria__Co..png"
-//     },
-//     {
-//       "id": 3,
-//       "title": "Speech emotion recognition",
-//       "general_category": "Blockchain",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/emotion_detection.png"
-//   },
-//   {
-//       "id": 4,
-//       "title": "Test Project",
-//       "general_category": "CP",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/For_his_participation_in_the_5-day_Grand_Entrepreneur_Workshop_held_by_Liceria__Co..png"
-//     },
-//   {
-//       "id": 5,
-//       "title": "Test Project",
-//       "general_category": "Others",
-//       "banner_image": "http://127.0.0.1:8000/media/projects/For_his_participation_in_the_5-day_Grand_Entrepreneur_Workshop_held_by_Liceria__Co..png"
-//     }
-//   ]
-
-// GeneralCategoryChoices = (
-//   ('ML', 'ML'),
-//   ('Developement', 'Development'),
-//   ('Blockchain', 'Blockchain'),
-//   ('CP', 'CP'),
-//   ('Others', 'Others'),
-//     )
-
-
-  
   const [filterValue, setFilterValue] = useState('All');
 
   const filteredProjects = useMemo(() => {
@@ -128,13 +80,6 @@ export default function Projects() {
         </button>
       </div>
     </div>
-    {/* <div className="px-24  pt-10 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 ">
-      <ProjectCard ProjectId="1" general_category="ML" link="https://itc.gymkhana.iitb.ac.in/wncc/assets/images/soc/2023/item221.jpg" title="TEXT SUMMARIZATION WEB APP"/>
-      <ProjectCard ProjectId="2" general_category="Development" link="https://itc.gymkhana.iitb.ac.in/wncc/assets/images/soc/2023/item222.jpg" title="Competitive Programming"/>
-      <ProjectCard ProjectId="3" general_category="Blockchain" link="https://itc.gymkhana.iitb.ac.in/wncc/assets/images/soc/2023/item226.png" title="Developing Trading Strategy with Pine Script"/>
-      <ProjectCard ProjectId="4" general_category="CP" link="https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80" title="How to position your furniture for positivity"/>
-      <ProjectCard ProjectId="5" general_category="Others" link="https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80" title="How to position your furniture for positivity"/>
-    </div> */}
     {isLoading ? <div className="h-screen flex justify-center items-center">
         <div class="flex gap-2">
           <div class="w-5 h-5 rounded-full animate-pulse bg-blue-600"></div>
