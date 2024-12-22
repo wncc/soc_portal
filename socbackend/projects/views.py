@@ -78,7 +78,9 @@ class ProjectWishlist(APIView):
         return Response({"message": "Project removed from wishlist."})
     
 class ProjectPreference(APIView):
+    authentication_classes  = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow any user to access the post request
 
     def get(self, request):
         user_profile = UserProfile.objects.get(user=request.user[0])

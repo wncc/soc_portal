@@ -390,9 +390,10 @@ const Page3 = ({project, sop, dataChange, setPage, details}) =>{
                     name="project"
                     className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                     onChange={dataChange}
+                    value={project}
                     required
                 >
-                    <option selected disabled>Please select</option>
+                    <option value="">Please select</option>
                     {details.map((details, index) => (
                         <option key={index} value={details.id}>
                             {details.title}
@@ -451,9 +452,10 @@ const Page4 = ({project, sop, dataChange, setPage, details, handleSubmit}) =>{
                     name="project"
                     className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                     onChange={dataChange}
+                    value={project}
                     required
                 >
-                    <option selected disabled>Please select</option>
+                    <option value="">Please select</option>
                     {details.map((details, index) => (
                         <option key={index} value={details.id}>
                             {details.title}
