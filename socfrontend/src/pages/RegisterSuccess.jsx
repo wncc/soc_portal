@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 function RegisterSuccess() {
     return (  
-        <div className="grid h-screen place-content-center bg-white px-4 ">
+        <div className="grid h-screen place-content-center bg-white px-4 dark:bg-gray-800 dark:text-white">
             <div className="text-center ">
             <span className="text-green-600 flex justify-center items-center">
                     <svg

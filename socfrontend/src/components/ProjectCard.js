@@ -54,6 +54,7 @@ export default function ProjectCard(props) {
           .then((res) => {
             console.log("Removed from wishlist:", res.data);
             setAdded(false);
+            props.onWishlistChange();
           })
           .catch((err) => {
             if (err.response && err.response.status === 401) {
@@ -77,8 +78,8 @@ export default function ProjectCard(props) {
           />
         </Link>
         <Link to={`/current_projects/${props.ProjectId}`}>
-          <div className="bg-white p-4 sm:p-6">
-            <h3 className="mt-0.5 text-lg line-clamp-1 text-gray-900">
+          <div className="bg-rgb(17, 24, 39) p-4 sm:p-6">
+            <h3 className="mt-0.5 text-lg line-clamp-1 text-gray-900 dark:text-white">
               {props.title}
             </h3>
           </div>

@@ -20,7 +20,7 @@ import RegisterSuccess from "./pages/RegisterSuccess";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import LoginRoute from "./components/LoginRoute";
 import PreferenceFormFilled from "./pages/PreferenceFormFilled";
-import api from './utils/api';
+import api from "./utils/api";
 import Wishlist from "./pages/Wishlist";
 import Home from "./pages/Home";
 
@@ -28,7 +28,8 @@ export default function App() {
   const [authToken, setAuthToken] = useState(null);
 
   useEffect(() => {
-    api.get(process.env.REACT_APP_BACKEND_URL+"/accounts/isloggedin/")
+    api
+      .get(process.env.REACT_APP_BACKEND_URL + "/accounts/isloggedin/")
       .then((res) => {
         console.log(res.data.status);
         setAuthToken(res.data.status === "YES");
@@ -58,7 +59,7 @@ export default function App() {
         <Navbar title="SOC" authToken={authToken} />
         <Routes>
           <Route path="/" element={<Home />} />
-          
+
           {/* Routes for Unauthenticated Users */}
           <Route element={<LoginRoute authToken={authToken} />}>
             <Route path="/register" element={<Register />} />
@@ -70,12 +71,18 @@ export default function App() {
           {/* Routes for Authenticated Users */}
           <Route element={<ProtectedRoutes authToken={authToken} />}>
             <Route path="/current_projects" element={<Projects />} />
-            <Route path="/current_projects/:ProjectId" element={<ProjectDetails />} />
+            <Route
+              path="/current_projects/:ProjectId"
+              element={<ProjectDetails />}
+            />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/Dashboard" element={<Dashboard />} />
             <Route path="/Dashboard/ProjectForm" element={<ProjectForm />} />
             <Route path="/PreferenceForm" element={<PreferenceForm />} />
-            <Route path="/PreferenceFormFilled" element={<PreferenceFormFilled />} />
+            <Route
+              path="/PreferenceFormFilled"
+              element={<PreferenceFormFilled />}
+            />
             <Route path="/logout" element={<Logout />} />
           </Route>
         </Routes>
