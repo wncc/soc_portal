@@ -49,10 +49,12 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Application definition
 
 AUTHENTICATION_BACKENDS = [
+    'accounts.customauth.RollNumberBackend',
     'django.contrib.auth.backends.ModelBackend',  # Default backend for user authentication
 ]
 

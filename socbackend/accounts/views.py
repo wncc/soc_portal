@@ -18,12 +18,14 @@ from django.contrib.auth.models import User
 from .serializers import RegisterUserSerializer, UserAutoCompleteSerializer, UserProfileSerializer
 
 from projects.models import Mentee
+from projects.models import Mentor
 
 from .options import DepartmentChoices, YearChoices
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from django.contrib.auth.models import AnonymousUser
+from .models import CustomUser
+
 
 
 
@@ -55,7 +57,7 @@ class YearListAPIView(APIView):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def isloggedin(request):
-    if isinstance(request.user, AnonymousUser):
+    if isinstance(request.user, CustomUser):
         return JsonResponse({"status": "NO"}, status=200)
     else:
         return JsonResponse({"status": "YES"}, status=200)
@@ -109,9 +111,10 @@ class RegisterUserView(APIView):
     def post(self, request):
         roll_number = request.data.get("roll_number").lower()
         password = request.data.get("password")
+        role = request.data.get("role")
 
-        if User.objects.filter(username=roll_number).exists():
-            user = User.objects.get(username=roll_number)
+        if CustomUser.objects.filter(username=roll_number,role=role).exists():
+            user = CustomUser.objects.get(username=roll_number,role=role)
             if UserProfile.objects.filter(user=user).exists():
                 user_profile = UserProfile.objects.get(user=user)
                 if user_profile.verified:
@@ -121,8 +124,9 @@ class RegisterUserView(APIView):
             else:
                 user.delete()
             
-        user = User.objects.create_user(username=roll_number, password=password)
+        user = CustomUser.objects.create_user(username=roll_number, password=password,role=role)
         user.is_active = False
+
         user.save()
         mutable_copy = request.POST.copy()
         mutable_copy["user"] = user.id
@@ -140,11 +144,10 @@ class RegisterUserView(APIView):
             user.save()
             user_profile.save()
             print(f"User profile: {user_profile}")
-            if user_profile:
-                mentee = Mentee.objects.create(user=user_profile)
-                mentee.save()
-            else:
-                raise print("User profile does not exist.")
+            if role == "mentee":
+                Mentee.objects.create(user=user_profile)
+            elif role == "mentor":
+                Mentor.objects.create(user=user_profile)
             
             # send_verification_email(user_profile)
             return Response(serializer.data, status=201)
@@ -207,15 +210,54 @@ class CreateUserProfileView(APIView):
 
         return Response(data)
 
+from rest_framework.exceptions import AuthenticationFailed
+from .customauth import RollNumberBackend
+import secrets
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         mutable_copy = request.POST.copy()
         mutable_copy["username"] = mutable_copy["username"].lower()
-        response = super().post(request, *args, **kwargs)
-        if "access" in response.data:
-            access_token = response.data["access"]
-            response.set_cookie(
-                key=SIMPLE_JWT["AUTH_COOKIE"], value=access_token, httponly=True
-            )
+
+        role = mutable_copy.get("role")
+        username=mutable_copy["username"]
+        if not role:
+            raise AuthenticationFailed("Role is required")
+        password = request.data.get("password")
+        backend = RollNumberBackend()
+        user= backend.authenticate(request=request, username=username, password=password, role=role)
+        print(user)
+        if user is None:
+            raise AuthenticationFailed("Invalid roll number, password, or role")
+        print(user.is_active)
+
+        # Call the parent class to obtain the JWT token (after authentication)
+        random_token = secrets.token_urlsafe(16)  # Generates a secure random string of 16 characters
+        custom_token = f"{user.id}-{random_token}"
+
+        # Optionally store the token in a model for later validation or expiration
+        # Example: store token in a custom model for tracking
+        # Token.objects.create(user=user, token=custom_token, expiration_date=expiration_date)
+
+        # Response with custom token
+        response_data = {
+            "access": custom_token,  # This is your custom token instead of JWT
+            "role": user.role,
+        }
+        response = JsonResponse(response_data)
+        
+        # Set the cookie with the custom token (make it HttpOnly for security)
+        # response.set_cookie(
+        #         key=SIMPLE_JWT["AUTH_COOKIE"], value=custom_token, httponly=True
+        #     )
+
+        response.set_cookie(
+            key="auth", 
+            value=custom_token, 
+            httponly=True, 
+        )
+        
+        # Log cookie settings for debugging
+        print(f"Cookie set with value: {custom_token}")
+        
         return response

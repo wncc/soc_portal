@@ -8,7 +8,7 @@ urlpatterns = [
     path("<int:pk>/", views.ProjectDetailView.as_view(), name="project_detail"),
     path("wishlist/", views.ProjectWishlist.as_view(), name="wishlist"),
     path("preference/", views.ProjectPreference.as_view(), name="prefenrence"),
-    path("mentor/profile", views.MentorProfile.as_view(), name="mentor"),
+    path('mentor/profile/', views.MentorProfileView.as_view(), name='mentor-profile'),
 
     # path("add/", views.ProjectAddView.as_view(), name="project_add"),
 ]

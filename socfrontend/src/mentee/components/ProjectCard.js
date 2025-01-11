@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from '../utils/api';
+import api from '../../utils/api';
 import { Link } from "react-router-dom";
 
 export default function ProjectCard(props) {
@@ -19,6 +19,7 @@ export default function ProjectCard(props) {
 
     const WishlistAdd = () => {
       const token = localStorage.getItem('authToken');
+      console.log(token)
 
       if (!token) {
         console.log("No authentication token found. Please log in.");
@@ -50,7 +51,7 @@ export default function ProjectCard(props) {
       } else {
         // Remove from wishlist
         api
-          .delete(`http://localhost:8000/api/projects/wishlist/?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
+          .delete(`http://localhost:8000/api/projects/wishlist?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
           .then((res) => {
             console.log("Removed from wishlist:", res.data);
             setAdded(false);

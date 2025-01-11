@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import api from "../utils/api";
+import api from "../../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
@@ -21,11 +21,15 @@ export default function Register() {
   const [error, setError] = useState(false);
   const [error1, setError1] = useState(false);
   const [years, setYears] = useState([]);
+  const [isMentor, setIsMentor] = useState(true);
   const [departments, setDepartments] = useState([]);
+
+  const role = isMentor ? "mentor" : "mentee"; // Dynamically set role
+  const baseUrl = process.env.REACT_APP_BACKEND_URL + `/accounts`;
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + "/accounts/years")
+      .get(`${baseUrl}/years`)
       .then((res) => {
         setYears(res.data);
       })
@@ -34,7 +38,7 @@ export default function Register() {
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + "/accounts/departments")
+      .get(`${baseUrl}/departments`)
       .then((res) => {
         setDepartments(res.data);
       })
@@ -57,6 +61,7 @@ export default function Register() {
     console.log(profile);
     e.preventDefault();
     const formData = new FormData();
+    formData.append("role", isMentor ? "mentor" : "mentee");
 
     Object.keys(profile).forEach((key) => {
       formData.append(key, profile[key]);
@@ -78,7 +83,7 @@ export default function Register() {
       setError1(false);
     }
     api
-      .post(process.env.REACT_APP_BACKEND_URL + "/accounts/register/", formData)
+      .post(`${baseUrl}/register/`, formData)
       .then((res) => {
         navigate("/registerSuccess");
         console.log(res);
@@ -191,6 +196,27 @@ export default function Register() {
           <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
             &lt;/&gt;Seasons of Code&lt;/&gt;
           </h1>
+
+          <div className="flex justify-center gap-4 my-4">
+            <button
+              className={`px-4 py-2 font-medium ${
+                isMentor ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+              } rounded`}
+              onClick={() => {setIsMentor(true);}}
+            >
+              Mentor
+            </button>
+            <button
+              className={`px-4 py-2 font-medium ${
+                !isMentor ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+              } rounded`}
+              onClick={() => {setIsMentor(false);}}
+            >
+              Mentee
+            </button>
+            
+          </div>
+            
 
           <form
             onSubmit={handleSubmit}

@@ -1,0 +1,176 @@
+/* Main container */
+.mentee-container {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 16px;
+  margin: 20px auto;
+}
+
+/* Section titles */
+.section-title {
+  font-size: 1.8rem;
+  color: #0052cc;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Rank list container */
+.rank-list-container {
+  margin-bottom: 40px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+}
+
+.empty-message {
+  text-align: center;
+  font-size: 1rem;
+  color: #777;
+}
+
+/* Rank list styling */
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rank-card {
+  background-color: #e3ebfa;
+  padding: 16px 10px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Rank info */
+.rank-info {
+  font-size: 1.1rem;
+  color: #4a4a4a;
+  flex: 1;
+  word-spacing:15px;
+}
+
+/* Rank actions row */
+.rank-actions-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+/* Mentee list container */
+.mentee-list-container {
+  background-color: #fff;
+  padding: 90px;
+  border-radius: 16px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+}
+
+/* Mentee cards */
+.mentee-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #e3ebfa;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mentee-info {
+  font-size: 1.1rem;
+  word-spacing: 30px;
+  color: #4a4a4a;
+}
+
+.mentee-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Buttons */
+.action-button {
+  background-color: #0052cc;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.action-button:hover {
+  background-color: #003d99;
+}
+
+.select-button {
+  background-color: #00cc66;
+  
+}
+
+.select-button:hover {
+  background-color: #00994d;
+}
+
+.sop-button {
+  background-color: #007bff;
+}
+
+.sop-button:hover {
+  background-color: #0056b3;
+}
+
+.move-up {
+  background-color: #4caf50; /* Green */
+}
+
+.move-up:hover {
+  background-color: #388e3c;
+}
+
+.move-down {
+  background-color: #ff5722; /* Orange */
+}
+
+.move-down:hover {
+  background-color: #e64a19;
+}
+
+/* SOP Modal */
+.sop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.sop-modal {
+  background: #003d99;
+  padding: 20px 30px;
+  border-radius: 16px;
+  color: white;
+  text-align: center;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 20px;
+}
+
+.sop-title {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.sop-content {
+  font-size: 1rem;
+}

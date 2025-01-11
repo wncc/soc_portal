@@ -1,5 +1,5 @@
 import ProjectCard from "../components/ProjectCard";
-import api from "../utils/api";
+import api from "../../utils/api";
 import "../components/Filter.css";
 import { useEffect } from "react";
 import { useState } from "react";

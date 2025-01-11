@@ -14,7 +14,9 @@ class CookieJWTAuthentication(JWTAuthentication):
         
         if header is None:
             # Attempt to get token from the cookie
+            # print(request.headers,"hi")
             token = request.COOKIES.get("auth")
+         
             if token:
                 return self.get_user(self.get_validated_token(token)), None
 

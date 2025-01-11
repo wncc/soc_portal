@@ -4,7 +4,7 @@ from .models import Project
 from .serializers import ProjectSerializer, BasicProjectSerializer, MenteePreferenceSerializer, MenteePreferenceSaveSerializer
 
 # from projects.models import Season
-from accounts.custom_auth import CookieJWTAuthentication
+from accounts.new import CookieJWTAuthentication2
 from rest_framework import generics, views
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,8 +13,6 @@ from rest_framework.permissions import IsAuthenticated
 from accounts.models import UserProfile
 from rest_framework.permissions import AllowAny
 import logging
-from .serializers import MentorSerializer  
-from .models import Mentor
 
 logger = logging.getLogger(__name__)
 # from .serializers import (
@@ -33,12 +31,12 @@ class ProjectDetailView(APIView):
     
 
 class ProjectWishlist(APIView):
-    authentication_classes  = [CookieJWTAuthentication]
+    authentication_classes  = [CookieJWTAuthentication2]
     permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny]  # Allow any user to access the post request
 
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user[0])
+        user_profile = UserProfile.objects.get(user=request.user)
         
         # logger.error('\n \n Error 1 \n \n ')
         mentee = Mentee.objects.get(user=user_profile)
@@ -53,9 +51,8 @@ class ProjectWishlist(APIView):
     
     def post(self, request):
         # logger.error('\n \n Error 6 \n \n ')
-        # print("HI")
-        print(request.user)
-        user_profile = UserProfile.objects.get(user=request.user[0])
+       # print("Request Data:", request.user)
+        user_profile = UserProfile.objects.get(user=request.user)
 
         # logger.error('\n \n Error 7 \n \n ')
         mentee = Mentee.objects.get(user=user_profile)
@@ -71,7 +68,7 @@ class ProjectWishlist(APIView):
         return Response({"message": "Project added to wishlist."})
     
     def delete(self, request):
-        user_profile = UserProfile.objects.get(user=request.user[0])
+        user_profile = UserProfile.objects.get(user=request.user)
         mentee = Mentee.objects.get(user=user_profile)
         project_id = request.GET['project_id']
         project = Project.objects.get(pk=project_id)
@@ -80,19 +77,19 @@ class ProjectWishlist(APIView):
         return Response({"message": "Project removed from wishlist."})
     
 class ProjectPreference(APIView):
-    authentication_classes  = [CookieJWTAuthentication]
+    authentication_classes  = [CookieJWTAuthentication2]
     permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny]  # Allow any user to access the post request
 
     def get(self, request):
-        user_profile = UserProfile.objects.get(user=request.user[0])
+        user_profile = UserProfile.objects.get(user=request.user)
         mentee = Mentee.objects.get(user=user_profile)
         preferences = MenteePreference.objects.filter(mentee=mentee)
         serializer = MenteePreferenceSerializer(preferences, many=True)
         return Response(serializer.data)
     
     def post(self, request):
-        user_profile = UserProfile.objects.get(user=request.user[0])
+        user_profile = UserProfile.objects.get(user=request.user)
         mentee = Mentee.objects.get(user=user_profile)
         project_id = request.data["project"]
         preference = request.data["preference"]
@@ -105,7 +102,7 @@ class ProjectPreference(APIView):
         return Response(serializer.errors, status=400)
     
     def delete(self, request):
-        user_profile = UserProfile.objects.get(user=request.user[0])
+        user_profile = UserProfile.objects.get(user=request.user)
         mentee = Mentee.objects.get(user=user_profile)
         project_id = request.data["project_id"]
         project = Project.objects.get(pk=project_id)
@@ -113,24 +110,26 @@ class ProjectPreference(APIView):
         preference.delete()
         return Response({"message": "Project removed from preferences."})
 
-class MentorProfile(APIView):
-    authentication_classes  = [CookieJWTAuthentication2]
-    permission_classes = [IsAuthenticated]
-    permission_classes = [AllowAny]  # Allow any user to access the post request
-
-    def get(self, request):
-        try:
-            # Fetch the mentor profile for the currently logged-in user
-            mentor = request.user.mentor  # Assuming mentor has a OneToOne relationship with User
-            print(mentor)
-            serializer = MentorSerializer(mentor)
-            print (serializer.data)
-
-            return Response(serializer.data)
-        except Mentor.DoesNotExist:
-            return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
-
 class BasicProjectListView(generics.ListAPIView):
     permission_classes = []
     queryset = Project.objects.all()
     serializer_class = BasicProjectSerializer
+
+from .serializers import MentorSerializer
+from .models import Mentor
+
+
+class MentorProfileView(APIView):
+    authentication_classes = [CookieJWTAuthentication2]  # Your custom authentication class
+   # permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        try:
+            # Fetch the mentor profile for the currently logged-in user
+            mentor = request.user.mentor  # Assuming mentor has a OneToOne relationship with User
+            serializer = MentorSerializer(mentor)
+
+            return Response(serializer.data)
+        except Mentor.DoesNotExist:
+            return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)

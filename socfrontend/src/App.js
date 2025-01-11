@@ -1,28 +1,30 @@
 import "./App.css";
 import React, { useEffect, useState } from "react";
-import Navbar from "./components/Navbar";
-import Textform from "./components/Textform";
-import Reviews from "./components/Reviews";
-import Login from "./pages/Login";
-import Logout from "./pages/Logout";
-import Projects from "./pages/Projects";
-import "./components/scrollable.css";
-import Button from "./components/Button";
+import Navbar from "./mentee/components/Navbar";
+// import Textform from "./components/Textform";
+// import Reviews from "./components/Reviews";
+import Login from "./mentee/pages/Login";
+import Logout from "./mentee/pages/Logout";
+import Projects from "./mentee/pages/Projects";
+import "./mentee/components/scrollable.css";
+// import Button from "./mentee/components/Button";
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Dashboard from "./components/Dashboard";
-import ProjectCard from "./components/ProjectCard";
-import ProjectForm from "./pages/ProjectForm";
-import Register from "./pages/Register";
-import ProjectDetails from "./pages/ProjectDetails";
-import PreferenceForm from "./pages/PreferenceForm";
-import VerifyEmail from "./pages/VerifyEmail";
-import RegisterSuccess from "./pages/RegisterSuccess";
-import ProtectedRoutes from "./components/ProtectedRoutes";
-import LoginRoute from "./components/LoginRoute";
-import PreferenceFormFilled from "./pages/PreferenceFormFilled";
+import Dashboard from "./mentee/components/Dashboard";
+// import ProjectCard from "./mentee/components/ProjectCard";
+import ProjectForm from "./mentee/pages/ProjectForm";
+import Register from "./mentee/pages/Register";
+import ProjectDetails from "./mentee/pages/ProjectDetails";
+import PreferenceForm from "./mentee/pages/PreferenceForm";
+import VerifyEmail from "./mentee/pages/VerifyEmail";
+import RegisterSuccess from "./mentee/pages/RegisterSuccess";
+import ProtectedRoutes from "./mentee/components/ProtectedRoutes";
+import LoginRoute from "./mentee/components/LoginRoute";
+import PreferenceFormFilled from "./mentee/pages/PreferenceFormFilled";
 import api from "./utils/api";
-import Wishlist from "./pages/Wishlist";
-import Home from "./pages/Home";
+import Wishlist from "./mentee/pages/Wishlist";
+import Home from "./mentee/pages/Home";
+import MentorPortal from "./mentor/MentorPortal";
+import MenteeList from "./mentor/MenteeList";
 
 export default function App() {
   const [authToken, setAuthToken] = useState(null);
@@ -83,6 +85,8 @@ export default function App() {
               path="/PreferenceFormFilled"
               element={<PreferenceFormFilled />}
             />
+            <Route path="/mentor/portal" element={<MentorPortal />} />
+            <Route path="/mentor/mentees_list" element={<MenteeList />} />
             <Route path="/logout" element={<Logout />} />
           </Route>
         </Routes>

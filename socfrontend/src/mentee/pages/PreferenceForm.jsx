@@ -1,5 +1,5 @@
 import React from "react";
-import api from "../utils/api";
+import api from "../../utils/api";
 import { useState, useEffect } from "react";
 import PreferenceFormFilled from "../pages/PreferenceFormFilled";
 import { Navigate } from "react-router-dom";

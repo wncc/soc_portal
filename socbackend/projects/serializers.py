@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Project, Mentor, MenteePreference
+
+from .models import Project, MenteePreference , Mentor
 from accounts.serializers import UserProfileSerializer
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -9,20 +10,10 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ["season"]
 
 
-
-
 class BasicProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "title", "general_category", "banner_image"]
-        
-class MentorSerializer(serializers.ModelSerializer):
-    user_profile = UserProfileSerializer(source= "user")
-    project = BasicProjectSerializer()
-    class Meta:
-        model = Mentor
-        fields = "__all__"
-        read_only_fields = ["season", "user_profile", "project"]
 
 class MenteePreferenceSerializer(serializers.ModelSerializer):
     project = BasicProjectSerializer()
@@ -38,6 +29,13 @@ class MenteePreferenceSaveSerializer(serializers.ModelSerializer):
         model = MenteePreference
         fields = "__all__"
 
+class MentorSerializer(serializers.ModelSerializer):
+    # This will serialize the related user profile and include its fields
+    user_profile = UserProfileSerializer(source='user')
+    project = BasicProjectSerializer()
+    class Meta:
+        model = Mentor
+        fields = ['user_profile', 'season','project']
 
 # class MentorRequestSerializer(serializers.ModelSerializer):
 #     project = ProjectSerializer()

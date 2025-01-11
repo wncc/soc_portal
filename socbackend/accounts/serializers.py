@@ -3,19 +3,17 @@ from rest_framework import serializers
 from django.db import transaction
 
 from .models import UserProfile
+from .models import CustomUser
 from .options import DepartmentChoices
 from django.contrib.auth.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = [
-            "first_name",
-            "last_name",
-            "username",
-            "email",
-            "password",
+            "id",
+            "role",
         ]
         extra_kwargs = {
             "password": {"style": {"input_type": "password"}, "write_only": True}
@@ -28,6 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
         validate_password(password)
 
         return password
+    
+    def validate_role(self, role):
+        if role not in ['mentor', 'mentee']:
+            raise serializers.ValidationError("Role must be either 'mentor' or 'mentee'")
+        return role
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
@@ -37,6 +40,20 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"style": {"input_type": "password"}, "write_only": True}
         }
+    def create(self, validated_data):
+        user_instance = validated_data.pop('user')
+        print("User Instance:", user_instance)  # Just for debugging
+
+        # Create user data dictionary based on the fields you expect
+        if isinstance(user_instance, CustomUser):
+        # Directly access the attributes of user_instance
+            user = user_instance
+        else:
+            # Handle error case if user_instance is not a valid CustomUser
+            raise serializers.ValidationError("Invalid user data")
+
+        # Now create the user profile
+        return UserProfile.objects.create(user=user, **validated_data)
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,7 +88,7 @@ class RegisterUserProfileSerializer(serializers.ModelSerializer):
         since the former saves with an unencrypted password
         """
         user_data = validated_data.pop("user")
-        user = User.objects.create_user(**user_data)
+        user = CustomUser.objects.create_user(**user_data)
         return UserProfile.objects.create(user=user, **validated_data)
 
 

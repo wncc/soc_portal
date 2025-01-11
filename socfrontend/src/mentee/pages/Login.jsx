@@ -1,6 +1,6 @@
 import { useState } from "react";
-import api from "../utils/api";
-import { Link } from "react-router-dom";
+import api from "../../utils/api";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   // States for user profile
@@ -11,6 +11,9 @@ export default function Login() {
 
   // States for checking the errors
   const [error, setError] = useState(false);
+  const [isMentor, setIsMentor] = useState(true);
+
+  const navigate = useNavigate();
 
   // Handling input change
   const handleProfile = (e) => {
@@ -25,22 +28,31 @@ export default function Login() {
   // Handling form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    const baseUrl = process.env.REACT_APP_BACKEND_URL + `/accounts`;
     const formData = new FormData();
     Object.keys(profile).forEach((key) => {
       formData.append(key, profile[key]);
     });
-
+    formData.append('role', isMentor ? 'mentor' : 'mentee');
     api
-      .post(process.env.REACT_APP_BACKEND_URL + "/accounts/token/", formData)
+      .post(`${baseUrl}/token/`, formData)
       .then(function (response) {
         const token = response.data.access; // Extract token
+        const role = response.data.role;
         console.log("Login successful, token:", token);
+        console.log("Login successful, role:", role);
 
         // Store the token in localStorage
+        localStorage.setItem("role", role);
         localStorage.setItem("authToken", token);
         // Redirect to Dashboard and reload the page
-        window.location.reload();
+        if (isMentor) {
+          console.log("Hello Mentor")
+          navigate('/mentor/portal')
+        } else {
+          window.location.reload();
+        }
+        
       })
       .catch((err) => {
         console.log("Login failed:", err);
@@ -124,6 +136,26 @@ export default function Login() {
               />
             </svg>
           </h1>
+
+          <div className="flex justify-center gap-4 my-4">
+            <button
+              className={`px-4 py-2 font-medium ${
+                isMentor ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+              } rounded`}
+              onClick={() => {setIsMentor(true);console.log(isMentor);}}
+            >
+              Mentor
+            </button>
+            <button
+              className={`px-4 py-2 font-medium ${
+                !isMentor ? "bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white" : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+              } rounded`}
+              onClick={() => {setIsMentor(false);console.log(isMentor);}}
+            >
+              Mentee
+            </button>
+            
+          </div>
 
           <form
             onSubmit={handleSubmit}

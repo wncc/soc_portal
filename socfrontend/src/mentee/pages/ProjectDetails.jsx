@@ -1,7 +1,7 @@
 import React from 'react';
 //import ProjectTimeline from '../components/ProjectTimeline';
 import { useState , useEffect } from 'react';
-import api from '../utils/api';
+import api from '../../utils/api';
 import ProjectTitle from '../components/ProjectTitle';
 import { useParams } from 'react-router-dom';
 
@@ -93,7 +93,7 @@ export default function ProjectDetails() {
           api
           .post(process.env.REACT_APP_BACKEND_URL+"/projects/wishlist/", formData)
             .then((res) => {
-                console.log(res);
+                console.log("hi",res);
                 setAdded(true);
             })
             .catch((err) => console.log(err));
