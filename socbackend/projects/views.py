@@ -13,6 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from accounts.models import UserProfile
 from rest_framework.permissions import AllowAny
 import logging
+from .serializers import MentorSerializer  
+from .models import Mentor
 
 logger = logging.getLogger(__name__)
 # from .serializers import (
@@ -110,6 +112,23 @@ class ProjectPreference(APIView):
         preference = MenteePreference.objects.get(mentee=mentee, project=project)
         preference.delete()
         return Response({"message": "Project removed from preferences."})
+
+class MentorProfile(APIView):
+    authentication_classes  = [CookieJWTAuthentication2]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow any user to access the post request
+
+    def get(self, request):
+        try:
+            # Fetch the mentor profile for the currently logged-in user
+            mentor = request.user.mentor  # Assuming mentor has a OneToOne relationship with User
+            print(mentor)
+            serializer = MentorSerializer(mentor)
+            print (serializer.data)
+
+            return Response(serializer.data)
+        except Mentor.DoesNotExist:
+            return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
 
 class BasicProjectListView(generics.ListAPIView):
     permission_classes = []

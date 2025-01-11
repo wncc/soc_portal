@@ -1,7 +1,6 @@
 from rest_framework import serializers
-
-from .models import Project, MenteePreference
-
+from .models import Project, Mentor, MenteePreference
+from accounts.serializers import UserProfileSerializer
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,10 +9,20 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ["season"]
 
 
+
+
 class BasicProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "title", "general_category", "banner_image"]
+        
+class MentorSerializer(serializers.ModelSerializer):
+    user_profile = UserProfileSerializer(source= "user")
+    project = BasicProjectSerializer()
+    class Meta:
+        model = Mentor
+        fields = "__all__"
+        read_only_fields = ["season", "user_profile", "project"]
 
 class MenteePreferenceSerializer(serializers.ModelSerializer):
     project = BasicProjectSerializer()

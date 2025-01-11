@@ -141,6 +141,44 @@ class Mentee(models.Model):
         return self.user.roll_number
 
 
+class Mentor(models.Model):
+    """
+    A Mentee is the representation of a user in a season applying to projects.
+    """
+
+    user = models.OneToOneField(
+        UserProfile,
+        on_delete=models.CASCADE,
+        help_text="The user corresponding to the mentor.",
+        unique=True,
+    )
+    season = models.TextField(default='')
+    # season = models.ForeignKey(
+    #     Season,
+    #     on_delete=models.PROTECT,
+    #     default=get_current_id,
+    #     help_text="The season to which mentee is applying for.",
+    # )
+
+    # project = models.ForeignKey(
+    #     Project,
+    #     null=True,
+    #     on_delete=models.SET_NULL,
+    #     help_text="The project that the mentee has been selected for. Is NULL if not selected yet.",
+    # )
+
+    # preferences = models.ManyToManyField(
+    #     "Project",
+    #     through="MenteePreference",
+    #     related_name="applications",
+    #     help_text="The projects that the mentee has applied to.",
+    # )
+
+
+    def __str__(self):
+        return self.user.roll_number
+
+
 # class ProjectCategory(models.Model):
 #     name = models.CharField(max_length=255, blank=False)
 
@@ -236,6 +274,59 @@ class Project(models.Model):
 #     status = models.IntegerField(
 #         choices=RequestStatusChoices.choices, default=RequestStatusChoices.PENDING
 #     )
+
+class Mentor(models.Model):
+    """
+    A Mentee is the representation of a user in a season applying to projects.
+    """
+
+    user = models.OneToOneField(
+        UserProfile,
+        on_delete=models.CASCADE,
+        help_text="The user corresponding to the mentor.",
+        unique=True,
+    )
+    season = models.TextField(default='')
+
+    project = models.ForeignKey(
+        Project,  # Reference to the Project model
+        on_delete=models.SET_NULL,  # What to do if the project is deleted
+        null=True,  # Allow mentor to exist without being assigned to a project
+        blank=True,  # Make this field optional
+        help_text="The project that the mentor is leading.",
+        related_name='project_leads'  # Use a unique related_name
+    )
+    # season = models.ForeignKey(
+    #     Season,
+    #     on_delete=models.PROTECT,
+    #     default=get_current_id,
+    #     help_text="The season to which mentee is applying for.",
+    # )
+
+    # project = models.ForeignKey(
+    #     Project,
+    #     null=True,
+    #     on_delete=models.SET_NULL,
+    #     help_text="The project that the mentee has been selected for. Is NULL if not selected yet.",
+    # )
+
+    # preferences = models.ManyToManyField(
+    #     "Project",
+    #     through="MenteePreference",
+    #     related_name="applications",
+    #     help_text="The projects that the mentee has applied to.",
+    # )
+
+
+    def __str__(self):
+        return self.user.roll_number
+
+
+# class ProjectCategory(models.Model):
+#     name = models.CharField(max_length=255, blank=False)
+
+#     def __str__(self):
+#         return self.name
 
 
 class MenteeWishlist(models.Model):

@@ -50,7 +50,7 @@ export default function ProjectCard(props) {
       } else {
         // Remove from wishlist
         api
-          .delete(`http://localhost:8000/api/projects/wishlist?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
+          .delete(`http://localhost:8000/api/projects/wishlist/?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
           .then((res) => {
             console.log("Removed from wishlist:", res.data);
             setAdded(false);
