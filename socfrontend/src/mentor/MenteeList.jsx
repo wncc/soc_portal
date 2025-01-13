@@ -1,19 +1,39 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { motion } from "framer-motion";
 import "./MenteeList.css";
+import axios from "axios";
 
 const MenteeList = () => {
-  const [mentees, setMentees] = useState([
-    { id: 1, name: "Mentee1", Roll: "23b0601", preference: "Preference-1", sop: "This is SOP for Mentee1." },
-    { id: 2, name: "Mentee2", Roll: "23b0602", preference: "Preference-1", sop: "This is SOP for Mentee2." },
-    { id: 3, name: "Mentee3", Roll: "23b0603", preference: "Preference-3", sop: "This is SOP for Mentee3." },
-    { id: 4, name: "Mentee4", Roll: "23b0604", preference: "Preference-2", sop: "This is SOP for Mentee4." },
-    { id: 5, name: "Mentee5", Roll: "23b0605", preference: "Preference-2", sop: "This is SOP for Mentee5." },
-    { id: 6, name: "Mentee6", Roll: "23b0606", preference: "Preference-1", sop: "This is SOP for Mentee6." },
-    { id: 7, name: "Mentee7", Roll: "23b0607", preference: "Preference-1", sop: "This is SOP for Mentee7." },
-    { id: 8, name: "Mentee8", Roll: "23b0608", preference: "Preference-1", sop: "This is SOP for Mentee8." },
-    { id: 9, name: "Mentee9", Roll: "23b0609", preference: "Preference-1", sop: "This is SOP for Mentee9." },
-  ]);
+
+  const token = localStorage.getItem("authToken");
+  const [mentees, setMentees] = useState([]);
+
+  const axiosConfig = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  // Fetch mentor data from the backend
+  useEffect(() => {
+    // You can replace this URL with the correct endpoint to fetch the current mentor's data
+    axios
+      .get(
+        process.env.REACT_APP_BACKEND_URL + "/projects/mentor/profile",
+        axiosConfig
+      )
+      .then((response) => {
+        const sortedMentees = response.data.mentees.sort((a, b) => {
+          const aPreference = a.preferences[0]?.preference || Infinity; // Default to Infinity if no preference
+          const bPreference = b.preferences[0]?.preference || Infinity;
+          return aPreference - bPreference;
+        });
+        setMentees(sortedMentees);
+      })
+      .catch((error) => {
+        console.error("Error fetching mentor data:", error);
+      });
+  }, []);
 
   const [rankList, setRankList] = useState([]);
   const [selectedSOP, setSelectedSOP] = useState(null); // For SOP modal
@@ -85,7 +105,7 @@ const MenteeList = () => {
               <div className="rank-card" key={mentee.id}>
                 <div className="rank-info">
                   <p>
-                  Rank:{index + 1}  {mentee.name} {mentee.Roll}  {mentee.preference}
+                  Rank:{index + 1}  {mentee.user_profile.name} {mentee.user_profile.roll_number} {mentee.preferences.preference}
                   </p>
                 </div>
                 <div className="rank-actions-row">
@@ -111,12 +131,19 @@ const MenteeList = () => {
       {/* Mentee List */}
       <div className="mentee-list-container">
         <h2 className="section-title">Applied Mentees</h2>
-        {mentees.map((mentee, index) => (
-          <div className="mentee-card" key={mentee.id}>
-            <div className="mentee-info">
-              <p>
-                ({mentee.id}) {mentee.name} {mentee.Roll} {mentee.preference}
-              </p>
+        {mentees
+          .slice()
+          .sort((a, b) => {
+            const aPreference = a.preferences.preference || Infinity;
+            const bPreference = b.preferences.preference || Infinity;
+            return aPreference - bPreference;
+          })
+          .map((mentee, index) => (
+            <div className="mentee-card" key={mentee.id}>
+              <div className="mentee-info">
+                <p>
+                  {mentee.user_profile.name} {mentee.user_profile.roll_number} {mentee.preferences.preference}
+                </p>
             </div>
             <div className="mentee-actions">
               <button

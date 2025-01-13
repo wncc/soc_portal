@@ -114,7 +114,7 @@ class Mentee(models.Model):
         help_text="The user corresponding to the mentee.",
         unique=True,
     )
-    season = models.TextField(default='')
+    season = models.TextField(default='1')
     # season = models.ForeignKey(
     #     Season,
     #     on_delete=models.PROTECT,
@@ -238,6 +238,28 @@ class Project(models.Model):
 #     )
 
 
+
+class MenteePreference(models.Model):
+    """
+    Preferences of a mentee (ie a user during a specific season)
+    """
+    mentee = models.ForeignKey(Mentee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    sop = models.TextField(null=False)
+    preference = models.IntegerField(null=False, blank=False)
+
+    def __str__(self):
+        return self.mentee.user.roll_number + " - " + self.project.title + " - " + str(self.preference)
+
+    class Meta:
+        unique_together = [
+            ('mentee', 'project', 'preference'),
+            ('mentee', 'project'),
+        ]
+
+
+
+
 class Mentor(models.Model):
     """
     A Mentee is the representation of a user in a season applying to projects.
@@ -249,7 +271,7 @@ class Mentor(models.Model):
         help_text="The user corresponding to the mentor.",
         unique=True,
     )
-    season = models.TextField(default='')
+    season = models.TextField(default='1')
 
     project = models.ForeignKey(
         Project,  # Reference to the Project model
@@ -259,6 +281,17 @@ class Mentor(models.Model):
         help_text="The project that the mentor is leading.",
         related_name='project_leads'  # Use a unique related_name
     )
+
+    @property
+    def mentees(self):
+        """
+        Returns a queryset of mentees who have a preference for the mentor's project.
+        """
+        if self.project:
+            return Mentee.objects.filter(
+                menteepreference__project=self.project
+            ).distinct()
+        return Mentee.objects.none()
     # season = models.ForeignKey(
     #     Season,
     #     on_delete=models.PROTECT,
@@ -297,24 +330,4 @@ class MenteeWishlist(models.Model):
     
     class Meta:
         unique_together = ('mentee', 'project')
-
-
-class MenteePreference(models.Model):
-    """
-    Preferences of a mentee (ie a user during a specific season)
-    """
-    mentee = models.ForeignKey(Mentee, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    sop = models.TextField(null=False)
-    preference = models.IntegerField(null=False, blank=False)
-
-    def __str__(self):
-        return self.mentee.user.roll_number + " - " + self.project.title + " - " + str(self.preference)
-
-    class Meta:
-        unique_together = [
-            ('mentee', 'project', 'preference'),
-            ('mentee', 'project'),
-        ]
-
 

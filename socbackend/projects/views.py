@@ -129,7 +129,7 @@ class MentorProfileView(APIView):
             # Fetch the mentor profile for the currently logged-in user
             mentor = request.user.mentor  # Assuming mentor has a OneToOne relationship with User
             serializer = MentorSerializer(mentor)
-
+          #  print(serializer.data)
             return Response(serializer.data)
         except Mentor.DoesNotExist:
             return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
