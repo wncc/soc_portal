@@ -257,7 +257,39 @@ class MenteePreference(models.Model):
             ('mentee', 'project'),
         ]
 
+class MenteeWishlist(models.Model):
+    """
+    Preferences of a mentee (ie a user during a specific season)
+    """
+    mentee = models.ForeignKey(Mentee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    # sop = models.TextField()
+    # preference = models.IntegerField()
+    def __str__(self):
+        return self.mentee.user.roll_number + " - " + self.project.title
+    
+    class Meta:
+        unique_together = ('mentee', 'project')
 
+        
+
+class MenteePreference(models.Model):
+    """
+    Preferences of a mentee (ie a user during a specific season)
+    """
+    mentee = models.ForeignKey(Mentee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    sop = models.TextField(null=False)
+    preference = models.IntegerField(null=False, blank=False)
+
+    def __str__(self):
+        return self.mentee.user.roll_number + " - " + self.project.title + " - " + str(self.preference)
+
+    class Meta:
+        unique_together = [
+            ('mentee', 'project', 'preference'),
+            ('mentee', 'project'),
+        ]
 
 
 class Mentor(models.Model):
@@ -317,17 +349,40 @@ class Mentor(models.Model):
     def __str__(self):
         return self.user.roll_number
 
-class MenteeWishlist(models.Model):
-    """
-    Preferences of a mentee (ie a user during a specific season)
-    """
-    mentee = models.ForeignKey(Mentee, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    # sop = models.TextField()
-    # preference = models.IntegerField()
-    def __str__(self):
-        return self.mentee.user.roll_number + " - " + self.project.title
-    
-    class Meta:
-        unique_together = ('mentee', 'project')
 
+class RankList(models.Model):
+    """
+    Model representing the ranking of mentees by mentors for specific projects.
+    """
+    mentor = models.ForeignKey(
+        Mentor,
+        on_delete=models.CASCADE,
+        related_name='ranklists',
+        help_text="The mentor who ranked the mentee."
+    )
+    mentee = models.ForeignKey(
+        Mentee,
+        on_delete=models.CASCADE,
+        related_name='rankings',
+        help_text="The mentee who is ranked by the mentor."
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='ranklists',
+        help_text="The project associated with the ranking."
+    )
+    rank = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text="The rank given by the mentor to the mentee for this project."
+    )
+
+    class Meta:
+        unique_together = ('mentor', 'mentee', 'project')
+        ordering = ['rank']
+        verbose_name = "Rank List"
+        verbose_name_plural = "Rank Lists"
+
+    def __str__(self):
+        return (f"Project: {self.project.title}, Mentor: {self.mentor.user.roll_number}, "
+                f"Mentee: {self.mentee.user.roll_number}, Rank: {self.rank}")

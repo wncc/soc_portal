@@ -1,6 +1,6 @@
 from django.contrib import admin
 # from django.contrib import admin
-from .models import Project, Mentee,Mentor, MenteePreference, MenteeWishlist
+from .models import Project, Mentee,Mentor, MenteePreference, MenteeWishlist ,RankList
 
 
 # class MentorInline(admin.TabularInline):
@@ -17,6 +17,8 @@ class MenteeAdmin(admin.ModelAdmin):
     list_per_page = 1000  
 class MentorAdmin(admin.ModelAdmin):
     list_per_page = 1000  
+class RankListAdmin(admin.ModelAdmin):
+    list_per_page = 1000  
 
 # Register your models here.
 # admin.site.register(Season)
@@ -25,6 +27,8 @@ class MentorAdmin(admin.ModelAdmin):
 admin.site.register(Project)    
 admin.site.register(Mentor, MentorAdmin)
 admin.site.register(Mentee, MenteeAdmin)
+admin.site.register(RankList, RankListAdmin)
 # admin.site.register(ProjectCategory)
 admin.site.register(MenteePreference)
 admin.site.register(MenteeWishlist)
+

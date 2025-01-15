@@ -174,3 +174,13 @@
 .sop-content {
   font-size: 1rem;
 }
+
+.save-modal {
+  background: #003d99;
+  padding: 20px 30px;
+  margin-top: 20px;
+  border-radius: 16px;
+  color: white;
+  text-align: center;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 20px;
+}

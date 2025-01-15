@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Project, MenteePreference , Mentor , Mentee
+from .models import Project, MenteePreference , Mentor , Mentee ,RankList
 from accounts.serializers import UserProfileSerializer
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -56,6 +56,59 @@ class MentorSerializer(serializers.ModelSerializer):
         # Pass the mentor's project to the MenteeSerializer context
         serializer = MenteeSerializer(mentees, many=True, context={'mentor_project': obj.project})
         return serializer.data
+    
+class RankListSaveSerializer(serializers.Serializer):
+    rank_list = serializers.ListField(
+        child=serializers.DictField(),
+        write_only=True
+    )
+
+    def validate_rank_list(self, value):
+        for entry in value:
+            if 'mentee_id' not in entry or 'rank' not in entry:
+                raise serializers.ValidationError(
+                    "Each entry must contain 'mentee_id' and 'rank'."
+                )
+        return value
+
+    def create(self, validated_data):
+        rank_list_data = validated_data.pop('rank_list', [])
+        mentor = self.context['mentor']
+
+        # Loop over each entry in the rank_list data
+        for entry in rank_list_data:
+            mentee_roll_number = entry['mentee_id']  # The mentee_id now refers to the roll number
+            rank = entry['rank']
+            # Find the mentee by their roll number and ensure they belong to the mentor's project
+            try:
+                mentee = Mentee.objects.get(user__roll_number=mentee_roll_number)
+
+                existing_entry = RankList.objects.filter(mentor=mentor, rank=rank).first()
+            
+                if existing_entry:
+                    # If there's a clash, delete the previous entry
+                    print(f"Deleting previous rank list entry for mentee {existing_entry.mentee.user.roll_number} due to rank clash.")
+                    existing_entry.delete()
+
+                # Check if the RankList entry already exists
+                rank_list_entry, created = RankList.objects.update_or_create(
+                    mentor=mentor,
+                    mentee=mentee,
+                    project=mentor.project,
+                    defaults={'rank': rank}  # Update the rank if the entry exists
+                )
+
+                # If created is False, it means the entry was updated
+                if created:
+                    print(f"Created new rank list entry for mentee {mentee_roll_number}.")
+                else:
+                    print(f"Updated rank for mentee {mentee_roll_number}.")
+
+            except Mentee.DoesNotExist:
+                raise serializers.ValidationError(f"Mentee with roll number {mentee_roll_number} not found or not in your project.")
+
+        return {'status': 'Rank list saved successfully'}
+
 
 # class MentorRequestSerializer(serializers.ModelSerializer):
 #     project = ProjectSerializer()

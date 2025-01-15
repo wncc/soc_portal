@@ -1,7 +1,7 @@
 from rest_framework import generics
 
 from .models import Project
-from .serializers import ProjectSerializer, BasicProjectSerializer, MenteePreferenceSerializer, MenteePreferenceSaveSerializer
+from .serializers import ProjectSerializer, BasicProjectSerializer, MenteePreferenceSerializer, MenteePreferenceSaveSerializer ,RankListSaveSerializer
 
 # from projects.models import Season
 from accounts.new import CookieJWTAuthentication2
@@ -133,3 +133,29 @@ class MentorProfileView(APIView):
             return Response(serializer.data)
         except Mentor.DoesNotExist:
             return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
+
+from rest_framework import status   
+class SaveRankListView(APIView):
+    authentication_classes = [CookieJWTAuthentication2]  # Your custom authentication class
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            mentor = Mentor.objects.get(user=user_profile)  # Ensure the user is a mentor
+        except Mentor.DoesNotExist:
+            return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found.'}, status=404)
+
+        # Assuming request.data contains a list of mentees with roll_number and rank
+        print(request.data)
+        serializer = RankListSaveSerializer(data=request.data, context={'mentor': mentor})
+
+        if serializer.is_valid():
+            # Use the serializer to save the rank list
+            serializer.save()
+            return Response({'status': 'Rank list saved successfully'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
