@@ -2,7 +2,6 @@ import ProjectCard from "../components/ProjectCard";
 import api from "../../utils/api";
 import "../components/Filter.css";
 import { useEffect, useState, useMemo } from "react";
-import "../components/ProjectCard.css";
 
 export default function Projects() {
   const [details, setDetails] = useState([]);

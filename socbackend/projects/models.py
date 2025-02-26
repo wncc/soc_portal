@@ -1,7 +1,7 @@
 import uuid
 
 from django.conf import settings
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import  MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -72,36 +72,6 @@ def upload_to(instance, filename):
     return "projects/{filename}".format(filename=filename)
 
 
-# Mentor Model Commented for now
-
-# class Mentor(models.Model):
-#     """
-#     A Mentor is the representation of a user in a season creating/heading projects.
-#     """
-
-#     user = models.ForeignKey(
-#         UserProfile,
-#         on_delete=models.CASCADE,
-#         help_text="The user corresponding to the mentee.",
-#     )
-#     season = models.ForeignKey(
-#         Season,
-#         on_delete=models.PROTECT,
-#         default=get_current_id,
-#         help_text="The season to which mentee is applying for.",
-#     )
-
-#     def __str__(self):
-#         return self.user.roll_number
-
-#     class Meta:
-#         constraints = [
-#             models.UniqueConstraint(
-#                 fields=["user", "season"],
-#                 name="mentor_unique_user_season",
-#             )
-#         ]
-
 
 class Mentee(models.Model):
     """
@@ -140,14 +110,6 @@ class Mentee(models.Model):
     def __str__(self):
         return self.user.roll_number
     
-
-# class ProjectCategory(models.Model):
-#     name = models.CharField(max_length=255, blank=False)
-
-#     def __str__(self):
-#         return self.name
-
-
 
 
 class Project(models.Model):
@@ -216,27 +178,6 @@ class Project(models.Model):
             # Generate a UUID and take the first 8 characters
             self.code = str(uuid.uuid4())[:8]
         super().save(*args, **kwargs)
-
-
-# class MentorRequest(models.Model):
-#     """
-#     Explicit many-to-many linking table between Project and
-#     Mentor. Doubles as the (co-)mentor request table
-#     """
-
-#     mentor = models.ForeignKey(Mentor, on_delete=models.CASCADE)
-#     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-
-#     class RequestStatusChoices(models.IntegerChoices):
-#         PENDING = 0b00
-#         FIRST_MENTOR = 0b01
-#         REJECTED = 0b10
-#         ACCEPTED = 0b11
-
-#     status = models.IntegerField(
-#         choices=RequestStatusChoices.choices, default=RequestStatusChoices.PENDING
-#     )
-
 
 
 class MenteePreference(models.Model):
@@ -349,7 +290,6 @@ class Mentor(models.Model):
     def __str__(self):
         return self.user.roll_number
 
-
 class RankList(models.Model):
     """
     Model representing the ranking of mentees by mentors for specific projects.
@@ -360,6 +300,7 @@ class RankList(models.Model):
         related_name='ranklists',
         help_text="The mentor who ranked the mentee."
     )
+    
     mentee = models.ForeignKey(
         Mentee,
         on_delete=models.CASCADE,
@@ -376,13 +317,21 @@ class RankList(models.Model):
         validators=[MinValueValidator(1)],
         help_text="The rank given by the mentor to the mentee for this project."
     )
+    preference = models.PositiveIntegerField(
+        help_text="The preference given of mentee for this project."
+    )
 
     class Meta:
-        unique_together = ('mentor', 'mentee', 'project')
+        unique_together = ('mentor', 'mentee', 'project','preference')
         ordering = ['rank']
         verbose_name = "Rank List"
         verbose_name_plural = "Rank Lists"
 
     def __str__(self):
         return (f"Project: {self.project.title}, Mentor: {self.mentor.user.roll_number}, "
-                f"Mentee: {self.mentee.user.roll_number}, Rank: {self.rank}")
+                f"Mentee: {self.mentee.user.roll_number}, Rank: {self.rank}, Preference: {self.preference}")
+
+    def get_preference(self):
+        """Fetches mentee preference from MenteePreference model"""
+        mentee_pref = MenteePreference.objects.filter(mentee=self.mentee, project=self.project).first()
+        return mentee_pref.preference if mentee_pref else None

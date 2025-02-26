@@ -1,7 +1,7 @@
 from rest_framework import generics
 
-from .models import Project
-from .serializers import ProjectSerializer, BasicProjectSerializer, MenteePreferenceSerializer, MenteePreferenceSaveSerializer ,RankListSaveSerializer
+from .models import Project,RankList
+from .serializers import ProjectSerializer, BasicProjectSerializer, MenteePreferenceSerializer, MenteePreferenceSaveSerializer ,RankListSaveSerializer,RankListSerializer
 
 # from projects.models import Season
 from accounts.new import CookieJWTAuthentication2
@@ -129,32 +129,56 @@ class MentorProfileView(APIView):
             # Fetch the mentor profile for the currently logged-in user
             mentor = request.user.mentor  # Assuming mentor has a OneToOne relationship with User
             serializer = MentorSerializer(mentor)
-          #  print(serializer.data)
+            # print(serializer.data)
             return Response(serializer.data)
         except Mentor.DoesNotExist:
             return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
 
 from rest_framework import status   
 class SaveRankListView(APIView):
-    authentication_classes = [CookieJWTAuthentication2]  # Your custom authentication class
-    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
-    permission_classes = [AllowAny]
+    authentication_classes = [CookieJWTAuthentication2]  # Custom authentication
+    permission_classes = [AllowAny]  # Ensure the user is authenticated
 
-    def post(self, request):
+    def get(self, request, project_id):
+        """ Fetch saved rank list for the authenticated mentor for a specific project """
         try:
             user_profile = UserProfile.objects.get(user=request.user)
-            mentor = Mentor.objects.get(user=user_profile)  # Ensure the user is a mentor
+            mentor = Mentor.objects.get(user=user_profile)
+
+            # Fetch the project and its rank list
+            project = Project.objects.get(id=project_id)
+            rank_list = RankList.objects.filter(mentor=mentor, project=project).order_by("rank")
+
+            # Serialize the rank list and pass mentor_project context
+            serializer = RankListSerializer(rank_list, many=True, context={'mentor_project': project})
+
+            return Response({"rank_list": serializer.data}, status=status.HTTP_200_OK)
+
+        except Mentor.DoesNotExist:
+            return Response({"error": "Mentor profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except UserProfile.DoesNotExist:
+            return Response({"error": "User profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, project_id):
+        """ Save or update the rank list for a mentor and project """
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            mentor = Mentor.objects.get(user=user_profile)  # Ensure user is a mentor
+            project = Project.objects.get(id=project_id)  # Fetch project
         except Mentor.DoesNotExist:
             return Response({'error': 'You are not a mentor or mentor profile does not exist.'}, status=404)
         except UserProfile.DoesNotExist:
             return Response({'error': 'User profile not found.'}, status=404)
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found.'}, status=404)
 
-        # Assuming request.data contains a list of mentees with roll_number and rank
-        print(request.data)
-        serializer = RankListSaveSerializer(data=request.data, context={'mentor': mentor})
-
+        # Pass mentor and project context to the serializer
+        serializer = RankListSaveSerializer(data=request.data, context={'mentor': mentor, 'mentor_project': project})
         if serializer.is_valid():
-            # Use the serializer to save the rank list
             serializer.save()
             return Response({'status': 'Rank list saved successfully'}, status=status.HTTP_201_CREATED)
         else:

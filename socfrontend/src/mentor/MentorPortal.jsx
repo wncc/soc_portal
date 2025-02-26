@@ -1,11 +1,9 @@
 import "./MentorPortal.scss";
 import React, { useRef, useEffect, useState } from "react";
-import { FaBehance, FaDribbble } from "react-icons/fa";
 import { IoMailOutline, IoChevronForwardCircle, IoStar } from "react-icons/io5";
 import { IconContext } from "react-icons";
 import { motion } from "framer-motion";
 import MenteeList from "./MenteeList";
-import bg from "../images/bg.png";
 import axios from "axios";
 
 let easeing = [0.6, -0.05, 0.01, 0.99];
@@ -55,21 +53,7 @@ const btnGroup = {
     },
   },
 };
-const star = {
-  initial: {
-    y: 60,
-    opacity: 0,
-    transition: { duration: 0.8, ease: easeing },
-  },
-  animate: {
-    y: 0,
-    opacity: 1,
-    animation: {
-      duration: 0.6,
-      ease: easeing,
-    },
-  },
-};
+
 
 function MentorPortal() {
   // State for storing mentor's data

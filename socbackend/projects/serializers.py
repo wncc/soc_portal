@@ -57,6 +57,24 @@ class MentorSerializer(serializers.ModelSerializer):
         serializer = MenteeSerializer(mentees, many=True, context={'mentor_project': obj.project})
         return serializer.data
     
+    
+class RankListSerializer(serializers.ModelSerializer):
+    mentee = serializers.SerializerMethodField()
+    preference = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RankList
+        fields = ['mentee', 'rank', 'preference']
+
+    def get_mentee(self, obj):
+        """ Use MenteeSerializer to include user profile and preferences """
+        mentor_project = self.context.get('mentor_project')  # Get mentor's project
+        return MenteeSerializer(obj.mentee, context={'mentor_project': mentor_project}).data
+
+    def get_preference(self, obj):
+        """ Fetch preference from MenteePreference instead of RankList """
+        return obj.get_preference()
+    
 class RankListSaveSerializer(serializers.Serializer):
     rank_list = serializers.ListField(
         child=serializers.DictField(),
@@ -75,77 +93,45 @@ class RankListSaveSerializer(serializers.Serializer):
         rank_list_data = validated_data.pop('rank_list', [])
         mentor = self.context['mentor']
 
-        # Loop over each entry in the rank_list data
+        # Step 1: ❌ Delete existing rank list entries for this mentor
+        RankList.objects.filter(mentor=mentor).delete()
+        print(f"Deleted existing rank list for mentor {mentor.id}")
+
+        # Step 2: ✅ Add new rank list entries
         for entry in rank_list_data:
-            mentee_roll_number = entry['mentee_id']  # The mentee_id now refers to the roll number
+            mentee_roll_number = entry['mentee_id']
             rank = entry['rank']
-            # Find the mentee by their roll number and ensure they belong to the mentor's project
+            preference = entry.get('preference')  # Optional
+
             try:
                 mentee = Mentee.objects.get(user__roll_number=mentee_roll_number)
+                mentor_project = mentor.project
 
-                existing_entry = RankList.objects.filter(mentor=mentor, rank=rank).first()
-            
-                if existing_entry:
-                    # If there's a clash, delete the previous entry
-                    print(f"Deleting previous rank list entry for mentee {existing_entry.mentee.user.roll_number} due to rank clash.")
-                    existing_entry.delete()
-
-                # Check if the RankList entry already exists
-                rank_list_entry, created = RankList.objects.update_or_create(
-                    mentor=mentor,
+                # Fetch mentee preference for this project
+                mentee_pref, _ = MenteePreference.objects.get_or_create(
                     mentee=mentee,
-                    project=mentor.project,
-                    defaults={'rank': rank}  # Update the rank if the entry exists
+                    project=mentor_project,
+                    defaults={'preference': preference}
                 )
 
-                # If created is False, it means the entry was updated
-                if created:
-                    print(f"Created new rank list entry for mentee {mentee_roll_number}.")
-                else:
-                    print(f"Updated rank for mentee {mentee_roll_number}.")
+                # If preference is provided, update it
+                if preference is not None:
+                    mentee_pref.preference = preference
+                    mentee_pref.save()
+
+                # Create new rank list entry
+                RankList.objects.create(
+                    mentor=mentor,
+                    mentee=mentee,
+                    project=mentor_project,
+                    preference=mentee_pref.preference,
+                    rank=rank
+                )
+
+                print(f"Added mentee {mentee_roll_number} to rank list at rank {rank}")
 
             except Mentee.DoesNotExist:
                 raise serializers.ValidationError(f"Mentee with roll number {mentee_roll_number} not found or not in your project.")
 
         return {'status': 'Rank list saved successfully'}
 
-
-# class MentorRequestSerializer(serializers.ModelSerializer):
-#     project = ProjectSerializer()
-
-#     class Meta:
-#         model = MentorRequest
-#         exclude = ["mentor"]
-
-
-# class ProjectAdditionSerializer(ProjectSerializer):
-#     """
-#     Note: this serializer has a nested project.mentors field, but since this is
-#     read_only and co_mentors is write_only, this does not cause any issues.
-#     """
-
-#     class Meta:
-#         model = Project
-#         fields = "__all__"
-#         read_only_fields = ["season", "mentors"]
-
-#     # co_mentors = serializers.ListField(
-#     #     child=serializers.IntegerField(), write_only=True, required=False
-#     # )
-
-#     def create(self, validated_data):
-#         # co_mentors = validated_data.pop("co_mentors", [])
-#         project = Project.objects.create(**validated_data)
-
-#         first_mentor = self.context["request"].user
-#         project.mentors.add(
-#             first_mentor,
-#             through_defaults={
-#                 "status": MentorRequest.RequestStatusChoices.FIRST_MENTOR
-#             },
-#         )
-
-#         # if len(co_mentors):
-#         #     project.mentors.add(*co_mentors)
-
-#         return project

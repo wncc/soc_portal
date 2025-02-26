@@ -1,16 +1,14 @@
 import "./App.css";
 import React, { useEffect, useState } from "react";
+
 import Navbar from "./mentee/components/Navbar";
-// import Textform from "./components/Textform";
-// import Reviews from "./components/Reviews";
 import Login from "./mentee/pages/Login";
 import Logout from "./mentee/pages/Logout";
 import Projects from "./mentee/pages/Projects";
 import "./mentee/components/scrollable.css";
-// import Button from "./mentee/components/Button";
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Dashboard from "./mentee/components/Dashboard";
-// import ProjectCard from "./mentee/components/ProjectCard";
+
+import { Routes, Route } from "react-router-dom";
+
 import ProjectForm from "./mentee/pages/ProjectForm";
 import Register from "./mentee/pages/Register";
 import ProjectDetails from "./mentee/pages/ProjectDetails";
@@ -41,7 +39,7 @@ export default function App() {
       });
   }, []);
 
-  console.log(authToken);
+
 
   if (authToken === null) {
     return (
@@ -78,8 +76,6 @@ export default function App() {
               element={<ProjectDetails />}
             />
             <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/Dashboard" element={<Dashboard />} />
-            <Route path="/Dashboard/ProjectForm" element={<ProjectForm />} />
             <Route path="/PreferenceForm" element={<PreferenceForm />} />
             <Route
               path="/PreferenceFormFilled"

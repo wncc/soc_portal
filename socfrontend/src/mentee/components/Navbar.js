@@ -4,7 +4,7 @@ import wncc_logo from "../../assets/wncc-logo.png";
 import PropTypes from "prop-types";
 
 export default function Navbar(props) {
-  console.log(props.authToken);
+
   const authToken = localStorage.getItem("authToken");
   const role = localStorage.getItem("role");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -173,6 +173,7 @@ export default function Navbar(props) {
                     >
                       Mentees List
                     </Link>
+                    
                   </li>
                   <li>
                     <Link
