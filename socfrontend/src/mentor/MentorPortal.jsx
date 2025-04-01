@@ -54,15 +54,15 @@ const btnGroup = {
   },
 };
 
-
-function MentorPortal() {
+function MentorPortal({ project, onBack }) {
   // State for storing mentor's data
-  const [mentorName, setMentorName] = useState("");
-  const [mentorRoll, setMentorRoll] = useState("");
+  const [mentees, setMentees] = useState();
   const [mentorProj, setMentorProj] = useState("");
   const [mentorPath, setMentorPath] = useState("");
+  const [bannerImage, setBannerImage] = useState("");
   const menteeListRef = useRef(null);
   const token = localStorage.getItem("authToken");
+  const [isLoading, setIsLoading] = useState(true);
 
   const axiosConfig = {
     headers: {
@@ -70,25 +70,77 @@ function MentorPortal() {
       Authorization: `Bearer ${token}`,
     },
   };
+
   // Fetch mentor data from the backend
   useEffect(() => {
     // You can replace this URL with the correct endpoint to fetch the current mentor's data
     axios
       .get(
-        process.env.REACT_APP_BACKEND_URL + "/projects/mentor/profile",
+        process.env.REACT_APP_BACKEND_URL + `/projects/mentor/profile/${project.id}`,
         axiosConfig
       )
       .then((response) => {
-        setMentorName(response.data.user_profile.name); // Assuming the response has a 'name' field
-        setMentorRoll(response.data.user_profile.roll_number);
-        setMentorProj(response.data.project.title);
-        setMentorPath(response.data.project.banner_image);
+        const matchedProject = response.data.mentor.projects.find((x) => x.id === project.id);
+        setMentees(response.data.mentees.length)
+        if (matchedProject) {
+          console.log(matchedProject)
+          setMentorProj(matchedProject.title);
+          console.log("you",matchedProject.bannerImage)
+          if (matchedProject.banner_image) {
+            setMentorPath(matchedProject.banner_image);
+          } else {
+            // Call download API if the banner is missing
+            downloadBannerImage(matchedProject.banner_image_link, project.id);
+          }
+        } else {
+          console.warn("No matching project found for the given ID");
+        }
       })
       .catch((error) => {
         console.error("Error fetching mentor data:", error);
       });
-  }, []);
-  const fullImageUrl = `http://127.0.0.1:8000${mentorPath}`;
+  }, [project]);
+  
+  const downloadBannerImage = async (fileUrl, title) => {
+    if (!fileUrl || !title) return;
+
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/projects/download-banner/`,
+        {
+          params: { file_url: fileUrl, id: project.id },
+          headers: axiosConfig.headers,
+        }
+      );
+      if (response.data.success) {
+        setBannerImage(response.data.file_path);
+        setIsLoading(false);
+      } else {
+        console.error("Error downloading banner:", response.data.error);
+      }
+    } catch (error) {
+      console.error("Failed to download banner:", error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (mentorPath && mentorProj) {
+      setIsLoading(true); // Set loading to true when we start fetching the image
+      downloadBannerImage(mentorPath, mentorProj);
+    }
+  }, [mentorPath, mentorProj]);
+
+  useEffect(() => {
+    if (mentorPath && mentorProj) {
+      downloadBannerImage(mentorPath, mentorProj);
+    }
+  }, [mentorPath, mentorProj]);
+
+  console.log("what ",bannerImage)
+  const fullImageUrl = `http://127.0.0.1:8000/media/${bannerImage}`
+  console.log(fullImageUrl)
+
   // Function to scroll to a section
   const scrollToSection = (ref) => {
     ref.current.scrollIntoView({ behavior: "smooth" });
@@ -96,44 +148,10 @@ function MentorPortal() {
 
   return (
     <motion.div initial="initial" animate="animate">
-      <motion.header variants={stagger}>
-        <motion.div className="logo_wrapper" variants={fadeInUp}>
-          {mentorName ? (
-            <>
-              {mentorName.split(" ")[0]} <span>{mentorName.split(" ")[1]}</span>
-            </>
-          ) : (
-            "Loading..."
-          )}
-        </motion.div>
-        <motion.div className="menu_container" variants={stagger}>
-          <motion.span variants={fadeInUp}>
-            <IconContext.Provider
-              value={{
-                color: "#000",
-                size: "18px",
-                className: "icons_container",
-              }}
-            >
-            </IconContext.Provider>
-          </motion.span>
-          <motion.span variants={fadeInUp}>
-            <IconContext.Provider value={{ color: "#000", size: "18px" }}>
-              <div className="icon">
-                <IoMailOutline />
-              </div>
-              {mentorRoll ? (
-                <>
-                  <span>{mentorRoll+"@iitb.ac.in"}</span>
-                </>
-              ) : (
-                "Loading..."
-              )}
-            </IconContext.Provider>
-          </motion.span>
-        </motion.div>
-      </motion.header>
 
+<motion.header className="logo_wrapper" variants={fadeInUp}>
+            <button className="back_button" onClick={onBack}>⬅ Back to Projects</button>
+            </motion.header>
       <motion.div
         className="content_wrapper"
         initial={{ opacity: 0, scale: 0 }}
@@ -199,27 +217,36 @@ function MentorPortal() {
               ))}
             </IconContext.Provider>
             <motion.p className="more_review" variants={fadeInUp}>
-              More than 50+ students applied.
+            {`${mentees} student${(mentees === 1) || (mentees===0) ? "" : "s"} applied`}
             </motion.p>
           </motion.div>
         </div>
         
         <motion.div className="right_content_wrapper">
-          <motion.img
-            src={fullImageUrl}
-            alt="bg"
-            initial={{ x: 200, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-          />
+        {isLoading ? (
+    <h2>Loading the Image. Please wait</h2>
+  
+  ) : (
+    <motion.img
+      src={fullImageUrl}
+      alt="bg"
+      initial={{ x: 200, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.8 }}
+    />
+  )}
         </motion.div>
       </motion.div>
 
       {/* Mentee List Section */}
       <div ref={menteeListRef}>
-        <MenteeList />
+        <MenteeList key={project.id} project={project.id}/>
       </div>
+
+      
     </motion.div>
+
+    
   );
 }
 

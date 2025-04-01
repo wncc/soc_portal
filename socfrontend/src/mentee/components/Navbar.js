@@ -4,7 +4,6 @@ import wncc_logo from "../../assets/wncc-logo.png";
 import PropTypes from "prop-types";
 
 export default function Navbar(props) {
-
   const authToken = localStorage.getItem("authToken");
   const role = localStorage.getItem("role");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -160,20 +159,11 @@ export default function Navbar(props) {
                 <>
                   <li>
                     <Link
-                      to="mentor/portal"
+                      to="mentor/home"
                       className="block py-2 px-3 text-white rounded hover:bg-gray-100 hover:text-gray-500 md:hover:bg-transparent md:border-0 md:hover:text-black-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                     >
-                      Portal
+                      Home
                     </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="mentor/mentees_list"
-                      className="block py-2 px-3 text-white rounded hover:bg-gray-100 hover:text-gray-500 md:hover:bg-transparent md:border-0 md:hover:text-black-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                    >
-                      Mentees List
-                    </Link>
-                    
                   </li>
                   <li>
                     <Link

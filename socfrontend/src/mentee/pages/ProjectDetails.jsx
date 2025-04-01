@@ -6,7 +6,7 @@ import ProjectTitle from '../components/ProjectTitle';
 import { useParams } from 'react-router-dom';
 
 
-export default function ProjectDetails() {
+export default function ProjectDetails(props) {
 
     const [details, setDetails] = useState({
         "id": 0,
@@ -17,6 +17,7 @@ export default function ProjectDetails() {
         "mentee_max": "",
         "mentor": "",
         "description": "",
+        "weekly_meets":"",
         "timeline": "",
         "checkpoints": "",
         "prerequisites": "",
@@ -30,7 +31,6 @@ export default function ProjectDetails() {
     ProjectId = parseInt(ProjectId);
     const [wishlist, setWishlist] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-
 
     useEffect(() => {
         api.get(process.env.REACT_APP_BACKEND_URL+`/projects/${ProjectId}/`)
@@ -126,8 +126,7 @@ export default function ProjectDetails() {
                 <div className='pb-10 flex items-center justify-center'>
                     <div className="relative inline-flex justify-start overflow-hidden transition-all bg-white rounded hover:bg-white group">
                         <span className="w-0 h-0 rounded bg-indigo-600 absolute top-0 left-0 ease-out duration-500 transition-all group-hover:w-full group-hover:h-full -z-1"></span>
-                        {/* <ProjectTitle text="Developing Trading Strategy with Pine Script"/> */}
-                        <ProjectTitle text={details.title}/>
+                        <ProjectTitle text={`Project ID: ${details.id} ${details.title} `}/>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 pb-10 gap-4 lg:grid-cols-3 lg:gap-8">
@@ -168,12 +167,13 @@ export default function ProjectDetails() {
                                 <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
                                     <li>
                                         {/* <p>20+</p> */}
-                                        <p>{details.specific_category}</p>
+                                        <p>{details.general_category}</p>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                         {/* <WishlistButton str={str} WishlistAdd={WishlistAdd}/> */}
+                        {!props.isPreferenceFilled && (
                         <button
                             onClick={WishlistAdd}
                             className={`text-white font-bold ${
@@ -196,6 +196,7 @@ export default function ProjectDetails() {
                             </svg>
                             <p>{buttonMessage}</p>
                         </button>
+                        )}
                     </div>
                 </div>
 
@@ -219,6 +220,11 @@ export default function ProjectDetails() {
                         <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
                             <dt className="text-2xl text-indigo-600 sm:text-3xl">Checkpoints</dt>
                             <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.checkpoints.replace(/\\r\\n/g, "<br>") }}></p></dd>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+                            <dt className="text-2xl text-indigo-600 sm:text-3xl">Number of Weekly Meets Approximately</dt>
+                            <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.weekly_meets.replace(/\\r\\n/g, "<br>") }}></p></dd>
                         </div>
                     </dl>
                 </div>

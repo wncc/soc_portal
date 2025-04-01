@@ -22,6 +22,7 @@ class Command(BaseCommand):
                 title=row['title'],
                 description=row['description'],
                 checkpoints=row['checkpoints'],
+                weekly_meets=row['weekly_meets'],
                 timeline=row['timeline'],
                 mentor=row['mentor'],
                 co_mentor_info=row['co_mentor_info'],

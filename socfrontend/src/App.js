@@ -9,7 +9,6 @@ import "./mentee/components/scrollable.css";
 
 import { Routes, Route } from "react-router-dom";
 
-import ProjectForm from "./mentee/pages/ProjectForm";
 import Register from "./mentee/pages/Register";
 import ProjectDetails from "./mentee/pages/ProjectDetails";
 import PreferenceForm from "./mentee/pages/PreferenceForm";
@@ -23,11 +22,16 @@ import Wishlist from "./mentee/pages/Wishlist";
 import Home from "./mentee/pages/Home";
 import MentorPortal from "./mentor/MentorPortal";
 import MenteeList from "./mentor/MenteeList";
+import LandingPage from "./mentor/LandingPage";
+import Form from "./mentor/Form";
 
 export default function App() {
   const [authToken, setAuthToken] = useState(null);
 
   useEffect(() => {
+    // localStorage.removeItem("authToken"); // Clear stored token
+    // sessionStorage.removeItem("authToken"); // Clear session storage (if used)
+  
     api
       .get(process.env.REACT_APP_BACKEND_URL + "/accounts/isloggedin/")
       .then((res) => {
@@ -38,8 +42,7 @@ export default function App() {
         console.log(err);
       });
   }, []);
-
-
+  
 
   if (authToken === null) {
     return (
@@ -81,8 +84,8 @@ export default function App() {
               path="/PreferenceFormFilled"
               element={<PreferenceFormFilled />}
             />
-            <Route path="/mentor/portal" element={<MentorPortal />} />
-            <Route path="/mentor/mentees_list" element={<MenteeList />} />
+            <Route path="/mentor/add-project" element={<Form/>} />
+            <Route path="/mentor/home" element={<LandingPage/>} />
             <Route path="/logout" element={<Logout />} />
           </Route>
         </Routes>

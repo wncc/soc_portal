@@ -48,7 +48,7 @@ export default function Login() {
         // Redirect to Dashboard and reload the page
         if (isMentor) {
           console.log("Hello Mentor")
-          navigate('/mentor/portal')
+          navigate('/mentor/home')
         } else {
           window.location.reload();
         }
@@ -68,19 +68,17 @@ export default function Login() {
   };
 
   // Error message display
-  const errorMessage = () => {
+  function ErrorPopup({ onClose }) {
+
     return (
-      <div className="error" style={{ display: error ? "" : "none" }}>
-        <div
-          role="alert"
-          className="rounded border-s-4 border-red-500 bg-red-50 p-4"
-        >
-          <div className="flex items-center gap-2 text-red-800">
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm text-center">
+          <div className="text-red-600 dark:text-red-400 mb-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="h-5 w-5"
+              className="w-12 h-12 mx-auto"
             >
               <path
                 fillRule="evenodd"
@@ -88,20 +86,24 @@ export default function Login() {
                 clipRule="evenodd"
               />
             </svg>
-
-            <strong className="block font-medium">
-              {" "}
-              Wrong Username or Password{" "}
-            </strong>
           </div>
+          <p className="text-lg font-semibold text-gray-800 dark:text-white">
+            Wrong Username or Password
+          </p>
+          <button
+            onClick={onClose}
+            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            OK
+          </button>
         </div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="form h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
-      <div className="messages">{errorMessage()}</div>
+      <div className="messages">{error && <ErrorPopup onClose={() => setError(false)} />}</div>
 
       <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-lg">

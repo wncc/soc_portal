@@ -18,6 +18,7 @@ export default function ProjectCard(props) {
   };
 
     const WishlistAdd = () => {
+      if (props.isPreferenceFilled) return;
       const token = localStorage.getItem('authToken');
       console.log(token)
 
@@ -80,12 +81,20 @@ export default function ProjectCard(props) {
         </Link>
         <Link to={`/current_projects/${props.ProjectId}`}>
           <div className="bg-rgb(17, 24, 39) p-4 sm:p-6">
+          <h3 className="mt-0.5 text-lg line-clamp-1 text-gray-900 dark:text-white">
+              Project ID: {props.ProjectId}
+            </h3>
             <h3 className="mt-0.5 text-lg line-clamp-1 text-gray-900 dark:text-white">
               {props.title}
             </h3>
           </div>
         </Link>
         <div className="p-4 sm:p-6">
+        {props.isPreferenceFilled ? (
+            <button className="text-white font-bold bg-green-500 py-2 px-4 rounded inline-flex items-center cursor-default">
+              <p>Preference Filled</p>
+            </button>
+          ) : (
           <button
             onClick={WishlistAdd}
             className={`text-white font-bold ${Added ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700"} py-2 px-4 rounded inline-flex items-center`}
@@ -106,6 +115,7 @@ export default function ProjectCard(props) {
             </svg>
             <p>{Added ? "Remove From Wishlist" : "Add To Wishlist"}</p>
           </button>
+          )}
         </div>
       </article>
     </div>

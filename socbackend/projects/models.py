@@ -38,36 +38,6 @@ class SeasonManager(models.Manager):
         return self.get(is_active=True).id
 
 
-# class Season(models.Model):
-#     """
-#     Model representing a Seasons of Code event. Used by projects to
-#     reference which event they belonged to, and to control the apprearence of
-#     the dashboard as the event progresses.
-#     """
-
-#     name = models.CharField(max_length=100, default=default_season_name)
-#     is_active = models.BooleanField(default=False)
-#     objects = SeasonManager()
-
-#     class StatusChoices(models.IntegerChoices):
-#         YET_TO_START = 0
-#         MENTOR_REGISTRATION = 10
-#         MID_MENTOR_MENTEE = 15
-#         MENTEE_REGISTRATION = 20
-#         ONGOING = 30
-
-#     status = models.IntegerField(
-#         default=StatusChoices.YET_TO_START, choices=StatusChoices.choices
-#     )
-
-#     def __str__(self):
-#         return self.name
-
-
-# def get_current_id():
-#     return Season.objects.current_id()
-
-
 def upload_to(instance, filename):
     return "projects/{filename}".format(filename=filename)
 
@@ -85,27 +55,6 @@ class Mentee(models.Model):
         unique=True,
     )
     season = models.TextField(default='1')
-    # season = models.ForeignKey(
-    #     Season,
-    #     on_delete=models.PROTECT,
-    #     default=get_current_id,
-    #     help_text="The season to which mentee is applying for.",
-    # )
-
-    # project = models.ForeignKey(
-    #     Project,
-    #     null=True,
-    #     on_delete=models.SET_NULL,
-    #     help_text="The project that the mentee has been selected for. Is NULL if not selected yet.",
-    # )
-
-    # preferences = models.ManyToManyField(
-    #     "Project",
-    #     through="MenteePreference",
-    #     related_name="applications",
-    #     help_text="The projects that the mentee has applied to.",
-    # )
-
 
     def __str__(self):
         return self.user.roll_number
@@ -116,7 +65,7 @@ class Project(models.Model):
 
     GeneralCategoryChoices = (
         ('ML', 'ML'),
-        ('Developement', 'Development'),
+        ('Development', 'Development'),
         ('Blockchain', 'Blockchain'),
         ('CP', 'CP'),
         ('Others', 'Others'),
@@ -125,23 +74,6 @@ class Project(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=255, blank=False)
-    # season = models.ForeignKey(
-    #     Season,
-    #     on_delete=models.PROTECT,
-    #     related_name="projects",
-    #     default=get_current_id,
-    # )
-
-    # mentors = models.ManyToManyField(Mentor, through="MentorRequest")
-
-    # class CategoryChoices(models.TextChoices):
-    #     BLOCKCHAIN = "WEB3", "Blockchain"
-    #     AI_ML = "AIML", "AI/ML"
-    #     DEVELOPMENT = "DEV", "Development"
-    #     CP = "CP", "Competitive Programming"
-    #     MISCELLANEOUS = "MISC", "Miscellaneous"
-
-    # category = models.ForeignKey(ProjectCategory, on_delete=models.PROTECT)
 
     general_category = models.CharField(max_length=255, blank=False, default='Others', choices=GeneralCategoryChoices)
 
@@ -151,15 +83,7 @@ class Project(models.Model):
     mentee_max = models.CharField(max_length=255, blank=False)
     mentor = models.CharField(max_length=255, blank=False, default="NA")
     co_mentor_info = models.TextField()
-
-    # mentee_min = models.IntegerField(
-    #     default=1, validators=[MinValueValidator(1), MaxValueValidator(20)]
-    # )
-    # mentee_max = models.IntegerField(
-    #     blank=False, validators=[MinValueValidator(1), MaxValueValidator(20)]
-    # )
-
-    # abstract = models.TextField(max_length=500)
+    weekly_meets = models.CharField(max_length=255,blank=False,default=0)
     description = models.TextField(blank=False, default="NA")
     timeline = models.TextField(blank=False, default="NA")
     checkpoints = models.TextField(blank=False, default="NA")
@@ -179,24 +103,6 @@ class Project(models.Model):
             self.code = str(uuid.uuid4())[:8]
         super().save(*args, **kwargs)
 
-
-class MenteePreference(models.Model):
-    """
-    Preferences of a mentee (ie a user during a specific season)
-    """
-    mentee = models.ForeignKey(Mentee, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    sop = models.TextField(null=False)
-    preference = models.IntegerField(null=False, blank=False)
-
-    def __str__(self):
-        return self.mentee.user.roll_number + " - " + self.project.title + " - " + str(self.preference)
-
-    class Meta:
-        unique_together = [
-            ('mentee', 'project', 'preference'),
-            ('mentee', 'project'),
-        ]
 
 class MenteeWishlist(models.Model):
     """
@@ -246,25 +152,24 @@ class Mentor(models.Model):
     )
     season = models.TextField(default='1')
 
-    project = models.ForeignKey(
+    projects = models.ManyToManyField(
         Project,  # Reference to the Project model
-        on_delete=models.SET_NULL,  # What to do if the project is deleted
-        null=True,  # Allow mentor to exist without being assigned to a project
         blank=True,  # Make this field optional
         help_text="The project that the mentor is leading.",
-        related_name='project_leads'  # Use a unique related_name
+        related_name='mentors'  # Use a unique related_name
     )
 
-    @property
-    def mentees(self):
+    def mentees(self,project_id):
         """
         Returns a queryset of mentees who have a preference for the mentor's project.
         """
-        if self.project:
-            return Mentee.objects.filter(
-                menteepreference__project=self.project
-            ).distinct()
-        return Mentee.objects.none()
+
+        mentees_qs = Mentee.objects.filter(
+            menteepreference__project_id=project_id
+        ).distinct()
+
+
+        return mentees_qs
     # season = models.ForeignKey(
     #     Season,
     #     on_delete=models.PROTECT,

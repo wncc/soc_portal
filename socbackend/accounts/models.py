@@ -103,3 +103,7 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.roll_number} - {self.user.username}"
+    
+    @property
+    def is_authenticated(self):
+        return self.user.is_authenticated

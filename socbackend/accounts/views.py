@@ -27,11 +27,6 @@ from rest_framework.response import Response
 from .models import CustomUser
 
 
-
-
-
-
-
 from django.utils.crypto import get_random_string
 import os
 

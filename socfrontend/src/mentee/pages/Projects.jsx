@@ -7,6 +7,7 @@ export default function Projects() {
   const [details, setDetails] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showScroll, setShowScroll] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +36,18 @@ export default function Projects() {
       });
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 200) {
+        setShowScroll(true);
+      } else {
+        setShowScroll(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const [filterValue, setFilterValue] = useState("All");
   const [active, setActive] = useState("b1");
 
@@ -52,6 +65,10 @@ export default function Projects() {
 
   const handleFilterChange = (value) => {
     setFilterValue(value);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -168,6 +185,15 @@ export default function Projects() {
             </div>
           ))}
         </div>
+      )}
+
+      {showScroll && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-10 right-10 bg-indigo-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
+        >
+          ↑ Go to Top
+        </button>
       )}
     </section>
   );

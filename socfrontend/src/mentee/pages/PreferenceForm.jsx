@@ -246,25 +246,18 @@ export default function PreferenceForm() {
     );
   };
 
-  // Showing error message if error is true
-  const errorMessage = () => {
+  function ErrorPopup({ message, onClose }) {
+    if (!message) return null;
+
     return (
-      <div
-        className="error"
-        style={{
-          display: error ? "" : "none",
-        }}
-      >
-        <div
-          role="alert"
-          className="rounded border-s-4 border-red-500 bg-red-50 p-4"
-        >
-          <div className="flex items-center gap-2 text-red-800">
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm text-center">
+          <div className="text-red-600 dark:text-red-400 mb-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="h-5 w-5"
+              className="w-12 h-12 mx-auto"
             >
               <path
                 fillRule="evenodd"
@@ -272,61 +265,32 @@ export default function PreferenceForm() {
                 clipRule="evenodd"
               />
             </svg>
-
-            <strong className="block font-medium">
-              {" "}
-              All fields are required{" "}
-            </strong>
           </div>
+          <p className="text-lg font-semibold text-gray-800 dark:text-white">
+            {message}
+          </p>
+          <button
+            onClick={onClose}
+            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            OK
+          </button>
         </div>
       </div>
     );
-  };
+  }
 
-  const errorMessage1 = () => {
-    return (
-      <div
-        className="error"
-        style={{
-          display: error1 ? "" : "none",
-        }}
-      >
-        <div
-          role="alert"
-          className="rounded border-s-4 border-red-500 bg-red-50 p-4"
-        >
-          <div className="flex items-center gap-2 text-red-800">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="h-5 w-5"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
-                clipRule="evenodd"
-              />
-            </svg>
-
-            <strong className="block font-medium">
-              {" "}
-              Cannot Repeat Preferences.{" "}
-            </strong>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <>
       <div className="form h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
         {/* Calling to the methods */}
         <div className="messages">
-          {errorMessage()}
+        {error && <ErrorPopup message={"All fields are Required"} onClose={() => setError(false)} />}
+        {error1 && (
+          <ErrorPopup message={"Cannot Repeat Preferences."} onClose={() => setError1(false)} />
+        )}
           {successMessage()}
-          {errorMessage1()}
         </div>
 
         <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
@@ -421,7 +385,7 @@ const Page2 = ({ project, sop, dataChange, setPage, details }) => {
           <option value="">Please select</option>
           {details.map((details, index) => (
             <option key={index} value={details.id}>
-              {details.title}
+              {`Project ID: ${details.id} ${details.title}`}
             </option>
           ))}
         </select>
@@ -487,7 +451,7 @@ const Page3 = ({ project, sop, dataChange, setPage, details }) => {
           <option value="">Please select</option>
           {details.map((details, index) => (
             <option key={index} value={details.id}>
-              {details.title}
+              {`Project ID: ${details.id} ${details.title}`}
             </option>
           ))}
         </select>
@@ -583,7 +547,7 @@ const Page4 = ({
           <option value="">Please select</option>
           {details.map((details, index) => (
             <option key={index} value={details.id}>
-              {details.title}
+              {`Project ID: ${details.id} ${details.title}`}
             </option>
           ))}
         </select>
