@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { motion } from "framer-motion";
 import "./MenteeList.css";
 import axios from "axios";
@@ -185,12 +185,17 @@ const MenteeList = ({ project }) => {
     setRankList(updatedRankList); // Update state immediately
   };
 
+  const prevRankListRef = useRef(rankList);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      saveRankList(); // This will be your save function
-    }, 20000); // 20000 milliseconds = 20 seconds
-
-    return () => clearInterval(interval); // Cleanup when the component unmounts
+      if (JSON.stringify(prevRankListRef.current) !== JSON.stringify(rankList)) {
+        saveRankList();
+        prevRankListRef.current = rankList; // Update previous rank list
+      }
+    }, 2000); // 2 seconds
+  
+    return () => clearInterval(interval); // Cleanup
   }, [rankList]);
 
   return (

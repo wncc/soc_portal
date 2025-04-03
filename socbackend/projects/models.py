@@ -134,7 +134,7 @@ class MenteePreference(models.Model):
 
     class Meta:
         unique_together = [
-            ('mentee', 'project', 'preference'),
+            ('mentee', 'preference'),
             ('mentee', 'project'),
         ]
 

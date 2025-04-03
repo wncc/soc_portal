@@ -9,8 +9,8 @@ const LoginRoute = () => {
     }
 
     // If the user is not authenticated, show the child routes (login, register).
-    if (!Token) {
-        return <Outlet />;
+    if (!Token || Token === "null") {
+        return <Outlet />; // Allow unauthenticated users
     }
 
     // If the user is authenticated, redirect them to the home page.
