@@ -21,6 +21,7 @@ class DepartmentChoices(models.TextChoices):
     MECHANICAL_ENGINEERING = "Mechanical Engineering", "Mechanical Engineering"
     METALLURGICAL_ENGINEERING_AND_MATERIALS_SCIENCE = "Metallurgical Engineering and Materials Science", "Metallurgical Engineering and Materials Science"
     PHYSICS = "Physics", "Physics"
+    IEOR = "Industrial Engineering and Operations Research", "Industrial Engineering and Operations Research"
     OTHER= "Other", "Other"
     
 

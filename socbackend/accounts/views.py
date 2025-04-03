@@ -91,8 +91,8 @@ def send_verification_email(user_profile):
     """
 
     from_email = os.getenv("EMAIL_HOST_USER")  # Use the configured sender email
-    # recipient_list = [f"{user_profile.roll_number}@iitb.ac.in"]  # IITB email
-    recipient_list = ["23b2401@iitb.ac.in"]
+    recipient_list = [f"{user_profile.roll_number}@iitb.ac.in"]  # IITB email
+    #recipient_list = ["23b2401@iitb.ac.in"]
 
     print(f"Sending email from: {from_email} to: {recipient_list}")
 

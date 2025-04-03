@@ -24,26 +24,22 @@ Clone the Git repository:
 Install JS packages
 
 ```shell
-  cd frontend
+  cd socfrontend
   npm install
 ```
-
-Create Virtual Environment:
+Backend Configurations
 
 ```shell
-  cd backend
-  python3 -m venv venv
-  ./venv/Scripts/Activate.ps1 # Windows
-  source ./venv/bin/activate # Linux/MacOS
-  pip3 install -r requirements.txt
+  cd socbackend
+  python manage.py migrate
 ```
 
 Run Application
 
 ```shell
-  # Frontend (in ./frontend/)
+  # Frontend (in ./socfrontend/)
   npm run start
-  # Backend (in ./backend/)
+  # Backend (in ./socbackend/)
   python manage.py runserver
 ```
 

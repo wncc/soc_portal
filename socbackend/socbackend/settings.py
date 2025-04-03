@@ -15,12 +15,12 @@ from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv(r'C:\Users\praty\Documents\WnCC2025\soc\newsocportal\socfrontend\.env')
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
+
+load_dotenv(BASE_DIR/".env")
 
 PORTAL_SETTINGS = {
     "CURRENT_ACTIVE_SEASON_ID": 1,
