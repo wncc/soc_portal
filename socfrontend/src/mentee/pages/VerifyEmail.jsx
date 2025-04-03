@@ -11,7 +11,7 @@ const VerifyEmail = () => {
     console.log('Token:', token);
     api.get(`/api/accounts/verify-email/${token}`)
     .then((res) => {
-        navigate('/login')
+        navigate("/registerSuccess");
         console.log(res.data)
     })
     .catch(err =>{ console.log(err)

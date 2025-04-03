@@ -471,8 +471,9 @@ export default function Register() {
     api
       .post(`${baseUrl}/register/`, formData)
       .then((res) => {
-        navigate("/registerSuccess");
-        console.log(res);
+        console.log("Verification email sent:", res.data);
+        alert("A verification email has been sent to your IITB email. Please verify to complete registration.");
+        // console.log(res);
       })
       .catch((err) => {
         console.log(err);

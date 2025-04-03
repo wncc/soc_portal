@@ -15,7 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv('/var/www/socbackend/.env')
+load_dotenv(r'C:\Users\praty\Documents\WnCC2025\soc\newsocportal\socfrontend\.env')
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -42,7 +42,8 @@ ALLOWED_HOSTS = ['https://itc.gymkhana.iitb.ac.in','itc.gymkhana.iitb.ac.in' , '
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp-auth.iitb.ac.in'
+# EMAIL_HOST = 'smtp-auth.iitb.ac.in'
+EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
