@@ -8,11 +8,11 @@ import "./mentee/components/scrollable.css";
 
 import { Routes, Route } from "react-router-dom";
 
-import Register from "./mentee/pages/Register";
+// import Register from "./mentee/pages/Register";
 import ProjectDetails from "./mentee/pages/ProjectDetails";
 import PreferenceForm from "./mentee/pages/PreferenceForm";
-import VerifyEmail from "./mentee/pages/VerifyEmail";
-import RegisterSuccess from "./mentee/pages/RegisterSuccess";
+// import VerifyEmail from "./mentee/pages/VerifyEmail";
+// import RegisterSuccess from "./mentee/pages/RegisterSuccess";
 import ProtectedRoutes from "./mentee/components/ProtectedRoutes";
 import LoginRoute from "./mentee/components/LoginRoute";
 import PreferenceFormFilled from "./mentee/pages/PreferenceFormFilled";
@@ -24,6 +24,7 @@ import Form from "./mentor/Form";
 import { Navigate, useLocation } from "react-router-dom";
 import URLGuard from "./URLGuard";
 import Loading from "./mentee/pages/Loading";
+import NoPage from "./mentee/components/NoPage";
 
 export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
@@ -68,9 +69,9 @@ export default function App() {
 
           {/* Routes for Unauthenticated Users */}
           <Route element={<LoginRoute authToken={authToken} />}>
-            <Route path="/register" element={<Register />} />
-            <Route path="/registerSuccess" element={<RegisterSuccess />} />
-            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            {/* <Route path="/register" element={<Register />} /> */}
+            {/* <Route path="/registerSuccess" element={<RegisterSuccess />} /> */}
+            {/* <Route path="/verify-email/:token" element={<VerifyEmail />} /> */}
             <Route path="/login" element={<Login />} />
             <Route path="/loading" element={<Loading />} />
           </Route>
@@ -91,6 +92,7 @@ export default function App() {
             <Route path="/mentor/add-project" element={<Form/>} />
             <Route path="/mentor/home" element={<LandingPage/>} />
           </Route>
+          <Route path="*" element={<NoPage />} />
         </Routes>
 
         {/* You can enable this section once these components are ready */}

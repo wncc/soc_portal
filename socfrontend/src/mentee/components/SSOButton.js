@@ -42,9 +42,9 @@ const LoginButton = () => {
         >
           Login with IITB SSO
         </button>
-        <span className="text-sm text-gray-600 px-6 py-2 flex justify-center">
+        {/* <span className="text-sm text-gray-600 px-6 py-2 flex justify-center">
           No need to register if logging in with SSO
-        </span>
+        </span> */}
       </>
     );
   };

@@ -396,7 +396,7 @@ export default function Login() {
           </div>
 
           {!isMentor ? (
-            <div className="text-center text-lg font-semibold text-gray-600 dark:text-white">
+            <div className="text-center text-xl font-semibold text-gray-600 dark:text-white">
               Coming Soon
             </div>
           ) : (
@@ -408,7 +408,7 @@ export default function Login() {
                 Login to your account
               </p>
 
-              <div>
+              {/* <div>
                 <label htmlFor="username">Roll No.</label>
                 <input
                   type="text"
@@ -437,16 +437,16 @@ export default function Login() {
                 className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
               >
                 Login
-              </button>
+              </button> */}
 
               <LoginButton/>
-
+{/* 
               <p className="text-center text-sm text-gray-500 dark:text-white">
                 No account?{" "}
                 <Link className="underline" to="/register">
                   Register Now
                 </Link>
-              </p>
+              </p> */}
             </form>
           )}
         </div>

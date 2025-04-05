@@ -11,7 +11,8 @@ export default function URLGuard() {
 
     const mentorRoutes = ["/mentor/home", "/mentor/add-project"];
     const menteeRoutes = ["/PreferenceFormFilled","/current_projects", "/wishlist", "/PreferenceForm"];
-    const authRoutes = ["/login", "/register", "/registerSuccess", "/verify-email"];
+    // const authRoutes = ["/login", "/register", "/registerSuccess", "/verify-email"];
+    const authRoutes = ["/login"];
 
     const normalizedPath = location.pathname.replace(/\/+$/, "");
     const isProjectDetailsRoute = /^\/current_projects\/[^/]+$/.test(location.pathname);
