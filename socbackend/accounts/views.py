@@ -48,6 +48,38 @@ class YearListAPIView(APIView):
     def get(self, request):
         years = YearChoices.choices
         return Response(years)
+ 
+ 
+import requests
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+   
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_sso_user_data(request):
+    accessid = request.data.get('accessid')
+    if not accessid:
+        return Response({"error": "Missing accessid"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        print(accessid)
+        response = requests.post(
+            "http://sso.tech-iitb.org/project/getuserdata",
+            json={"id": accessid}
+        )
+        print("Raw SSO response text:", response.text)  # helpful for debugging
+
+        data = response.json()
+
+        if response.status_code == 200:
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Failed to fetch user data"}, status=response.status_code)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -153,6 +185,56 @@ class RegisterUserView(APIView):
             send_verification_email(user_profile)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+    
+
+class RegisterUserViewSSO(APIView):
+    permission_classes = [AllowAny]  
+
+    def post(self, request):
+        print(request.data)
+        roll_number = request.data.get("roll_number").lower()
+        password = request.data.get("password")
+        role = request.data.get("role")
+
+        if CustomUser.objects.filter(username=roll_number,role=role).exists():
+            user = CustomUser.objects.get(username=roll_number,role=role)
+            if UserProfile.objects.filter(user=user).exists():
+                user_profile = UserProfile.objects.get(user=user)
+                if user_profile.verified:
+                    return Response({"error": "User already exists"}, status=400)
+                else:
+                    user.delete()
+            else:
+                user.delete()
+            
+        user = CustomUser.objects.create_user(username=roll_number, password=password,role=role)
+        user.is_active = True
+
+        user.save()
+        mutable_copy = request.POST.copy()
+        mutable_copy["user"] = user.id
+        
+        serializer = RegisterUserSerializer(data=mutable_copy)
+
+        if serializer.is_valid():
+            serializer.save()
+            verification_token = generate_verification_token()
+            user_profile = UserProfile.objects.get(user=user)
+            user_profile.verification_token = verification_token
+            user_profile.verified = True
+            user = user_profile.user
+            user.is_active = True
+            user.save()
+            user_profile.save()
+            print(f"User profile: {user_profile}")
+            if role == "mentee":
+                Mentee.objects.create(user=user_profile)
+            elif role == "mentor":
+                Mentor.objects.create(user=user_profile)
+            print("mail")
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
 
 class UserProfileView(APIView):
 
@@ -261,4 +343,45 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         # Log cookie settings for debugging
         print(f"Cookie set with value: {custom_token}")
         
+        return response
+
+
+class CustomSSOTokenView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        roll_number = request.data.get("username")
+        role = request.data.get("role")
+
+        if not roll_number or not role:
+            raise AuthenticationFailed("Roll number and role are required")
+
+        roll_number = roll_number.lower()
+
+        try:
+            user = CustomUser.objects.get(username=roll_number, role=role)
+        except CustomUser.DoesNotExist:
+            raise AuthenticationFailed("User does not exist")
+
+        if not user.is_active:
+            raise AuthenticationFailed("User is not active")
+
+        # Generate custom token
+        random_token = secrets.token_urlsafe(16)
+        custom_token = f"{user.id}-{random_token}"
+
+        response_data = {
+            "access": custom_token,
+            "role": user.role,
+        }
+
+        response = JsonResponse(response_data)
+
+        # Optional: Set token as cookie
+        response.set_cookie(
+            key="auth",
+            value=custom_token,
+            httponly=True,
+        )
+
+        print(f"[SSO] Token issued for {user.username}: {custom_token}")
         return response

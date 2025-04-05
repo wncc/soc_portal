@@ -23,6 +23,7 @@ import LandingPage from "./mentor/LandingPage";
 import Form from "./mentor/Form";
 import { Navigate, useLocation } from "react-router-dom";
 import URLGuard from "./URLGuard";
+import Loading from "./mentee/pages/Loading";
 
 export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
@@ -71,6 +72,7 @@ export default function App() {
             <Route path="/registerSuccess" element={<RegisterSuccess />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/loading" element={<Loading />} />
           </Route>
 
           {/* Routes for Authenticated Users */}

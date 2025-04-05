@@ -294,9 +294,10 @@
 // }
 
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import api from "../../utils/api";
 import { Link, useNavigate } from "react-router-dom";
+import LoginButton from "../components/SSOButton";
 
 export default function Login() {
   const [profile, setProfile] = useState({
@@ -307,7 +308,17 @@ export default function Login() {
   const [error, setError] = useState(false);
   const [isMentor, setIsMentor] = useState(true);
 
-  const navigate = useNavigate();
+  const navigate=useNavigate()
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const accessid = params.get("accessid");
+  
+    if (accessid) {
+      localStorage.setItem("accessid", accessid);
+      navigate(`/loading?accessid=${encodeURIComponent(accessid)}`);
+    }
+  }, [navigate]);
 
   const handleProfile = (e) => {
     const { id, value } = e.target;
@@ -427,6 +438,8 @@ export default function Login() {
               >
                 Login
               </button>
+
+              <LoginButton/>
 
               <p className="text-center text-sm text-gray-500 dark:text-white">
                 No account?{" "}

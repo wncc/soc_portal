@@ -252,7 +252,7 @@ const Form = () => {
 
           {/* Banner Image Link */}
           <div className="lp-form-group">
-            <label className="lp-label">Banner Image Link (upload to Drive and share link) *</label>
+            <label className="lp-label">Banner Image Link (upload to Drive and share link with view access) *</label>
             <input
               type="url"
               name="banner_image_link"
