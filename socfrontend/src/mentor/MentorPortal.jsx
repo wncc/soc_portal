@@ -138,7 +138,7 @@ function MentorPortal({ project, onBack }) {
   }, [mentorPath, mentorProj]);
 
   console.log('what ',bannerImage);
-  const fullImageUrl = `http://127.0.0.1:8000/media/${bannerImage}`;
+  const fullImageUrl = `https://socb.tech-iitb.org/media/${bannerImage}`;
   console.log(fullImageUrl);
 
   // Function to scroll to a section
