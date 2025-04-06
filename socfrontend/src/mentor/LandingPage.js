@@ -35,6 +35,7 @@ function LandingPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null); // Store selected project
+  const [showInfo, setShowInfo] = useState(false);
 
   const token = localStorage.getItem("authToken");
   const axiosConfig = {
@@ -91,48 +92,67 @@ function LandingPage() {
         </motion.div>
       </motion.header>
 
-      <section className="mentor_info">
-        <h2>Basic Duties of an SOC Mentor:</h2>
-        <ol>
-          <li>Staying in touch with your mentees regularly.</li>
-          <li>
-            Providing them with resources and a learning pathway for the
-            project.
-          </li>
-          <li>
-            Encouraging active participation and involvement of each mentee.
-          </li>
-          <li>Conducting review meetings to track updates and progress.</li>
-          <li>Timely resolution of doubts and queries.</li>
-        </ol>
+      <section className="mentor_info_container">
+        <div
+          className="mentor_info_header"
+          onClick={() => setShowInfo(!showInfo)}
+        >
+          <h2>📘 Important Read Me</h2>
+          <span className={`arrow ${showInfo ? "up" : "down"}`}>
+            {showInfo ? "▲" : "▼"}
+          </span>
+        </div>
 
-        <h2>Selection Procedure:</h2>
-        <ol>
-          <li>
-            Project proposals will be thoroughly reviewed. Mentors might be
-            contacted for clarification.
-          </li>
-          <li>
-            Mentees will submit a written proposal along with their project
-            preferences.
-          </li>
-          <li>
-            Mentors will decide the selection procedure and finalize the number
-            of mentees.
-          </li>
-        </ol>
+        {showInfo && (
+          <div className="mentor_info_content">
+            <h3>Basic Duties of an SOC Mentor:</h3>
+            <ol>
+              <li>Staying in touch with your mentees regularly.</li>
+              <li>
+                Providing them with resources and a learning pathway for the
+                project.
+              </li>
+              <li>
+                Encouraging active participation and involvement of each mentee.
+              </li>
+              <li>Conducting review meetings to track updates and progress.</li>
+              <li>Timely resolution of doubts and queries.</li>
+            </ol>
 
-        <h2>Important Notes:</h2>
-        <ul>
-          <li>
-            Project ideas should be meaningful with a decent learning curve.
-          </li>
-          <li>You can mentor multiple projects, but commit equally to each.</li>
-          <li>Staying in the institute is not mandatory during the project.</li>
-          <li>
-            Think about deployment and presentation. WnCC can help if needed.
-          </li>
-        </ul>
+            <h3>Selection Procedure:</h3>
+            <ol>
+              <li>
+                Project proposals will be thoroughly reviewed. Mentors might be
+                contacted for clarification.
+              </li>
+              <li>
+                Mentees will submit a written proposal along with their project
+                preferences.
+              </li>
+              <li>
+                Mentors will decide the selection procedure and finalize the
+                number of mentees.
+              </li>
+            </ol>
+
+            <h3>Important Notes:</h3>
+            <ul>
+              <li>
+                Project ideas should be meaningful with a decent learning curve.
+              </li>
+              <li>
+                You can mentor multiple projects, but commit equally to each.
+              </li>
+              <li>
+                Staying in the institute is not mandatory during the project.
+              </li>
+              <li>
+                Think about deployment and presentation. WnCC can help if
+                needed.
+              </li>
+            </ul>
+          </div>
+        )}
       </section>
 
       {/* If a project is selected, show MentorPortal */}
