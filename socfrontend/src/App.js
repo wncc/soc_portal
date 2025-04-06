@@ -30,10 +30,10 @@ export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
   const role = localStorage.getItem('role');
   const location = useLocation();
-
+  
   useEffect(() => { 
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/accounts/isloggedin/')
+      .get('https://socb.tech-iitb.org/api/accounts/isloggedin/')
       .then((res) => {
         console.log(res.data.status);
         setAuthToken(res.data.status === 'YES');
