@@ -1,56 +1,55 @@
-import "./App.css";
-import React, { useEffect, useState } from "react";
+import './App.css';
+import React, { useEffect, useState } from 'react';
 
-import Navbar from "./mentee/components/Navbar";
-import Login from "./mentee/pages/Login";
-import Projects from "./mentee/pages/Projects";
-import "./mentee/components/scrollable.css";
+import Navbar from './mentee/components/Navbar';
+import Login from './mentee/pages/Login';
+import Projects from './mentee/pages/Projects';
+import './mentee/components/scrollable.css';
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from 'react-router-dom';
 
 // import Register from "./mentee/pages/Register";
-import ProjectDetails from "./mentee/pages/ProjectDetails";
-import PreferenceForm from "./mentee/pages/PreferenceForm";
+import ProjectDetails from './mentee/pages/ProjectDetails';
+import PreferenceForm from './mentee/pages/PreferenceForm';
 // import VerifyEmail from "./mentee/pages/VerifyEmail";
 // import RegisterSuccess from "./mentee/pages/RegisterSuccess";
-import ProtectedRoutes from "./mentee/components/ProtectedRoutes";
-import LoginRoute from "./mentee/components/LoginRoute";
-import PreferenceFormFilled from "./mentee/pages/PreferenceFormFilled";
-import api from "./utils/api";
-import Wishlist from "./mentee/pages/Wishlist";
-import Home from "./mentee/pages/Home";
-import LandingPage from "./mentor/LandingPage";
-import Form from "./mentor/Form";
-import { Navigate, useLocation } from "react-router-dom";
-import URLGuard from "./URLGuard";
-import Loading from "./mentee/pages/Loading";
-import NoPage from "./mentee/components/NoPage";
+import ProtectedRoutes from './mentee/components/ProtectedRoutes';
+import LoginRoute from './mentee/components/LoginRoute';
+import PreferenceFormFilled from './mentee/pages/PreferenceFormFilled';
+import api from './utils/api';
+import Wishlist from './mentee/pages/Wishlist';
+import Home from './mentee/pages/Home';
+import LandingPage from './mentor/LandingPage';
+import Form from './mentor/Form';
+import { Navigate, useLocation } from 'react-router-dom';
+import URLGuard from './URLGuard';
+import Loading from './mentee/pages/Loading';
+import NoPage from './mentee/components/NoPage';
 
 export default function App() {
-  const [authToken, setAuthToken] = useState(localStorage.getItem("authToken"));
-  const role = localStorage.getItem("role");
+  const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
+  const role = localStorage.getItem('role');
   const location = useLocation();
 
   useEffect(() => { 
     api
-      .get(process.env.REACT_APP_BACKEND_URL + "/accounts/isloggedin/")
+      .get(process.env.REACT_APP_BACKEND_URL + '/accounts/isloggedin/')
       .then((res) => {
         console.log(res.data.status);
-        setAuthToken(res.data.status === "YES");
+        setAuthToken(res.data.status === 'YES');
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
-  
 
   if (authToken === null) {
     return (
       <div className="h-screen flex justify-center items-center">
         <div className="flex gap-2">
-          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600"></div>
-          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600"></div>
-          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600"></div>
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
         </div>
       </div>
     );
@@ -64,7 +63,7 @@ export default function App() {
         <Routes>
           <Route
             path="/"
-            element={role === "mentor" ? <Navigate to="/mentor/home" replace={true} /> : <Home />}
+            element={role === 'mentor' ? <Navigate to="/mentor/home" replace={true} /> : <Home />}
           />
 
           {/* Routes for Unauthenticated Users */}

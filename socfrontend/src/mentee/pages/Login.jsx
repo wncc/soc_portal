@@ -293,29 +293,28 @@
 //   );
 // }
 
-
-import { useState,useEffect } from "react";
-import api from "../../utils/api";
-import { Link, useNavigate } from "react-router-dom";
-import LoginButton from "../components/SSOButton";
+import { useState,useEffect } from 'react';
+import api from '../../utils/api';
+import { Link, useNavigate } from 'react-router-dom';
+import LoginButton from '../components/SSOButton';
 
 export default function Login() {
   const [profile, setProfile] = useState({
-    username: "",
-    password: "",
+    username: '',
+    password: '',
   });
 
   const [error, setError] = useState(false);
   const [isMentor, setIsMentor] = useState(true);
 
-  const navigate=useNavigate()
+  const navigate=useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const accessid = params.get("accessid");
+    const accessid = params.get('accessid');
   
     if (accessid) {
-      localStorage.setItem("accessid", accessid);
+      localStorage.setItem('accessid', accessid);
       navigate(`/loading?accessid=${encodeURIComponent(accessid)}`);
     }
   }, [navigate]);
@@ -324,7 +323,7 @@ export default function Login() {
     const { id, value } = e.target;
     setProfile((prevProfile) => ({
       ...prevProfile,
-      [id]: id === "username" ? value.toLowerCase() : value,
+      [id]: id === 'username' ? value.toLowerCase() : value,
     }));
     setError(false);
   };
@@ -333,34 +332,34 @@ export default function Login() {
     e.preventDefault();
     if (!isMentor) return; // Prevent login attempt for mentees
 
-    const baseUrl = process.env.REACT_APP_BACKEND_URL + `/accounts`;
+    const baseUrl = process.env.REACT_APP_BACKEND_URL + '/accounts';
     const formData = new FormData();
     Object.keys(profile).forEach((key) => {
       formData.append(key, profile[key]);
     });
-    formData.append("role", isMentor ? "mentor" : "mentee");
+    formData.append('role', isMentor ? 'mentor' : 'mentee');
 
     api
       .post(`${baseUrl}/token/`, formData)
       .then((response) => {
         const token = response.data.access;
         const role = response.data.role;
-        console.log("Login successful, token:", token);
-        console.log("Login successful, role:", role);
+        console.log('Login successful, token:', token);
+        console.log('Login successful, role:', role);
 
-        localStorage.setItem("role", role);
-        localStorage.setItem("authToken", token);
+        localStorage.setItem('role', role);
+        localStorage.setItem('authToken', token);
 
         if (isMentor) {
-          navigate("/mentor/home");
+          navigate('/mentor/home');
         } else {
           window.location.reload();
         }
       })
       .catch((err) => {
-        console.log("Login failed:", err);
+        console.log('Login failed:', err);
         setError(true);
-        localStorage.removeItem("authToken");
+        localStorage.removeItem('authToken');
       });
   };
 
@@ -376,8 +375,8 @@ export default function Login() {
             <button
               className={`px-4 py-2 font-medium ${
                 isMentor
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 dark:text-white'
               } rounded`}
               onClick={() => setIsMentor(true)}
             >
@@ -386,8 +385,8 @@ export default function Login() {
             <button
               className={`px-4 py-2 font-medium ${
                 !isMentor
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 dark:bg-gray-700 dark:text-white"
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 dark:text-white'
               } rounded`}
               onClick={() => setIsMentor(false)}
             >
@@ -440,7 +439,7 @@ export default function Login() {
               </button> */}
 
               <LoginButton/>
-{/* 
+              {/* 
               <p className="text-center text-sm text-gray-500 dark:text-white">
                 No account?{" "}
                 <Link className="underline" to="/register">

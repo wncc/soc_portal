@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate} from 'react-router-dom';
-import api from "../../utils/api";
-
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -10,14 +9,14 @@ const VerifyEmail = () => {
   useEffect(() => {
     console.log('Token:', token);
     api.get(`/api/accounts/verify-email/${token}`)
-    .then((res) => {
-        navigate("/registerSuccess");
-        console.log(res.data)
-    })
-    .catch(err =>{ console.log(err)
-      navigate('/login')
-  }
-)
+      .then((res) => {
+        navigate('/registerSuccess');
+        console.log(res.data);
+      })
+      .catch(err => { console.log(err);
+        navigate('/login');
+      },
+      );
   }, [token]);
 
   return (

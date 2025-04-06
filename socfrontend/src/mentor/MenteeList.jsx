@@ -1,22 +1,22 @@
-import React, { useState, useEffect,useRef } from "react";
-import { motion } from "framer-motion";
-import "./MenteeList.css";
-import axios from "axios";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import React, { useState, useEffect,useRef } from 'react';
+import { motion } from 'framer-motion';
+import './MenteeList.css';
+import axios from 'axios';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const MenteeList = ({ project }) => {
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem('authToken');
   const [mentees, setMentees] = useState([]);
   const [rankList, setRankList] = useState([]);
   const [preferenceRankList, setPreferenceRankList] = useState([]);
   const [loadingRankList, setLoadingRankList] = useState(true);
   const [selectedSOP, setSelectedSOP] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState('');
   const [showRankList, setShowRankList] = useState(false);
 
   const axiosConfig = {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
   };
@@ -27,12 +27,12 @@ const MenteeList = ({ project }) => {
       .get(
         process.env.REACT_APP_BACKEND_URL +
           `/projects/mentor/profile/${project}`,
-        axiosConfig
+        axiosConfig,
       )
       .then((response) => {
         setMentees(response.data.mentees);
       })
-      .catch((error) => console.error("Error fetching mentor data:", error));
+      .catch((error) => console.error('Error fetching mentor data:', error));
   }, []);
 
   // Fetch saved rank list
@@ -42,7 +42,7 @@ const MenteeList = ({ project }) => {
       axios
         .get(
           `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/ranklist/${project}`,
-          axiosConfig
+          axiosConfig,
         )
         .then((response) => {
           const savedRankList = response.data.rank_list || [];
@@ -50,7 +50,7 @@ const MenteeList = ({ project }) => {
           setLoadingRankList(false);
         })
         .catch((error) => {
-          console.error("Error fetching rank list:", error);
+          console.error('Error fetching rank list:', error);
           setLoadingRankList(false);
         });
     }
@@ -61,14 +61,14 @@ const MenteeList = ({ project }) => {
       const savedMenteeIds = new Set(
         rankList
           .filter((entry) => entry?.mentee?.user_profile?.roll_number)
-          .map((entry) => entry.mentee.user_profile.roll_number)
+          .map((entry) => entry.mentee.user_profile.roll_number),
       );
 
       const sortedPreferenceList = mentees
         .filter(
           (mentee) =>
             mentee?.user_profile?.roll_number &&
-            !savedMenteeIds.has(mentee.user_profile.roll_number)
+            !savedMenteeIds.has(mentee.user_profile.roll_number),
         )
         .sort((a, b) => {
           const aPref = a.preferences?.preference ?? Infinity;
@@ -150,13 +150,13 @@ const MenteeList = ({ project }) => {
       .post(
         `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/ranklist/${project}/`,
         { rank_list: rankListData },
-        axiosConfig
+        axiosConfig,
       )
       .then(() => {
-        setSuccessMessage("Rank List saved successfully!");
-        setTimeout(() => setSuccessMessage(""), 2000);
+        setSuccessMessage('Rank List saved successfully!');
+        setTimeout(() => setSuccessMessage(''), 2000);
       })
-      .catch((error) => console.error("Error saving rank list:", error));
+      .catch((error) => console.error('Error saving rank list:', error));
   };
 
   const onDragEnd = (result) => {
@@ -268,8 +268,8 @@ const MenteeList = ({ project }) => {
                         >
                           <div className="rank-info">
                             <p>
-                              Rank: {index + 1}{" "}
-                              {mentee.mentee.user_profile?.name}{" "}
+                              Rank: {index + 1}{' '}
+                              {mentee.mentee.user_profile?.name}{' '}
                               {mentee.user_profile?.roll_number} Preference:
                               {mentee.mentee.preferences?.preference}
                             </p>
@@ -308,38 +308,38 @@ const MenteeList = ({ project }) => {
                                 <path
                                   d="M10 12V17"
                                   stroke="#000000"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                ></path>
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                                 <path
                                   d="M14 12V17"
                                   stroke="#000000"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                ></path>
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                                 <path
                                   d="M4 7H20"
                                   stroke="#000000"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                ></path>
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                                 <path
                                   d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10"
                                   stroke="#000000"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                ></path>
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                                 <path
                                   d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z"
                                   stroke="#000000"
-                                  stroke-width="2"
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                ></path>
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
                               </svg>
                             </button>
                           </div>
@@ -370,7 +370,7 @@ const MenteeList = ({ project }) => {
             <div className="mentee-card" key={mentee.id}>
               <div className="mentee-info">
                 <p>
-                  {mentee.user_profile?.name} {mentee.user_profile?.roll_number}{" "}
+                  {mentee.user_profile?.name} {mentee.user_profile?.roll_number}{' '}
                   Preference: {mentee.preferences?.preference}
                 </p>
               </div>

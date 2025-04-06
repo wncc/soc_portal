@@ -1,8 +1,8 @@
 // src/utils/api.js
-import axios from "axios";
+import axios from 'axios';
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/",
+  baseURL: 'http://127.0.0.1:8000/',
   // withCredentials: true,  // This is crucial for sending cookies
   // headers: {
   //   'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

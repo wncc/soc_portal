@@ -1,21 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Link, useLocation,useNavigate } from "react-router-dom";
-import wncc_logo from "../../assets/wncc-logo.png";
-import PropTypes from "prop-types";
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation,useNavigate } from 'react-router-dom';
+import wncc_logo from '../../assets/wncc-logo.png';
+import PropTypes from 'prop-types';
 
 export default function Navbar(props) {
-  const authToken = localStorage.getItem("authToken");
-  const role = localStorage.getItem("role");
+  const authToken = localStorage.getItem('authToken');
+  const role = localStorage.getItem('role');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("role");
-    navigate("/login"); // Use navigate instead of Navigate component
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('role');
+    navigate('/login'); // Use navigate instead of Navigate component
   };
-
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -28,27 +27,27 @@ export default function Navbar(props) {
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (role === "mentor") {
-      document.documentElement.classList.remove("dark");
+    const savedTheme = localStorage.getItem('theme');
+    if (role === 'mentor') {
+      document.documentElement.classList.remove('dark');
       setDarkMode(false);
       return;
     }
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
       setDarkMode(true);
     }
   }, []);
 
   const toggleDarkMode = () => {
-    if (role === "mentor") return;
+    if (role === 'mentor') return;
     setDarkMode(!darkMode);
     if (darkMode) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     }
   };
 
@@ -70,7 +69,7 @@ export default function Navbar(props) {
           onClick={toggleMenu}
           className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:bg-transparent dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
           aria-controls="navbar-menu"
-          aria-expanded={isMenuOpen ? "true" : "false"}
+          aria-expanded={isMenuOpen ? 'true' : 'false'}
         >
           <span className="sr-only">Open main menu</span>
           <svg
@@ -92,12 +91,12 @@ export default function Navbar(props) {
 
         <div
           className={`w-full md:flex md:w-auto ${
-            isMenuOpen ? "block" : "hidden"
+            isMenuOpen ? 'block' : 'hidden'
           }`}
           id="navbar-menu"
         >
           <ul className="flex flex-col md:flex-row font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 dark:border-gray-700">
-            {role !== "mentor" && (
+            {role !== 'mentor' && (
               <button onClick={toggleDarkMode} className=" text-white px-3">
                 {!darkMode ? (
                   <svg
@@ -123,7 +122,7 @@ export default function Navbar(props) {
               </button>
             )}
 
-            {role !== "mentor" && (
+            {role !== 'mentor' && (
               <li>
                 <Link
                   to=""
@@ -135,7 +134,7 @@ export default function Navbar(props) {
             )}
 
             {authToken ? (
-              role === "mentee" ? (
+              role === 'mentee' ? (
                 <>
                   <li>
                     <Link
@@ -170,7 +169,7 @@ export default function Navbar(props) {
                     </button>
                   </li>
                 </>
-              ) : role === "mentor" ? (
+              ) : role === 'mentor' ? (
                 <>
                   <li>
                     <Link
@@ -181,7 +180,7 @@ export default function Navbar(props) {
                     </Link>
                   </li>
                   <li>
-                  <button
+                    <button
                       onClick={handleLogout} 
                       className="block py-2 px-3 text-white rounded hover:bg-gray-100 hover:text-gray-500 md:hover:bg-transparent md:border-0 md:hover:text-black-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                     >

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import Typed from "typed.js";
+import React, { useEffect, useRef } from 'react';
+import Typed from 'typed.js';
 
 export default function ProjectTitle(props) {
   const typedRef = useRef(null);
@@ -23,6 +23,6 @@ export default function ProjectTitle(props) {
     <h1
       className="w-full px-14 py-3 text-center text-2xl rounded-lg font-bold text-indigo-600 sm:text-3xl transition-colors duration-300 ease-in-out group-hover:text-white z-10"
       ref={typedRef}
-    ></h1>
+    />
   );
 }
