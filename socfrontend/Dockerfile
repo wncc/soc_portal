@@ -1,5 +1,7 @@
-FROM node:18-alpine as build
+# Build stage
+FROM node:20-slim as builder
 
+# Set working directory
 WORKDIR /app
 
 # Install pnpm
@@ -9,24 +11,25 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
-# Copy project files
+# Copy source code
 COPY . .
 
-# Build the app
+# Build the application
 RUN pnpm build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy built files from build stage
-COPY --from=build /app/build /usr/share/nginx/html
+# Copy built assets from builder stage
+COPY --from=builder /app/build /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration if needed
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
+# Expose port 80
 EXPOSE 80
 
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"] 
