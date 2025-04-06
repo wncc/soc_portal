@@ -1,23 +1,32 @@
-FROM node:18-alpine AS build
+FROM node:18-alpine as build
 
 WORKDIR /app
 
-# Copy package files first for better caching
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install pnpm and dependencies
-RUN npm install -g pnpm && \
-  pnpm install
+# Install dependencies
+RUN pnpm install
 
-# Copy the rest of the app and build
+# Copy project files
 COPY . .
+
+# Build the app
 RUN pnpm build
 
-# Production environment
-FROM nginx:stable-alpine AS production
+# Production stage
+FROM nginx:alpine
+
+# Copy built files from build stage
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Expose port
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"] 

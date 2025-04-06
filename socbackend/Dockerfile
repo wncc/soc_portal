@@ -2,7 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies including libffi-dev
+# Install system dependencies required for building Python packages
 RUN apt-get update && apt-get install -y \
   build-essential \
   libffi-dev \
@@ -11,19 +11,20 @@ RUN apt-get update && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (for better caching)
-COPY requirements.txt .
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install Python dependencies
-RUN python -m venv /opt/venv && \
-  /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
-  /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY . .
-
-# Set environment path
+# Create and activate virtual environment
+RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project files
+COPY . .
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
@@ -31,5 +32,5 @@ RUN python manage.py collectstatic --noinput
 # Expose port
 EXPOSE 8000
 
-# Start Gunicorn server
+# Set the command to run using Gunicorn
 CMD ["gunicorn", "--config", "gunicorn.conf.py", "socbackend.wsgi:application"] 
