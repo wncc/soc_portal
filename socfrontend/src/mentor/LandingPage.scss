@@ -168,3 +168,26 @@ header {
     }
   }
 }
+
+
+.mentor_info {
+  background: #f7f7f7;
+  padding: 2rem;
+  margin: 2rem 0;
+  border-radius: 16px;
+
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+  }
+
+  ol, ul {
+    margin-left: 1.5rem;
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+  }
+}

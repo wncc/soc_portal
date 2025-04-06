@@ -89,58 +89,51 @@ function LandingPage() {
             </IconContext.Provider>
           </motion.span>
         </motion.div>
-        <motion.div>
-          <h2>Basic Duties of an SOC Mentor:</h2>
-          <ol>
-            <li>Staying in touch with your mentees regularly.</li>
-            <li>
-              Providing them with resources and a learning pathway for the
-              project.
-            </li>
-            <li>
-              Encouraging active participation and involvement of each mentee.
-            </li>
-            <li>Conducting review meetings to track updates and progress.</li>
-            <li>Timely resolution of doubts and queries.</li>
-          </ol>
-
-          <h2>Selection Procedure:</h2>
-          <ol>
-            <li>
-              Project proposals will be thoroughly reviewed. Mentors might be
-              contacted for clarification.
-            </li>
-            <li>
-              Mentees will submit a written proposal along with their project
-              preferences.
-            </li>
-            <li>
-              Mentors will decide the selection procedure and finalize the
-              number of mentees.
-            </li>
-          </ol>
-
-          <h2>Important Notes:</h2>
-          <ul>
-            <li>
-              Since SOC has a long timeline, project ideas should be meaningful
-              with a decent learning curve.
-            </li>
-            <li>
-              Mentoring multiple projects is allowed, but equal time commitment
-              is expected.
-            </li>
-            <li>
-              Staying in the institute during the project is not mandatory.
-            </li>
-            <li>
-              Mentors are encouraged to consider deployment and final
-              presentation of the project. WnCC can assist with special
-              requirements.
-            </li>
-          </ul>
-        </motion.div>
       </motion.header>
+
+      <section className="mentor_info">
+        <h2>Basic Duties of an SOC Mentor:</h2>
+        <ol>
+          <li>Staying in touch with your mentees regularly.</li>
+          <li>
+            Providing them with resources and a learning pathway for the
+            project.
+          </li>
+          <li>
+            Encouraging active participation and involvement of each mentee.
+          </li>
+          <li>Conducting review meetings to track updates and progress.</li>
+          <li>Timely resolution of doubts and queries.</li>
+        </ol>
+
+        <h2>Selection Procedure:</h2>
+        <ol>
+          <li>
+            Project proposals will be thoroughly reviewed. Mentors might be
+            contacted for clarification.
+          </li>
+          <li>
+            Mentees will submit a written proposal along with their project
+            preferences.
+          </li>
+          <li>
+            Mentors will decide the selection procedure and finalize the number
+            of mentees.
+          </li>
+        </ol>
+
+        <h2>Important Notes:</h2>
+        <ul>
+          <li>
+            Project ideas should be meaningful with a decent learning curve.
+          </li>
+          <li>You can mentor multiple projects, but commit equally to each.</li>
+          <li>Staying in the institute is not mandatory during the project.</li>
+          <li>
+            Think about deployment and presentation. WnCC can help if needed.
+          </li>
+        </ul>
+      </section>
 
       {/* If a project is selected, show MentorPortal */}
       {selectedProject ? (
