@@ -280,7 +280,6 @@
 //     );
 //   }
 
-
 //   return (
 //     <>
 //       <div className="form h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
@@ -602,9 +601,9 @@
 //   );
 // };
 
-import React, { useState, useEffect } from "react";
-import { Navigate } from "react-router-dom";
-import api from "../../utils/api";
+import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import api from '../../utils/api';
 
 export default function PreferenceForm() {
   const [details, setDetails] = useState([]);
@@ -616,23 +615,23 @@ export default function PreferenceForm() {
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + "/projects/wishlist/")
+      .get(process.env.REACT_APP_BACKEND_URL + '/projects/wishlist/')
       .then((response) => setDetails(response.data))
-      .catch((error) => console.error("Error fetching projects:", error));
+      .catch((error) => console.error('Error fetching projects:', error));
   }, []);
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + "/projects/preference")
+      .get(process.env.REACT_APP_BACKEND_URL + '/projects/preference')
       .then((response) => setUserPreference(response.data))
-      .catch((error) => console.error("Error fetching preferences:", error));
+      .catch((error) => console.error('Error fetching preferences:', error));
   }, []);
 
-  const [selectedProjects, setSelectedProjects] = useState(["", "", ""]);
+  const [selectedProjects, setSelectedProjects] = useState(['', '', '']);
   const [data, setData] = useState([
-    { project: "", sop: "", preference: 1 },
-    { project: "", sop: "", preference: 2 },
-    { project: "", sop: "", preference: 3 },
+    { project: '', sop: '', preference: 1 },
+    { project: '', sop: '', preference: 2 },
+    { project: '', sop: '', preference: 3 },
   ]);
 
   if (userPreference.length > 0) {
@@ -699,7 +698,7 @@ const Page = ({
     setError1(false);
   
     // Filter out empty preferences (user can submit 1, 2, or 3)
-    const filteredData = data.filter(({ project, sop }) => project.trim() !== "");
+    const filteredData = data.filter(({ project, sop }) => project.trim() !== '');
   
     // Ensure at least one preference is selected
     if (filteredData.length === 0) {
@@ -725,30 +724,29 @@ const Page = ({
       .then(() => setSubmitted(true))
       .catch(() => setError(true));
   };
-  
 
   const handleNextPage = () => setPage(page + 1);
   const handlePrevPage = () => setPage(page - 1);
 
   const handleProjectChange = (e) => {
     const { value } = e.target;
-    let newSelectedProjects = [...selectedProjects];
+    const newSelectedProjects = [...selectedProjects];
     newSelectedProjects[page - 1] = value;
     setSelectedProjects(newSelectedProjects);
 
-    let newData = [...data];
+    const newData = [...data];
     newData[page - 1].project = value;
     setData(newData);
   };
 
   const handleSOPChange = (e) => {
-    let newData = [...data];
+    const newData = [...data];
     newData[page - 1].sop = e.target.value;
     setData(newData);
   };
 
   const availableProjects = details.filter(
-    (p) => !selectedProjects.includes(p.id.toString()) || p.id.toString() === selectedProjects[page - 1]
+    (p) => !selectedProjects.includes(p.id.toString()) || p.id.toString() === selectedProjects[page - 1],
   );
 
   return (
@@ -780,7 +778,7 @@ const Page = ({
           required
           value={data[page - 1].sop}
           onChange={handleSOPChange}
-        ></textarea>
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">

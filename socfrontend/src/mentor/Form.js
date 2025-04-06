@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
-import axios from "axios";
-import "./Form.css";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
+import axios from 'axios';
+import './Form.css';
 
 const Form = () => {
   const navigate = useNavigate();
   
   // Form State
   const [formData, setFormData] = useState({
-    title: "",
-    general_category: "Others",
-    specific_category: "NA",
-    mentee_max: "",
-    mentor: "NA",
-    co_mentor_info: "NA",
-    description: "",
-    weekly_meets: "",
-    timeline: "",
-    checkpoints: "",
-    prereuisites: "",  
-    banner_image_link: "",
+    title: '',
+    general_category: 'Others',
+    specific_category: 'NA',
+    mentee_max: '',
+    mentor: 'NA',
+    co_mentor_info: 'NA',
+    description: '',
+    weekly_meets: '',
+    timeline: '',
+    checkpoints: '',
+    prereuisites: '',  
+    banner_image_link: '',
   });
 
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem('authToken');
   const axiosConfig = {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
   };
@@ -35,9 +35,9 @@ const Form = () => {
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile`,
-          axiosConfig
+          axiosConfig,
         );
-        console.log("Mentor Data:", response.data);
+        console.log('Mentor Data:', response.data);
 
         const mentorName = response.data.mentor.user_profile.name;
 
@@ -46,7 +46,7 @@ const Form = () => {
           mentor: mentorName,
         }));
       } catch (error) {
-        console.error("Error fetching mentor data:", error);
+        console.error('Error fetching mentor data:', error);
       }
     };
 
@@ -64,7 +64,7 @@ const Form = () => {
     e.preventDefault();
 
     if (formData.description.length < 50) {
-      alert("Description must be at least 50 characters long.");
+      alert('Description must be at least 50 characters long.');
       return;
     }  
 
@@ -73,20 +73,20 @@ const Form = () => {
       const profileResponse = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`,
         formData,
-        axiosConfig
+        axiosConfig,
       );
-      console.log("Project added:", profileResponse.data);
+      console.log('Project added:', profileResponse.data);
   
-      alert("Project submitted successfully!");
-      navigate("/mentor/home");
+      alert('Project submitted successfully!');
+      navigate('/mentor/home');
   
     } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("Failed to submit the project. Please try again.");
+      console.error('Error submitting form:', error);
+      alert('Failed to submit the project. Please try again.');
     }
   };
 
-  console.log(formData)
+  console.log(formData);
 
   return (
     <div className="lp-container">
@@ -116,7 +116,7 @@ const Form = () => {
           <div className="lp-form-group">
             <label className="lp-label">Project Category *</label>
             <div className="lp-radio-group">
-              {["ML", 'Development', "CP", "Blockchain", "Others"].map((category) => (
+              {['ML', 'Development', 'CP', 'Blockchain', 'Others'].map((category) => (
                 <label key={category}>
                   <input
                     type="radio"
@@ -165,7 +165,7 @@ const Form = () => {
             <label className="lp-label">Co-mentor(s)</label>
             <p className="lp-help-text">
               If there are multiple co-mentors, add their names in this format: Name (roll No) separated by commas.
-              </p>
+            </p>
             <input
               type="text"
               name="co_mentor_info"
@@ -190,7 +190,7 @@ const Form = () => {
               value={formData.description}
               onChange={handleChange}
               required
-            ></textarea>
+            />
           </div>
 
           {/* Timeline */}
@@ -204,7 +204,7 @@ const Form = () => {
               value={formData.timeline}
               onChange={handleChange}
               required
-            ></textarea>
+            />
           </div>
 
           {/* Checkpoints */}
@@ -218,7 +218,7 @@ const Form = () => {
               value={formData.checkpoints}
               onChange={handleChange}
               required
-            ></textarea>
+            />
           </div>
 
           {/* Prerequisites */}
@@ -232,7 +232,7 @@ const Form = () => {
               value={formData.prereuisites}
               onChange={handleChange}
               required
-            ></textarea>
+            />
           </div>
 
           {/* Weekly Meets */}
@@ -247,7 +247,7 @@ const Form = () => {
               onChange={handleChange}
               required
               min="0"
-            ></input>
+            />
           </div>
 
           {/* Banner Image Link */}

@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import "./LandingPage.scss";
-import { useNavigate } from "react-router-dom";
-import { IoMailOutline } from "react-icons/io5";
-import { IconContext } from "react-icons";
-import { motion } from "framer-motion";
-import axios from "axios";
-import MentorPortal from "./MentorPortal"; // Import MentorPortal component
+import React, { useEffect, useState } from 'react';
+import './LandingPage.scss';
+import { useNavigate } from 'react-router-dom';
+import { IoMailOutline } from 'react-icons/io5';
+import { IconContext } from 'react-icons';
+import { motion } from 'framer-motion';
+import axios from 'axios';
+import MentorPortal from './MentorPortal'; // Import MentorPortal component
 
-let easing = [0.6, -0.05, 0.01, 0.99];
+const easing = [0.6, -0.05, 0.01, 0.99];
 
 const stagger = {
   animate: {
@@ -26,16 +26,16 @@ const fadeInUp = {
 
 function LandingPage() {
   const navigate = useNavigate();
-  const [mentorName, setMentorName] = useState("");
-  const [mentorEmail, setMentorEmail] = useState("");
+  const [mentorName, setMentorName] = useState('');
+  const [mentorEmail, setMentorEmail] = useState('');
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null); // Store selected project
 
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem('authToken');
   const axiosConfig = {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
   };
@@ -45,14 +45,14 @@ function LandingPage() {
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile`,
-          axiosConfig
+          axiosConfig,
         );
-        console.log(response.data)
+        console.log(response.data);
         setMentorName(response.data.mentor.user_profile.name);
-        setMentorEmail(response.data.mentor.user_profile.roll_number + "@iitb.ac.in");
+        setMentorEmail(response.data.mentor.user_profile.roll_number + '@iitb.ac.in');
         setProjects(response.data.mentor.projects); // Expecting an array of projects
       } catch (error) {
-        console.error("Error fetching mentor data:", error);
+        console.error('Error fetching mentor data:', error);
       }
       setLoading(false);
     };
@@ -67,19 +67,18 @@ function LandingPage() {
         <motion.div className="logo_wrapper" variants={fadeInUp}>
           {mentorName ? (
             <>
-              {mentorName.split(" ")[0]} <span>{mentorName.split(" ")[1]}</span>
+              {mentorName.split(' ')[0]} <span>{mentorName.split(' ')[1]}</span>
             </>
           ) : (
-            "Loading..."
+            'Loading...'
           )}
         </motion.div>
         <motion.div className="menu_container" variants={stagger}>
+          <motion.span variants={fadeInUp} />
           <motion.span variants={fadeInUp}>
-          </motion.span>
-          <motion.span variants={fadeInUp}>
-            <IconContext.Provider value={{ color: "#000", size: "18px" }}>
+            <IconContext.Provider value={{ color: '#000', size: '18px' }}>
               <div className="icon"><IoMailOutline /></div>
-              {mentorEmail || "Loading..."}
+              {mentorEmail || 'Loading...'}
             </IconContext.Provider>
           </motion.span>
         </motion.div>
@@ -114,7 +113,7 @@ function LandingPage() {
             variants={fadeInUp}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/mentor/add-project")}
+            onClick={() => navigate('/mentor/add-project')}
           >
             <div className="add_project_content">
               <motion.div className="add_icon" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: easing }}>

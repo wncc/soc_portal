@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { useState } from "react";
-import { useCallback } from "react";
-import { Link } from "react-router-dom";
-import ProjectCard from "../components/ProjectCard";
-import api from "../../utils/api";
+import { useEffect } from 'react';
+import { useState } from 'react';
+import { useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import ProjectCard from '../components/ProjectCard';
+import api from '../../utils/api';
 
 function PreferenceFormFilled() {
   const [details, setDetails] = useState([]);
@@ -11,15 +11,15 @@ function PreferenceFormFilled() {
   const fetchPreferenceList = useCallback(() => {
     setIsLoading(true);
     api
-      .get(process.env.REACT_APP_BACKEND_URL + "/projects/preference/")
+      .get(process.env.REACT_APP_BACKEND_URL + '/projects/preference/')
       .then((response) => {
         setDetails(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching Preference:", error);
+        console.error('Error fetching Preference:', error);
         if (error.response && error.response.status === 401) {
-          window.location.href = "/";
+          window.location.href = '/';
         }
         setIsLoading(false);
       });
@@ -59,9 +59,7 @@ function PreferenceFormFilled() {
       <section className="project-card dark:bg-gray-800 dark:text-white">
         {details.length === 0 ? (
           <>
-            <p className="text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              
-            </p>
+            <p className="text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl" />
           </>
         ) : (
           <>
@@ -71,7 +69,7 @@ function PreferenceFormFilled() {
               ) : (
                 <div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 pt-16">
                   {details.map((project, index) => {
-                    if (!project.project.banner_image.includes(":8000")) {
+                    if (!project.project.banner_image.includes(':8000')) {
                       project.project.banner_image = `http://127.0.0.1:8000${project.project.banner_image}`;
                     }
                     return (
@@ -93,12 +91,12 @@ function PreferenceFormFilled() {
         )}
       </section>
       <div className="text-center py-2">
-      <Link
-        to="/"
-        className="mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring"
-      >
+        <Link
+          to="/"
+          className="mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring"
+        >
         Home
-      </Link>
+        </Link>
       </div>
     </>
   );
