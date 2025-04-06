@@ -199,7 +199,7 @@ const Loading = () => {
     const doSSOLogin = async () => {
       try {
         const ssoRes = await api.post(
-          `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`,
+          `https://socb.tech-iitb.org/api/accounts/get-sso-user/`,
           { accessid },
         );
 

@@ -29,7 +29,7 @@ import React from 'react';
 
 const LoginButton = () => {
   const handleLoginRedirect = () => {
-    const redirect = encodeURIComponent(`${window.location.origin}/loading`);
+    const redirect = encodeURIComponent(`https://wncc-soc.tech-iitb.org/loading`);
     const projectId = '38dd0ef6-28a1-4a14-980e-b294bd987636';
     window.location.href = `https://sso.tech-iitb.org/project/${projectId}/ssocall/?redirect=${redirect}`;
   };

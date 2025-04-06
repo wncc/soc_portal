@@ -30,7 +30,7 @@ Create a `.env` file in the `socfrontend` directory with the following content:
 REACT_APP_BACKEND_URL=https://socb.tech-iitb.org/api
 EMAIL_HOST_USER=your_email@gmail.com
 EMAIL_HOST_PASSWORD=your_app_password
-DOMAIN_NAME=https://soc.tech-iitb.org/
+DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
 ```
 
 ## Deployment Steps
