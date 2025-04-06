@@ -35,11 +35,7 @@ SECRET_KEY = os.environ.get(
     "django-insecure-d+#y%l^0ihv^!n85jt7ckxco6(b=0(a3+e+fml#3t0ef2gbs3k",
 )
 
-# # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = os.environ.get("DJANGO_DEBUG", "") != "False"
-
-ALLOWED_HOSTS = ['https://itc.gymkhana.iitb.ac.in','itc.gymkhana.iitb.ac.in' , '*','localhost', '127.0.0.1']
-
+ALLOWED_HOSTS = ['socb.tech-iitb.org', 'www.socb.tech-iitb.org', 'itc.gymkhana.iitb.ac.in', 'localhost', '127.0.0.1']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp-auth.iitb.ac.in'
@@ -71,25 +67,27 @@ INSTALLED_APPS = [
     "drf_yasg",
     "accounts",
     "projects",
+    "gunicorn",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://itc.gymkhana.iitb.ac.in/",
-    "http://localhost:3000/",
-    "http://127.0.0.1:3000/",
+    "https://soc.tech-iitb.org",
+    "https://www.soc.tech-iitb.org",
+    "https://socb.tech-iitb.org",
+    "https://www.socb.tech-iitb.org",
+    "https://itc.gymkhana.iitb.ac.in",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
 
-################## Updated
-# CORS_ALLOWED_ORIGINS = [
-#     "https://itc.gymkhana.iitb.ac.in/",
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
-
-CORS_ALLOW_ALL_ORIGINS = True
-################## Updated
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "https://soc.tech-iitb.org",
+    "https://www.soc.tech-iitb.org",
+    "https://itc.gymkhana.iitb.ac.in",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
