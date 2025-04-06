@@ -92,6 +92,7 @@ function LandingPage() {
         </motion.div>
       </motion.header>
 
+      <div className="dropdown_wrapper">
       <section className="mentor_info_container">
         <div
           className="mentor_info_header"
@@ -154,6 +155,7 @@ function LandingPage() {
           </div>
         )}
       </section>
+      </div>
 
       {/* If a project is selected, show MentorPortal */}
       {selectedProject ? (

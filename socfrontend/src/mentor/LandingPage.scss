@@ -216,3 +216,17 @@ header {
     }
   }
 }
+
+.dropdown_wrapper {
+  max-width: 700px;
+  width: 90%;
+  margin: 2rem auto 1rem auto; // Top spacing from email
+}
+
+.mentor_info_container {
+  background-color: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
