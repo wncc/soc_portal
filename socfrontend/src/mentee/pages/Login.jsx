@@ -332,7 +332,7 @@ export default function Login() {
     e.preventDefault();
     if (!isMentor) return; // Prevent login attempt for mentees
 
-    const baseUrl = process.env.REACT_APP_BACKEND_URL + '/accounts';
+    const baseUrl = 'https://socb.tech-iitb.org/api/accounts';
     const formData = new FormData();
     Object.keys(profile).forEach((key) => {
       formData.append(key, profile[key]);

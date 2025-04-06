@@ -218,7 +218,7 @@ const Loading = () => {
 
         try {
           // Attempt to register
-          await api.post(`${process.env.REACT_APP_BACKEND_URL}/accounts/register_sso/`, formData);
+          await api.post(`https://socb.tech-iitb.org/api/accounts/register_sso/`, formData);
           console.log('Registered successfully');
 
           // Now try logging in
@@ -250,7 +250,7 @@ const Loading = () => {
         loginForm.append('role', role);
 
         const loginRes = await api.post(
-          `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`,
+          `https://socb.tech-iitb.org/api/accounts/token_sso/`,
           loginForm,
         );
 

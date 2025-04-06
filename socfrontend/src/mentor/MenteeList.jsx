@@ -25,8 +25,7 @@ const MenteeList = ({ project }) => {
   useEffect(() => {
     axios
       .get(
-        process.env.REACT_APP_BACKEND_URL +
-          `/projects/mentor/profile/${project}`,
+        `https://socb.tech-iitb.org/api/projects/mentor/profile/${project}`,
         axiosConfig,
       )
       .then((response) => {
@@ -41,7 +40,7 @@ const MenteeList = ({ project }) => {
       setLoadingRankList(true);
       axios
         .get(
-          `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/ranklist/${project}`,
+          `https://socb.tech-iitb.org/api/projects/mentor/ranklist/${project}`,
           axiosConfig,
         )
         .then((response) => {
@@ -148,7 +147,7 @@ const MenteeList = ({ project }) => {
 
     axios
       .post(
-        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/ranklist/${project}/`,
+        `https://socb.tech-iitb.org/api/projects/mentor/ranklist/${project}/`,
         { rank_list: rankListData },
         axiosConfig,
       )

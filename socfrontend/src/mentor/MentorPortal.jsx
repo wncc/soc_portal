@@ -76,7 +76,7 @@ function MentorPortal({ project, onBack }) {
     // You can replace this URL with the correct endpoint to fetch the current mentor's data
     axios
       .get(
-        process.env.REACT_APP_BACKEND_URL + `/projects/mentor/profile/${project.id}`,
+        `https://socb.tech-iitb.org/api/projects/mentor/profile/${project.id}`,
         axiosConfig,
       )
       .then((response) => {
@@ -106,7 +106,7 @@ function MentorPortal({ project, onBack }) {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/projects/download-banner/`,
+        `https://socb.tech-iitb.org/api/projects/download-banner/`,
         {
           params: { file_url: fileUrl, id: project.id },
           headers: axiosConfig.headers,

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 function Logout() {
   const navigate = useNavigate();
   useEffect(() => {
-    api.get(process.env.REACT_APP_BACKEND_URL+'/accounts/logout/')
+    api.get('https://socb.tech-iitb.org/api/accounts/logout/')
       .then((res) => {
         console.log(res.data);
         window.location.reload();
