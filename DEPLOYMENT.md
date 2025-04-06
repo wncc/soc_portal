@@ -6,7 +6,7 @@ This guide provides instructions for deploying the SOC Portal (backend and front
 
 - Docker and Docker Compose installed on the server
 - Domain names configured:
-  - Frontend: soc.tech-iitb.org
+  - Frontend: wncc-soc.tech-iitb.org
   - Backend: socb.tech-iitb.org
 
 ## Environment Files
@@ -54,12 +54,12 @@ DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
 
    Create a configuration file for each domain:
 
-   ### For soc.tech-iitb.org:
+   ### For wncc-soc.tech-iitb.org:
 
    ```
    server {
        listen 80;
-       server_name soc.tech-iitb.org;
+       server_name wncc-soc.tech-iitb.org;
 
        # Redirect HTTP to HTTPS
        location / {
@@ -69,7 +69,7 @@ DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
 
    server {
        listen 443 ssl;
-       server_name soc.tech-iitb.org;
+       server_name wncc-soc.tech-iitb.org;
 
        ssl_certificate /path/to/cert.pem;
        ssl_certificate_key /path/to/key.pem;
@@ -126,7 +126,7 @@ DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
 5. Obtain SSL certificates using Let's Encrypt:
 
    ```
-   sudo certbot --nginx -d soc.tech-iitb.org -d socb.tech-iitb.org
+   sudo certbot --nginx -d wncc-soc.tech-iitb.org -d socb.tech-iitb.org
    ```
 
 6. Restart Nginx to apply the changes:
