@@ -195,6 +195,42 @@ class MentorProfileView(APIView):
             return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def put(self, request, project_id=None):
+        try:
+            if not project_id:
+                return Response({'error': 'Project ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Get the mentor profile of the logged-in user
+            user_profile = UserProfile.objects.get(user=request.user)
+            mentor = Mentor.objects.get(user=user_profile)
+
+            # Get the project
+            project = Project.objects.get(id=project_id)
+
+            # Ensure the mentor owns the project
+            if project not in mentor.projects.all():
+                return Response({'error': 'You do not have permission to edit this project.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Update the project using the serializer
+            serializer = ProjectSerializer(project, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Project updated successfully.",
+                    "project": serializer.data
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Project.DoesNotExist:
+            return Response({'error': 'Project not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Mentor.DoesNotExist:
+            return Response({'error': 'Mentor profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 from rest_framework import status   

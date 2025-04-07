@@ -25,6 +25,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import URLGuard from './URLGuard';
 import Loading from './mentee/pages/Loading';
 import NoPage from './mentee/components/NoPage';
+import EditProject from './mentor/EditProject';
 
 export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
@@ -89,6 +90,7 @@ export default function App() {
               element={<PreferenceFormFilled />}
             />
             <Route path="/mentor/add-project" element={<Form/>} />
+            <Route path="/mentor/edit-project" element={<EditProject />} />
             <Route path="/mentor/home" element={<LandingPage/>} />
           </Route>
           <Route path="*" element={<NoPage />} />

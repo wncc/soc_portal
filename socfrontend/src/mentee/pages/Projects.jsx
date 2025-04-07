@@ -90,7 +90,7 @@ export default function Projects() {
           </button>
           <button
             onClick={() => {
-              handleFilterChange('ML');
+              handleFilterChange('Machine Learning');
               setActive('b2');
             }}
             className={`w-40 px-4 py-2 text-sm font-medium ${
@@ -99,7 +99,7 @@ export default function Projects() {
               active === 'b2' ? 'bg-indigo-600' : 'bg-white dark:bg-slate-400'
             } border border-gray-500 hover:bg-indigo-600 hover:text-white`}
           >
-            ML
+            Machine Learning
           </button>
           <button
             onClick={() => {
@@ -129,7 +129,7 @@ export default function Projects() {
           </button>
           <button
             onClick={() => {
-              handleFilterChange('CP');
+              handleFilterChange('Competitive Programming');
               setActive('b5');
             }}
             className={`w-40 px-4 py-2 text-sm font-medium ${
@@ -138,7 +138,7 @@ export default function Projects() {
               active === 'b5' ? 'bg-indigo-600' : 'bg-white dark:bg-slate-400'
             } border border-gray-500 hover:bg-indigo-600 hover:text-white`}
           >
-            CP
+            Competitive Programming
           </button>
           <button
             onClick={() => {

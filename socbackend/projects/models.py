@@ -64,10 +64,10 @@ class Mentee(models.Model):
 class Project(models.Model):
 
     GeneralCategoryChoices = (
-        ('ML', 'ML'),
+        ('Machine Learning', 'Machine Learning'),
         ('Development', 'Development'),
         ('Blockchain', 'Blockchain'),
-        ('CP', 'CP'),
+        ('Competitive Programming', 'Competitive Programming'),
         ('Others', 'Others'),
     )
 
