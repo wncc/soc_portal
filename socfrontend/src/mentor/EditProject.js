@@ -50,6 +50,10 @@ const EditProject = () => {
     }
   }, [project]);
 
+  useEffect(() => {
+    console.log('Loaded project from location.state:', project);
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
