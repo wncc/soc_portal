@@ -9,7 +9,7 @@ export default function URLGuard() {
   useEffect(() => {
     if (!role) return; // Avoid unnecessary redirections before role is loaded
 
-    const mentorRoutes = ['/mentor/home', '/mentor/add-project'];
+    const mentorRoutes = ['/mentor/home', '/mentor/add-project','/mentor/edit-project'];
     const menteeRoutes = ['/PreferenceFormFilled','/current_projects', '/wishlist', '/PreferenceForm'];
     // const authRoutes = ["/login", "/register", "/registerSuccess", "/verify-email"];
     const authRoutes = ['/login'];
