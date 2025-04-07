@@ -36,3 +36,4 @@ class YearChoices(models.TextChoices):
     Fifth_Year = "Fifth Year", "Fifth Year"
     M_Tech = "M.Tech", "M.Tech"
     Ph_D = "Ph.D.", "Ph.D."
+    Other= "Other","Other"
