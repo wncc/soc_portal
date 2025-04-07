@@ -67,7 +67,7 @@ def validate_roll_number(value):
         if not value[2:3].isalpha() or not value[3:].isdigit() or len(value) != 7:
             raise ValidationError("Enter a valid roll number.")
     else:
-        if not (len(value) == 9 and value[2].isalpha() and value[3:5].isalnum() and value[5:6].isdigit() and value[6:].isdigit()):
+        if not (len(value) == 9 and value[2].isalnum() and value[3:5].isalnum() and value[5:6].isdigit() and value[6:].isdigit()):
             raise ValidationError("Enter a valid roll number.")
 
 class UserProfile(models.Model):
