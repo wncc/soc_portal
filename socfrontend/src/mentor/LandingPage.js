@@ -441,7 +441,7 @@ function LandingPage() {
                   variants={fadeInUp}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate("/mentor/edit-project", { state: { project: projects[0] } })}
+                  onClick={() => navigate("/mentor/edit-project", { state: { projectId: projects[0].id } })}
                 >
                   <div className="add_project_content">
                     <motion.div

@@ -6,7 +6,7 @@ import './Form.css'; // Same styling as the original Form
 const EditProject = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { project } = location.state || {};
+  const { projectId } = location.state || {};
 
   const [formData, setFormData] = useState({
     title: '',
@@ -32,27 +32,40 @@ const EditProject = () => {
   };
 
   useEffect(() => {
-    if (project) {
-      setFormData({
-        title: project.title || '',
-        general_category: project.general_category || '',
-        specific_category: project.specific_category || '',
-        mentee_max: project.mentee_max || '',
-        mentor: project.mentor || '',
-        co_mentor_info: project.co_mentor_info || '',
-        description: project.description || '',
-        weekly_meets: project.weekly_meets || '',
-        timeline: project.timeline || '',
-        checkpoints: project.checkpoints || '',
-        prereuisites: project.prereuisites || '',
-        banner_image_link: project.banner_image_link || '',
-      });
+    const fetchProjectDetails = async () => {
+      try {
+        const response = await axios.get(
+          `https://socb.tech-iitb.org/api/projects/${projectId}/`,
+          axiosConfig
+        );
+        const projectData = response.data;
+  
+        console.log("Fetched full project:", projectData);
+  
+        setFormData({
+          title: projectData.title || '',
+          general_category: projectData.general_category || '',
+          specific_category: projectData.specific_category || '',
+          mentee_max: projectData.mentee_max || '',
+          mentor: projectData.mentor || '',
+          co_mentor_info: projectData.co_mentor_info || '',
+          description: projectData.description || '',
+          weekly_meets: projectData.weekly_meets || '',
+          timeline: projectData.timeline || '',
+          checkpoints: projectData.checkpoints || '',
+          prerequisites: projectData.prerequisites || '',
+          banner_image_link: projectData.banner_image_link || '',
+        });
+      } catch (error) {
+        console.error("Error fetching project details:", error);
+        alert("Failed to load full project details.");
+      }
+    };
+  
+    if (projectId) {
+      fetchProjectDetails();
     }
-  }, [project]);
-
-  useEffect(() => {
-    console.log('Loaded project from location.state:', project);
-  }, []);
+  }, [projectId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,7 +82,7 @@ const EditProject = () => {
 
     try {
       const response = await axios.put(
-        `https://socb.tech-iitb.org/api/projects/mentor/profile/${project.id}/`,
+        `https://socb.tech-iitb.org/api/projects/mentor/profile/${projectId}/`,
         formData,
         axiosConfig
       );
