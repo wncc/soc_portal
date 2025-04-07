@@ -40,8 +40,6 @@ const EditProject = () => {
         );
         const projectData = response.data;
   
-        console.log("Fetched full project:", projectData);
-  
         setFormData({
           title: projectData.title || '',
           general_category: projectData.general_category || '',
@@ -53,7 +51,7 @@ const EditProject = () => {
           weekly_meets: projectData.weekly_meets || '',
           timeline: projectData.timeline || '',
           checkpoints: projectData.checkpoints || '',
-          prerequisites: projectData.prerequisites || '',
+          prereuisites: projectData.prereuisites || '',
           banner_image_link: projectData.banner_image_link || '',
         });
       } catch (error) {
