@@ -395,17 +395,22 @@ export default function Login() {
           </div>
 
           {!isMentor ? (
+            <form
+            onSubmit={handleSubmit}
+            className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
+          >
             <div className="text-center text-xl font-semibold text-gray-600 dark:text-white">
               Coming Soon
             </div>
+          </form>
           ) : (
             <form
               onSubmit={handleSubmit}
               className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
             >
-              <p className="text-center text-lg font-medium">
-                Login to your account
-              </p>
+              <div className="text-center text-xl font-semibold text-gray-600 dark:text-white">
+                Registrations Closed
+              </div>
 
               {/* <div>
                 <label htmlFor="username">Roll No.</label>
@@ -438,8 +443,8 @@ export default function Login() {
                 Login
               </button> */}
 
-              <LoginButton/>
-              {/* 
+              {/*<LoginButton/>
+            
               <p className="text-center text-sm text-gray-500 dark:text-white">
                 No account?{" "}
                 <Link className="underline" to="/register">
