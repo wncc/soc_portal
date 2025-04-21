@@ -409,7 +409,7 @@ function LandingPage() {
                   <p>{project.general_category}</p>
                 </motion.div>
               ))}
-              {projects.length === 0 ? (
+              {/* {projects.length === 0 ? (
                 <motion.div
                   className="add_project_card"
                   variants={fadeInUp}
@@ -461,7 +461,7 @@ function LandingPage() {
                     </motion.p>
                   </div>
                 </motion.div>
-              )}
+              )} */}
             </>
           )}
         </motion.div>
