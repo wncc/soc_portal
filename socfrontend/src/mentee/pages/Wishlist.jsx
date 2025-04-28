@@ -14,7 +14,7 @@ export default function Wishlist() {
   const fetchWishlist = useCallback(() => {
     setIsLoading(true);
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/projects/wishlist/')
+      .get('https://socb.tech-iitb.org/api/projects/wishlist/')
       .then((response) => {
         setDetails(response.data);
         setIsLoading(false);

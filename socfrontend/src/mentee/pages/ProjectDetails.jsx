@@ -32,7 +32,7 @@ export default function ProjectDetails(props) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get(process.env.REACT_APP_BACKEND_URL+`/projects/${ProjectId}/`)
+    api.get(`https://socb.tech-iitb.org/api/projects/${ProjectId}/`)
       .then((response) => {
         // Assuming the response contains the image URL
         console.log(response.data);
