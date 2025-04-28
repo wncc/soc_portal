@@ -1,7 +1,37 @@
-import React from 'react';
+import React,  { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from "axios";
+import PhoneUpdateModal from '../components/PhoneUpdateModal';
 
 function Home() {
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const token = localStorage.getItem('authToken');
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  useEffect(() => {
+    const checkPhoneNumber = async () => {
+      const role = localStorage.getItem('role');
+      if (role === 'mentee') {
+        try {
+          const res = await axios.get('https://socb.tech-iitb.org/api/projects/mentee/profile/',axiosConfig);
+          const phone = res.data.mentee.user_profile.phone_number;
+
+          if (phone === '0000000000') {
+            console.log("hiiii")
+            setShowModal(true); // Show the modal if phone number is '0000000000'
+          }
+        } catch (err) {
+          console.error('Error fetching mentee profile:', err);
+        }
+      }
+    };
+
+    checkPhoneNumber();
+  }, []);
   return (  
     <>
     
@@ -501,6 +531,7 @@ function Home() {
           </div>
         </div>
       </div>
+      {showModal && <PhoneUpdateModal onClose={() => setShowModal(false)} />}
     </>);
 }
 

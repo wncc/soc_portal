@@ -232,6 +232,30 @@ class MentorProfileView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+            
+    def patch(self, request):
+        """ Update only the phone number of the mentee """
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            mentee = Mentor.objects.get(user=user_profile)
+
+            phone_number = request.data.get('phone_number')
+            if phone_number is None:
+                return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            user_profile.phone_number = phone_number
+            user_profile.save()
+
+            serializer = MentorSerializer(mentee, context={'request': request})
+            print(serializer.data)
+            return Response({"mentee": serializer.data, "message": "Phone number updated successfully."}, status=status.HTTP_200_OK)
+
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Mentor.DoesNotExist:
+            return Response({'error': 'Mentor profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 from rest_framework import status   
 class SaveRankListView(APIView):
@@ -337,3 +361,55 @@ def download_project_banner(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+   
+    
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from accounts.new import CookieJWTAuthentication2
+from rest_framework.permissions import IsAuthenticated
+from accounts.models import UserProfile
+from .models import Mentee
+from .serializers import MenteeSerializer  # You need to create this if not already created
+
+class MenteeProfileView(APIView):
+    authentication_classes = [CookieJWTAuthentication2]  # Your custom authentication
+    permission_classes = [IsAuthenticated]  # Ensure the user is authenticated
+
+    def get(self, request):
+        """ Get the mentee profile of the logged-in user """
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            mentee = Mentee.objects.get(user=user_profile)
+            serializer = MenteeSerializer(mentee, context={'request': request})
+            return Response({"mentee": serializer.data}, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Mentee.DoesNotExist:
+            return Response({'error': 'Mentee profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def patch(self, request):
+        """ Update only the phone number of the mentee """
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            mentee = Mentee.objects.get(user=user_profile)
+
+            phone_number = request.data.get('phone_number')
+            if phone_number is None:
+                return Response({'error': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            user_profile.phone_number = phone_number
+            user_profile.save()
+
+            serializer = MenteeSerializer(mentee, context={'request': request})
+            print(serializer.data)
+            return Response({"mentee": serializer.data, "message": "Phone number updated successfully."}, status=status.HTTP_200_OK)
+
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Mentee.DoesNotExist:
+            return Response({'error': 'Mentee profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

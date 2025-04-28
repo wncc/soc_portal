@@ -668,7 +668,7 @@ export default function PreferenceForm() {
             )}
           </form>
 
-          {error && <p className="text-red-500">Please fill all fields.</p>}
+          {error && <p className="text-red-500">Please fill SOPs.</p>}
           {error1 && <p className="text-red-500">Select 3 unique projects.</p>}
         </div>
       </div>
@@ -688,38 +688,41 @@ const Page = ({
   setError,
   setError1,
 }) => {
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false); // <-- new
   useEffect(() => {
     setSelectedProjects([...selectedProjects]); // Ensures state persistence
   }, [page]);
 
-  const handleSubmit = (e) => {
+  const handleSubmitClick = (e) => {
     e.preventDefault();
     setError(false);
     setError1(false);
-  
-    // Filter out empty preferences (user can submit 1, 2, or 3)
+
     const filteredData = data.filter(({ project, sop }) => project.trim() !== '');
-  
-    // Ensure at least one preference is selected
+
     if (filteredData.length === 0) {
       setError(true);
       return;
     }
-  
-    // Ensure selected projects are unique
+
     const selectedProjectIDs = filteredData.map((entry) => entry.project);
     if (new Set(selectedProjectIDs).size !== selectedProjectIDs.length) {
       setError1(true);
       return;
     }
-  
-    // Send only non-empty preferences to backend
+
+    setShowConfirmPopup(true); // <-- show confirmation popup
+  };
+
+  const actuallySubmit = () => {
+    const filteredData = data.filter(({ project, sop }) => project.trim() !== '');
+
     const submitData = filteredData.map((entry) => {
       const formData = new FormData();
       Object.keys(entry).forEach((key) => formData.append(key, entry[key]));
       return api.post(`${process.env.REACT_APP_BACKEND_URL}/projects/preference/`, formData);
     });
-  
+
     Promise.all(submitData)
       .then(() => setSubmitted(true))
       .catch(() => setError(true));
@@ -748,6 +751,16 @@ const Page = ({
   const availableProjects = details.filter(
     (p) => !selectedProjects.includes(p.id.toString()) || p.id.toString() === selectedProjects[page - 1],
   );
+
+  const handleConfirm = () => {
+    setShowConfirmPopup(false);
+    actuallySubmit();
+  };
+
+  const handleCancel = () => {
+    setShowConfirmPopup(false);
+  };
+
 
   return (
     <div>
@@ -795,7 +808,7 @@ const Page = ({
           <button
             type="button" // Changed from submit to button
             className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
-            onClick={handleSubmit} // Only submit when clicked
+            onClick={handleSubmitClick} // Only submit when clicked
           >
             Submit
           </button>
@@ -809,6 +822,49 @@ const Page = ({
           </button>
         )}
       </div>
+      {showConfirmPopup && (
+        <ConfirmationPopup onConfirm={handleConfirm} onCancel={handleCancel} />
+      )}
     </div>
   );
 };
+
+function ConfirmationPopup({ onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm text-center">
+        <div className="text-indigo-600 dark:text-indigo-400 mb-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-12 h-12 mx-auto"
+          >
+            <path
+              fillRule="evenodd"
+              d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 15a1 1 0 110-2 1 1 0 010 2zm.75-4.75a.75.75 0 00-1.5 0V7a.75.75 0 001.5 0v5.25z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+        <p className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          Are you sure you want to submit your preferences?
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+          >
+            Confirm
+          </button>
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-400 text-white rounded-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

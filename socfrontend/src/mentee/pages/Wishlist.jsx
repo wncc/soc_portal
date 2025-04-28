@@ -242,8 +242,8 @@ export default function Wishlist() {
             <div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 py-20">
               {filteredProjects.map((project, index) => {
                 console.log(project.banner_image);
-                if (!project.banner_image.includes(':8000')) {
-                  project.banner_image = `http://127.0.0.1:8000${project.banner_image}`;
+                if (project.banner_image && !project.banner_image.includes('socb.tech-iitb.org')) {
+                  project.banner_image = `https://socb.tech-iitb.org${project.banner_image}`;
                 }
                 return (
                   <div key={index}>

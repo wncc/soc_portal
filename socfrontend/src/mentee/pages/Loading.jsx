@@ -187,7 +187,7 @@ const Loading = () => {
 
   useEffect(() => {
     const accessid = localStorage.getItem('accessid');
-    const role = localStorage.getItem('role') || 'mentor';
+    const role = localStorage.getItem('role');
     const isMentor = role === 'mentor';
 
     if (!accessid) {

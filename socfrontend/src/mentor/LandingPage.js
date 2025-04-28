@@ -227,6 +227,7 @@ import { IconContext } from "react-icons";
 import { motion } from "framer-motion";
 import axios from "axios";
 import MentorPortal from "./MentorPortal"; // Import MentorPortal component
+import PhoneUpdateModal from '../mentee/components/PhoneUpdateModal';
 
 const easing = [0.6, -0.05, 0.01, 0.99];
 
@@ -265,6 +266,29 @@ function LandingPage() {
       Authorization: `Bearer ${token}`,
     },
   };
+
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+
+  useEffect(() => {
+    const checkPhoneNumber = async () => {
+      const role = localStorage.getItem('role');
+      if (role === 'mentor') {
+        try {
+          const res = await axios.get('https://socb.tech-iitb.org/api/projects/mentor/profile/',axiosConfig);
+          const phone = res.data.mentor.user_profile.phone_number;
+
+          if (phone === '0000000000') {
+            console.log("hiiii")
+            setShowModal(true); // Show the modal if phone number is '0000000000'
+          }
+        } catch (err) {
+          console.error('Error fetching mentor profile:', err);
+        }
+      }
+    };
+
+    checkPhoneNumber();
+  }, []);
 
   useEffect(() => {
     const fetchMentorData = async () => {
@@ -362,6 +386,9 @@ function LandingPage() {
 
               <h3>Important Notes:</h3>
               <ul>
+              <li>
+                  If you are planning to have co-mentors, then only one should submit the project idea. (Please follow the excat convention to mention co-mentors.)
+                </li>
                 <li>
                   Project ideas should be meaningful with a decent learning
                   curve.
@@ -466,6 +493,7 @@ function LandingPage() {
           )}
         </motion.div>
       )}
+      {showModal && <PhoneUpdateModal onClose={() => setShowModal(false)} />}
     </motion.div>
   );
 }

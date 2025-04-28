@@ -330,7 +330,7 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!isMentor) return; // Prevent login attempt for mentees
+    // if (!isMentor) return; // Prevent login attempt for mentees
 
     const baseUrl = 'https://socb.tech-iitb.org/api/accounts';
     const formData = new FormData();
@@ -394,7 +394,7 @@ export default function Login() {
             </button>
           </div>
 
-          {!isMentor ? (
+          {/* {!isMentor ? (
             <form
             onSubmit={handleSubmit}
             className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
@@ -403,7 +403,7 @@ export default function Login() {
               Coming Soon
             </div>
           </form>
-          ) : (
+          ) : ( */}
             <form
               onSubmit={handleSubmit}
               className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
@@ -443,16 +443,16 @@ export default function Login() {
                 Login
               </button> */}
 
-              {/*<LoginButton/>
+<LoginButton role={isMentor ? 'mentor' : 'mentee'}/>
             
-              <p className="text-center text-sm text-gray-500 dark:text-white">
+              {/* <p className="text-center text-sm text-gray-500 dark:text-white">
                 No account?{" "}
                 <Link className="underline" to="/register">
                   Register Now
                 </Link>
               </p> */}
             </form>
-          )}
+          {/* )} */}
         </div>
       </div>
     </div>

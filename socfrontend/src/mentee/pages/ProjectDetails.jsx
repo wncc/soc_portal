@@ -38,7 +38,7 @@ export default function ProjectDetails(props) {
         console.log(response.data);
 
         if (response.data.banner_image) {
-          response.data.banner_image = `http://127.0.0.1:8000${response.data.banner_image}`;
+          response.data.banner_image = `https://socb.tech-iitb.org${response.data.banner_image}`;
         }
 
         response.data.description = response.data.description.split('\\r\\n').join('<br>');

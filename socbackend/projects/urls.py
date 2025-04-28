@@ -10,6 +10,7 @@ urlpatterns = [
     path("wishlist/", views.ProjectWishlist.as_view(), name="wishlist"),
     path("preference/", views.ProjectPreference.as_view(), name="prefenrence"),
     path("mentor/profile/", views.MentorProfileView.as_view(), name="mentor-profile"),
+    path("mentee/profile/", views.MenteeProfileView.as_view(), name="mentee-profile"),
     path("mentor/profile/<int:project_id>/", views.MentorProfileView.as_view(), name="mentor-profile-with-project"),
     path("download-banner/", views.download_project_banner, name="download-banner"),
     path('mentor/ranklist/<int:project_id>/', views.SaveRankListView.as_view(), name='save-rank-list'),
