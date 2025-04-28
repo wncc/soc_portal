@@ -37,7 +37,7 @@ export default function ProjectCard(props) {
     if (!Added) {
       // Add to wishlist
       api
-        .post(`https://socb.tech-iitb.org/projects/wishlist/`, details, axiosConfig) // Updated URL
+        .post(`https://socb.tech-iitb.org/api/projects/wishlist/`, details, axiosConfig) // Updated URL
         .then((res) => {
           console.log('Added to wishlist:', res.data);
           setAdded(true);
