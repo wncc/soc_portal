@@ -14,7 +14,7 @@ export default function Projects() {
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/projects/')
+      .get('https://socb.tech-iitb.org/api/projects/')
       .then((response) => {
         setDetails(response.data);
       })
@@ -25,7 +25,7 @@ export default function Projects() {
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/projects/wishlist/')
+      .get('https://socb.tech-iitb.org/api/projects/wishlist/')
       .then((response) => {
         setWishlist(response.data);
         setIsLoading(false);
