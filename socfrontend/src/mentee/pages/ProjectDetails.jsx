@@ -55,7 +55,7 @@ export default function ProjectDetails(props) {
 
   const [Added, setAdded] = useState();
   useEffect(() => {
-    api.get(process.env.REACT_APP_BACKEND_URL+'/projects/wishlist/')
+    api.get('https://socb.tech-iitb.org/api/projects/wishlist/')
       .then((response) => {
         console.log(response.data);
         setWishlist(response.data);
@@ -89,7 +89,7 @@ export default function ProjectDetails(props) {
       console.log(formData);
           
       api
-        .post(process.env.REACT_APP_BACKEND_URL+'/projects/wishlist/', formData)
+        .post('https://socb.tech-iitb.org/api/projects/wishlist/', formData)
         .then((res) => {
           console.log('hi',res);
           setAdded(true);
@@ -98,7 +98,7 @@ export default function ProjectDetails(props) {
     } 
     else {
             
-      api.delete(process.env.REACT_APP_BACKEND_URL+`/projects/wishlist?project_id=${details.id}`)
+      api.delete(`https://socb.tech-iitb.org/api/projects/wishlist?project_id=${details.id}`)
         .then((res) => {
           console.log(res);
           setAdded(false);

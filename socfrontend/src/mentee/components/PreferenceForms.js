@@ -37,7 +37,7 @@ function PreferenceForms(props) {
     } else {
       setSubmitted(true);
       setError(false);
-      api.post(process.env.REACT_APP_BACKEND_URL+'/accounts/preference/', data)
+      api.post('https://socb.tech-iitb.org/api/accounts/preference/', data)
         .then(res => {
           navigate('/'); // Redirect to the home page
                

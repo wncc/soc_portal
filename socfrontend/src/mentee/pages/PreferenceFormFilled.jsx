@@ -11,7 +11,7 @@ function PreferenceFormFilled() {
   const fetchPreferenceList = useCallback(() => {
     setIsLoading(true);
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/projects/preference/')
+      .get('https://socb.tech-iitb.org/api/projects/preference/')
       .then((response) => {
         setDetails(response.data);
         setIsLoading(false);

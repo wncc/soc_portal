@@ -615,14 +615,14 @@ export default function PreferenceForm() {
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/projects/wishlist/')
+      .get('https://socb.tech-iitb.org/api/projects/wishlist/')
       .then((response) => setDetails(response.data))
       .catch((error) => console.error('Error fetching projects:', error));
   }, []);
 
   useEffect(() => {
     api
-      .get(process.env.REACT_APP_BACKEND_URL + '/projects/preference')
+      .get('https://socb.tech-iitb.org/api/projects/preference')
       .then((response) => setUserPreference(response.data))
       .catch((error) => console.error('Error fetching preferences:', error));
   }, []);
@@ -720,7 +720,7 @@ const Page = ({
     const submitData = filteredData.map((entry) => {
       const formData = new FormData();
       Object.keys(entry).forEach((key) => formData.append(key, entry[key]));
-      return api.post(`${process.env.REACT_APP_BACKEND_URL}/projects/preference/`, formData);
+      return api.post(`https://socb.tech-iitb.org/api/projects/preference/`, formData);
     });
 
     Promise.all(submitData)
