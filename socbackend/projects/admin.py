@@ -37,7 +37,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 import csv
 from .models import Project, Mentee, Mentor, MenteePreference, MenteeWishlist, RankList
-from accounts.models import UserProfile
+from accounts.models import UserProfile,CustomUser
 
 # Admin class for Mentee
 class MenteeAdmin(admin.ModelAdmin):
@@ -301,28 +301,38 @@ class ProjectAdmin(admin.ModelAdmin):
     def add_co_mentor_as_mentor(self, request, queryset):
         for project in queryset:
             if project.co_mentor_info:
-                # Process co_mentor_info field to extract name and roll number
                 matches = re.findall(r'([A-Za-z\s]+)\s\((\w+)\)', project.co_mentor_info)
                 for match in matches:
                     name, roll_number = match
-                    try:
-                        # Try to find the user by roll_number in the UserProfile
-                        user_profile = UserProfile.objects.get(user__username=roll_number, role='Mentor')  # Assuming the role is stored in UserProfile
-                        
-                        # Now, get the Mentor object associated with the UserProfile
-                        mentor = Mentor.objects.get(user=user_profile.user)
+                    roll_number = roll_number.strip().lower()  # Normalize roll number
 
-                        # If this mentor is not already linked to the project, add them
-                        if project not in mentor.projects.all():
-                            mentor.projects.add(project)
-                            self.message_user(request, f'Co-mentor {name} with roll number {roll_number} added as a mentor for project {project.title}')
-                    except UserProfile.DoesNotExist:
-                        self.message_user(request, f'Mentor with roll number {roll_number} not found in UserProfile or not assigned a mentor role.')
-                    except Mentor.DoesNotExist:
-                        self.message_user(request, f'Mentor with user {name} and roll number {roll_number} does not exist in Mentor table.')
+                    # Check if the co-mentor exists as a CustomUser with role 'mentor'
+                    user = CustomUser.objects.filter(username=roll_number, role='mentor').first()
 
-        # After applying the action, redirect back to the project list page
-        return HttpResponse("Co-mentor check complete.")
+                    if user:
+                        try:
+                            # Check if the user has a corresponding UserProfile and that profile is a mentor
+                            user_profile = UserProfile.objects.get(user=user, role='mentor')
+
+                            # Check if the user is already a mentor for any project
+                            mentor = Mentor.objects.get(user=user_profile)
+
+                            # If the mentor is not already linked to this project, add them
+                            if project not in mentor.projects.all():
+                                mentor.projects.add(project)
+                                self.message_user(request, f'Co-mentor {name} with roll number {roll_number} added as mentor for project {project.title}')
+                            else:
+                                self.message_user(request, f'Co-mentor {name} with roll number {roll_number} is already a mentor for this project.')
+
+                        except UserProfile.DoesNotExist:
+                            self.message_user(request, f'Mentor profile for roll number {roll_number} does not exist or role is incorrect.')
+                        except Mentor.DoesNotExist:
+                            self.message_user(request, f'Mentor object for {name} ({roll_number}) not found.')
+                    else:
+                        self.message_user(request, f'No mentor user found with roll number {roll_number}.')
+
+        self.message_user(request, "Co-mentor check complete.")
+        return None
 
     actions = [export_projects_csv,add_co_mentor_as_mentor]
 
