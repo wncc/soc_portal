@@ -60,8 +60,7 @@ export default function ProjectDetails(props) {
         console.log(response.data);
         setWishlist(response.data);
         setIsLoading(false);
-        // const isAdded = wishlist.some((item) => item.id === details.id);
-        const isAdded = response.data.some((item) => item.id === ProjectId);
+        const isAdded = wishlist.some((item) => item.id === details.id);
         setAdded(isAdded);
         console.log(isAdded);
             
