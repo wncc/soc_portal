@@ -363,6 +363,7 @@ export default function Login() {
       });
   };
 
+
   return (
     <div className="form h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
       <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
@@ -394,13 +395,13 @@ export default function Login() {
             </button>
           </div>
 
-          {!isMentor ? (
+          {isMentor ? (
             <form
             onSubmit={handleSubmit}
             className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
           >
             <div className="text-center text-xl font-semibold text-gray-600 dark:text-white">
-              Coming Soon
+              Registrations Closed
             </div>
           </form>
           ) : (
@@ -408,9 +409,9 @@ export default function Login() {
               onSubmit={handleSubmit}
               className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
             >
-              <div className="text-center text-xl font-semibold text-gray-600 dark:text-white">
+              {/* <div className="text-center text-xl font-semibold text-gray-600 dark:text-white">
                 Registrations Closed
-              </div>
+              </div> */}
 
               {/* <div>
                 <label htmlFor="username">Roll No.</label>
@@ -443,7 +444,7 @@ export default function Login() {
                 Login
               </button> */}
 
-{/* <LoginButton role={isMentor ? 'mentor' : 'mentee'}/> */}
+<LoginButton role={isMentor ? 'mentor' : 'mentee'}/>
             
               {/* <p className="text-center text-sm text-gray-500 dark:text-white">
                 No account?{" "}
