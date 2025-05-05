@@ -395,7 +395,7 @@ export default function Login() {
             </button>
           </div>
 
-          {isMentor ? (
+          {/* {isMentor ? (
             <form
             onSubmit={handleSubmit}
             className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
@@ -404,7 +404,7 @@ export default function Login() {
               Registrations Closed
             </div>
           </form>
-          ) : (
+          ) : ( */}
             <form
               onSubmit={handleSubmit}
               className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8 dark:bg-slate-700"
@@ -453,7 +453,7 @@ export default function Login() {
                 </Link>
               </p> */}
             </form>
-           )}
+           {/* )} */}
         </div>
       </div>
     </div>
