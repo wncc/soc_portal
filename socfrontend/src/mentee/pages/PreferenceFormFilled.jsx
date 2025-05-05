@@ -93,7 +93,7 @@ function PreferenceFormFilled() {
           </>
         )}
       </section>
-      <div className="text-center py-2">
+      <div className="text-center py-2 dark:bg-gray-800 dark:text-white">
         <Link
           to="/"
           className="mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring"
