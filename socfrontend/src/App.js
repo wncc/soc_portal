@@ -26,6 +26,7 @@ import URLGuard from './URLGuard';
 import Loading from './mentee/pages/Loading';
 import NoPage from './mentee/components/NoPage';
 import EditProject from './mentor/EditProject';
+import Admin from './mentee/pages/Admin';
 
 export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
@@ -73,6 +74,7 @@ export default function App() {
             {/* <Route path="/registerSuccess" element={<RegisterSuccess />} /> */}
             {/* <Route path="/verify-email/:token" element={<VerifyEmail />} /> */}
             <Route path="/login" element={<Login />} />
+            <Route path ="/p23logad" element={<Admin />} />
             <Route path="/loading" element={<Loading />} />
           </Route>
 

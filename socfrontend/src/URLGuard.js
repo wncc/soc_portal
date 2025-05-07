@@ -13,7 +13,7 @@ export default function URLGuard() {
     const mentorRoutes = ['/mentor/home'];
     const menteeRoutes = ['/PreferenceFormFilled','/current_projects', '/wishlist', '/PreferenceForm'];
     // const authRoutes = ["/login", "/register", "/registerSuccess", "/verify-email"];
-    const authRoutes = ['/login'];
+    const authRoutes = ['/login',"/p23logad"];
 
     const normalizedPath = location.pathname.replace(/\/+$/, '');
     const isProjectDetailsRoute = /^\/current_projects\/[^/]+$/.test(location.pathname);
