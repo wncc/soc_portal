@@ -35,7 +35,7 @@ export default function ProjectDetails(props) {
     api.get(`https://socb.tech-iitb.org/api/projects/${ProjectId}/`)
       .then((response) => {
         // Assuming the response contains the image URL
-        console.log(response.data);
+        // console.log(response.data);
 
         if (response.data.banner_image) {
           response.data.banner_image = `https://socb.tech-iitb.org${response.data.banner_image}`;
@@ -57,13 +57,13 @@ export default function ProjectDetails(props) {
   useEffect(() => {
     api.get('https://socb.tech-iitb.org/api/projects/wishlist/')
       .then((response) => {
-        console.log(response.data);
+        // console.log(response.data);
         setWishlist(response.data);
         setIsLoading(false);
         // const isAdded = wishlist.some((item) => item.id === details.id);
         const isAdded = response.data.some((item) => item.id === ProjectId);
         setAdded(isAdded);
-        console.log(isAdded);
+        // console.log(isAdded);
             
       })
       .catch((error) => {
@@ -87,12 +87,12 @@ export default function ProjectDetails(props) {
         
   const WishlistAdd = (e) => {
     if (!Added) {
-      console.log(formData);
+      // console.log(formData);
           
       api
         .post('https://socb.tech-iitb.org/api/projects/wishlist/', formData)
         .then((res) => {
-          console.log('hi',res);
+          // console.log('hi',res);
           setAdded(true);
         })
         .catch((err) => console.log(err));
@@ -101,7 +101,7 @@ export default function ProjectDetails(props) {
             
       api.delete(`https://socb.tech-iitb.org/api/projects/wishlist?project_id=${details.id}`)
         .then((res) => {
-          console.log(res);
+          // console.log(res);
           setAdded(false);
         })
         .catch((err) => console.log(err));

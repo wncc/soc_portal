@@ -37,11 +37,11 @@ export default function App() {
     api
       .get('https://socb.tech-iitb.org/api/accounts/isloggedin/')
       .then((res) => {
-        console.log(res.data.status);
+        // console.log(res.data.status);
         setAuthToken(res.data.status === 'YES');
       })
       .catch((err) => {
-        console.log(err);
+        // console.log(err);
       });
   }, []);
 

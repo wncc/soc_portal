@@ -21,7 +21,7 @@ function Home() {
           const phone = res.data.mentee.user_profile.phone_number;
 
           if (phone === '0000000000') {
-            console.log("hiiii")
+            // console.log("hiiii")
             setShowModal(true); // Show the modal if phone number is '0000000000'
           }
         } catch (err) {

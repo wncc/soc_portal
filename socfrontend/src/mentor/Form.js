@@ -37,7 +37,7 @@ const Form = () => {
           `https://socb.tech-iitb.org/api/projects/mentor/profile`,
           axiosConfig,
         );
-        console.log('Mentor Data:', response.data);
+        // console.log('Mentor Data:', response.data);
 
         const mentorName = response.data.mentor.user_profile.name;
 
@@ -86,7 +86,7 @@ const Form = () => {
     }
   };
 
-  console.log(formData);
+  // console.log(formData);
 
   return (
     <div className="lp-container">

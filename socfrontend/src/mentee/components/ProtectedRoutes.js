@@ -3,7 +3,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 
 const ProtectedRoutes = () => {
   const authToken = localStorage.getItem('authToken');
-  console.log('authToken:', authToken);
+  // console.log('authToken:', authToken);
   if (authToken) {
     return <Outlet/>;
   } else {

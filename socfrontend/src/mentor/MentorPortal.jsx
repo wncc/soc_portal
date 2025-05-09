@@ -83,9 +83,9 @@ function MentorPortal({ project, onBack }) {
         const matchedProject = response.data.mentor.projects.find((x) => x.id === project.id);
         setMentees(response.data.mentees.length);
         if (matchedProject) {
-          console.log(matchedProject);
+          // console.log(matchedProject);
           setMentorProj(matchedProject.title);
-          console.log('you',matchedProject.bannerImage);
+          // console.log('you',matchedProject.bannerImage);
           if (matchedProject.banner_image) {
             setMentorPath(matchedProject.banner_image);
           } else {
@@ -137,9 +137,9 @@ function MentorPortal({ project, onBack }) {
     }
   }, [mentorPath, mentorProj]);
 
-  console.log('what ',bannerImage);
+  // console.log('what ',bannerImage);
   const fullImageUrl = `https://socb.tech-iitb.org/media/${bannerImage}`;
-  console.log(fullImageUrl);
+  // console.log(fullImageUrl);
 
   // Function to scroll to a section
   const scrollToSection = (ref) => {

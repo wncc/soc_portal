@@ -24,13 +24,13 @@ function PreferenceForms(props) {
       // console.log(projectlist)
     });
     setSubmitted(false);
-    console.log('id:', id);
-    console.log('value:', value);
-    console.log(data);
+    // console.log('id:', id);
+    // console.log('value:', value);
+    // console.log(data);
   };
 
   const handleSubmit = (e) => {
-    console.log(data);
+    // console.log(data);
     e.preventDefault();
     if (data.project==='' || data.sop==='') {
       setError(true);
@@ -41,7 +41,7 @@ function PreferenceForms(props) {
         .then(res => {
           navigate('/'); // Redirect to the home page
                
-          console.log(res);
+          // console.log(res);
         })
         .catch(err => console.log(err));
     }

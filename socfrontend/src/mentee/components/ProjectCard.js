@@ -20,7 +20,7 @@ export default function ProjectCard(props) {
   const WishlistAdd = () => {
     if (props.isPreferenceFilled) return;
     const token = localStorage.getItem('authToken');
-    console.log(token);
+    // console.log(token);
 
     if (!token) {
       console.log('No authentication token found. Please log in.');
@@ -39,7 +39,7 @@ export default function ProjectCard(props) {
       api
         .post(`https://socb.tech-iitb.org/api/projects/wishlist/`, details, axiosConfig) // Updated URL
         .then((res) => {
-          console.log('Added to wishlist:', res.data);
+          // console.log('Added to wishlist:', res.data);
           setAdded(true);
         })
         .catch((err) => {
@@ -54,7 +54,7 @@ export default function ProjectCard(props) {
       api
         .delete(`https://socb.tech-iitb.org/api/projects/wishlist?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
         .then((res) => {
-          console.log('Removed from wishlist:', res.data);
+          // console.log('Removed from wishlist:', res.data);
           setAdded(false);
           props.onWishlistChange();
         })

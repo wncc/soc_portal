@@ -7,7 +7,7 @@ function Logout() {
   useEffect(() => {
     api.get('https://socb.tech-iitb.org/api/accounts/logout/')
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         window.location.reload();
         localStorage.removeItem('authToken');
         localStorage.removeItem('role');

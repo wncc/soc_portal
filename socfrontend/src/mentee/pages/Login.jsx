@@ -344,8 +344,8 @@ export default function Login() {
       .then((response) => {
         const token = response.data.access;
         const role = response.data.role;
-        console.log('Login successful, token:', token);
-        console.log('Login successful, role:', role);
+        // console.log('Login successful, token:', token);
+        // console.log('Login successful, role:', role);
 
         localStorage.setItem('role', role);
         localStorage.setItem('authToken', token);

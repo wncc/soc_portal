@@ -278,7 +278,7 @@ function LandingPage() {
           const phone = res.data.mentor.user_profile.phone_number;
 
           if (phone === '0000000000') {
-            console.log("hiiii")
+            // console.log("hiiii")
             setShowModal(true); // Show the modal if phone number is '0000000000'
           }
         } catch (err) {
@@ -297,7 +297,7 @@ function LandingPage() {
           `https://socb.tech-iitb.org/api/projects/mentor/profile`,
           axiosConfig
         );
-        console.log(response.data);
+        // console.log(response.data);
         setMentorName(response.data.mentor.user_profile.name);
         setMentorEmail(
           response.data.mentor.user_profile.roll_number + "@iitb.ac.in"
