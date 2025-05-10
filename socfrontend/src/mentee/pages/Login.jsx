@@ -413,7 +413,7 @@ export default function Login() {
                 Registrations Closed
               </div> */}
 
-              <div>
+              {/* <div>
                 <label htmlFor="username">Roll No.</label>
                 <input
                   type="text"
@@ -442,7 +442,7 @@ export default function Login() {
                 className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
               >
                 Login
-              </button>
+              </button> */}
 
 <LoginButton role={isMentor ? 'mentor' : 'mentee'}/>
             
