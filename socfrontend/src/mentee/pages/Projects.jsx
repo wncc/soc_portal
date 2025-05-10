@@ -79,6 +79,8 @@ export default function Projects() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  console.log(sortedProjects)
+
   return (
     <section className="project-card min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
       <div className="pt-8 flex flex-wrap items-center justify-center gap-4">
