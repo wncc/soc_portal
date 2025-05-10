@@ -413,3 +413,40 @@ class MenteeProfileView(APIView):
             return Response({'error': 'Mentee profile not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+from django.db.models import Count        
+class SortedProjectWishlist(APIView):
+    authentication_classes  = [CookieJWTAuthentication2]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get all the wishlist entries (all mentees' preferences)
+        preferences = MenteeWishlist.objects.all()
+
+        # Count how many times each project has been added to the wishlist
+        project_counts = preferences.values('project').annotate(count=Count('project')).order_by('-count')
+
+        # Get sorted project IDs based on the number of wishlist entries
+        sorted_project_ids = [project['project'] for project in project_counts]
+
+        # Retrieve the sorted projects using the sorted project IDs (all projects will be included)
+        all_projects = Project.objects.all()
+
+        # Add projects that have not been added to the wishlist with a count of 0
+        projects_with_counts = []
+
+        for project in all_projects:
+            # Check if the project is in the sorted_project_ids, otherwise set count to 0
+            count = next((item['count'] for item in project_counts if item['project'] == project.id), 0)
+            projects_with_counts.append((project, count))
+
+        # Sort the projects by the count in descending order
+        sorted_projects_with_counts = sorted(projects_with_counts, key=lambda x: x[1], reverse=True)
+
+        # Get only the sorted projects
+        sorted_projects = [project[0] for project in sorted_projects_with_counts]
+
+        # Serialize the sorted list of projects
+        serializer = BasicProjectSerializer(sorted_projects, many=True)
+        
+        return Response(serializer.data)

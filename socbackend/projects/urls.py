@@ -14,6 +14,6 @@ urlpatterns = [
     path("mentor/profile/<int:project_id>/", views.MentorProfileView.as_view(), name="mentor-profile-with-project"),
     path("download-banner/", views.download_project_banner, name="download-banner"),
     path('mentor/ranklist/<int:project_id>/', views.SaveRankListView.as_view(), name='save-rank-list'),
-
+    path("/sorted",views.SortedProjectWishlist.as_view(),name="sorted list")
     # path("add/", views.ProjectAddView.as_view(), name="project_add"),
 ]
