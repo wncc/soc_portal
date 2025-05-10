@@ -63,13 +63,13 @@ export default function Projects() {
     });
   }, [details, filterValue, searchQuery]);
 
-  const sortedProjects = useMemo(() => {
-    return filteredProjects.sort((a, b) => {
-      const wishlistCountA = wishlist.filter((item) => item.project === a.id).length;
-      const wishlistCountB = wishlist.filter((item) => item.project === b.id).length;
-      return wishlistCountB - wishlistCountA; // Descending order
-    });
-  }, [filteredProjects, wishlist]);
+  // const sortedProjects = useMemo(() => {
+  //   return filteredProjects.sort((a, b) => {
+  //     const wishlistCountA = wishlist.filter((item) => item.project === a.id).length;
+  //     const wishlistCountB = wishlist.filter((item) => item.project === b.id).length;
+  //     return wishlistCountB - wishlistCountA; // Descending order
+  //   });
+  // }, [filteredProjects, wishlist]);
 
   const handleFilterChange = (value) => {
     setFilterValue(value);
@@ -79,7 +79,6 @@ export default function Projects() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  console.log(sortedProjects)
 
   return (
     <section className="project-card min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
@@ -183,7 +182,7 @@ export default function Projects() {
         </div>
       ) : (
         <div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 py-20">
-          {sortedProjects.map((project, index) => (
+          {filteredProjects.map((project, index) => (
             <div key={index}>
               <ProjectCard
                 ProjectId={project.id}
