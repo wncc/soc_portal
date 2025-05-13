@@ -1,8 +1,11 @@
 from django.contrib import admin
 from .models import UserProfile
 
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('roll_number', 'role')
+    search_fields = ("roll_number","name")
 # Register your models here.
-admin.site.register(UserProfile)
+admin.site.register(UserProfile,UserProfileAdmin)
 from .models import CustomUser
 
 class CustomUserAdmin(admin.ModelAdmin):

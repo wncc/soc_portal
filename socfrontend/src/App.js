@@ -85,14 +85,14 @@ export default function App() {
               path="/current_projects/:ProjectId"
               element={<ProjectDetails />}
             />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/PreferenceForm" element={<PreferenceForm />} />
-            <Route
+            {/* <Route path="/wishlist" element={<Wishlist />} /> */}
+            {/* <Route path="/PreferenceForm" element={<PreferenceForm />} /> */}
+            {/* <Route
               path="/PreferenceFormFilled"
               element={<PreferenceFormFilled />}
-            />
-            <Route path="/mentor/add-project" element={<Form/>} />
-            <Route path="/mentor/edit-project" element={<EditProject />} />
+            /> */}
+            {/* <Route path="/mentor/add-project" element={<Form/>} /> */}
+            {/* <Route path="/mentor/edit-project" element={<EditProject />} /> */}
             <Route path="/mentor/home" element={<LandingPage/>} />
           </Route>
           <Route path="*" element={<NoPage />} />
