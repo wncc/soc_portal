@@ -227,7 +227,7 @@ import { IconContext } from "react-icons";
 import { motion } from "framer-motion";
 import axios from "axios";
 import MentorPortal from "./MentorPortal"; // Import MentorPortal component
-import PhoneUpdateModal from '../mentee/components/PhoneUpdateModal';
+import PhoneUpdateModal from "../mentee/components/PhoneUpdateModal";
 
 const easing = [0.6, -0.05, 0.01, 0.99];
 
@@ -271,18 +271,21 @@ function LandingPage() {
 
   useEffect(() => {
     const checkPhoneNumber = async () => {
-      const role = localStorage.getItem('role');
-      if (role === 'mentor') {
+      const role = localStorage.getItem("role");
+      if (role === "mentor") {
         try {
-          const res = await axios.get('https://socb.tech-iitb.org/api/projects/mentor/profile/',axiosConfig);
+          const res = await axios.get(
+            "https://socb.tech-iitb.org/api/projects/mentor/profile/",
+            axiosConfig
+          );
           const phone = res.data.mentor.user_profile.phone_number;
 
-          if (phone === '0000000000') {
+          if (phone === "0000000000") {
             // console.log("hiiii")
             setShowModal(true); // Show the modal if phone number is '0000000000'
           }
         } catch (err) {
-          console.error('Error fetching mentor profile:', err);
+          console.error("Error fetching mentor profile:", err);
         }
       }
     };
@@ -343,7 +346,8 @@ function LandingPage() {
             className="mentor_info_header"
             onClick={() => setShowInfo(!showInfo)}
           >
-            <h2>📘 Important Read Me</h2>
+            <h2>📘 Read Me !!</h2>
+            <h3> All Mentors are requested to read the procedure before selecting mentees.</h3>
             <span className={`arrow ${showInfo ? "up" : "down"}`}>
               {showInfo ? "▲" : "▼"}
             </span>
@@ -368,40 +372,29 @@ function LandingPage() {
                 <li>Timely resolution of doubts and queries.</li>
               </ol>
 
-              <h3>Selection Procedure:</h3>
-              <ol>
-                <li>
-                  Project proposals will be thoroughly reviewed. Mentors might
-                  be contacted for clarification.
-                </li>
-                <li>
-                  Mentees will submit a written proposal along with their
-                  project preferences.
-                </li>
-                <li>
-                  Mentors will decide the selection procedure and finalize the
-                  number of mentees.
-                </li>
-              </ol>
-
-              <h3>Important Notes:</h3>
+              <h3>How to Select Mentees:</h3>
               <ul>
-              <li>
-                  If you are planning to have co-mentors, then only one should submit the project idea. (Please follow the excat convention to mention co-mentors.)
+                <li>
+                  <strong>Read All SOPs Carefully:</strong>
+                  <br />
+                  Go through the Statements of Purpose (SOPs) submitted by all
+                  applicants to your project. Try to understand their
+                  motivation, background, and expectations from the project.
                 </li>
                 <li>
-                  Project ideas should be meaningful with a decent learning
-                  curve.
+                  <strong>Ignore the Mentee Limit for Now:</strong>
+                  <br />
+                  Don’t worry about the number of mentees you said you'd take
+                  up—just focus on evaluating everyone fairly. You'll submit
+                  your ranked list, and we’ll handle the cutoff based on
+                  preferences and availability.
                 </li>
                 <li>
-                  You can mentor multiple projects, but commit equally to each.
-                </li>
-                <li>
-                  Staying in the institute is not mandatory during the project.
-                </li>
-                <li>
-                  Think about deployment and presentation. WnCC can help if
-                  needed.
+                  <strong>Prepare a Ranked List:</strong>
+                  <br />
+                  Rank the mentees in order of preference based on the quality
+                  of their SOP, relevant skills, past experience (if any), and
+                  enthusiasm.
                 </li>
               </ul>
             </div>
