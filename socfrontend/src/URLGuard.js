@@ -11,8 +11,8 @@ export default function URLGuard() {
 
     // const mentorRoutes = ['/mentor/home', '/mentor/add-project','/mentor/edit-project'];
     const mentorRoutes = ['/mentor/home'];
-    const menteeRoutes = ['/PreferenceFormFilled','/current_projects', '/wishlist', '/PreferenceForm'];
-    //const menteeRoutes = [];
+    // const menteeRoutes = ['/PreferenceFormFilled','/current_projects', '/wishlist', '/PreferenceForm'];
+    const menteeRoutes = [];
     // const authRoutes = ["/login", "/register", "/registerSuccess", "/verify-email"];
     const authRoutes = ['/login',"/p23logad"];
 
