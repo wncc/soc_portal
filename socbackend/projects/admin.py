@@ -411,8 +411,12 @@ class ProjectAdmin(admin.ModelAdmin):
 
         self.message_user(request, "Co-mentor check complete.")
         return None
+    
+    @admin.action(description="Clear all banner images for selected projects")
+    def clear_banner_images(self, request, queryset):
+        queryset.update(banner_image=None)
 
-    actions = [export_projects_csv,add_co_mentor_as_mentor]
+    actions = [export_projects_csv,add_co_mentor_as_mentor,clear_banner_images]
 
 # Register the ProjectAdmin with the Django admin panel
 admin.site.register(Project, ProjectAdmin)
