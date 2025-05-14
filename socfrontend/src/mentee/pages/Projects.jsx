@@ -74,8 +74,8 @@ export default function Projects() {
 
     // Bring project with ID 104 to the top
     return [
-      ...filtered.filter((project) => project.id === 104),
-      ...filtered.filter((project) => project.id !== 104),
+      ...filtered.filter((project) => project.id === 99),
+      ...filtered.filter((project) => project.id !== 99),
     ];
   }, [details, filterValue, searchQuery]);
 
