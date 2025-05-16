@@ -80,26 +80,26 @@ from .models import RankList, Mentee
 class RankListAdmin(admin.ModelAdmin):
     list_per_page = 1000
 
-    @admin.action(description="Export mentees and project summary to ZIP")
+    @admin.action(description="combine karo")
     def export_selected_mentees_to_csv(self, request, queryset):
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-
             selected_buffer = io.StringIO()
             selected_writer = csv.writer(selected_buffer)
 
+            log_buffer = io.StringIO()  # NEW: Buffer for debug logs
+
             selected_writer.writerow(['Project Title', 'Project Id', 'Mentor Roll Number', 'Mentor Name',
-                                      'Mentee Roll Number', 'Mentee Name', 'Avg Rank', 'Mentee Preference'])
+                                    'Mentee Roll Number', 'Mentee Name', 'Avg Rank', 'Mentee Preference'])
 
             projects = {rank.project for rank in queryset}
             rank_entries = RankList.objects.filter(project__in=projects).select_related(
                 'project', 'mentee__user', 'mentor__user'
             )
-            print(f"Total RankList entries fetched: {rank_entries.count()}")
+            log_buffer.write(f"Total RankList entries fetched: {rank_entries.count()}\n")
 
-            # Count unique mentees
             unique_mentees = rank_entries.values_list('mentee', flat=True).distinct().count()
-            print(f"Total unique mentees in selected projects: {unique_mentees}")
+            log_buffer.write(f"Total unique mentees in selected projects: {unique_mentees}\n")
 
             project_data = {
                 project.id: {
@@ -111,21 +111,18 @@ class RankListAdmin(admin.ModelAdmin):
                 for project in projects
             }
 
-            # Aggregate ranks per mentee per project
             for entry in rank_entries:
                 pid = entry.project.id
                 mid = entry.mentee.id
                 project_data[pid]['ranked'][mid]['ranks'].append(entry.rank)
                 project_data[pid]['ranked'][mid]['preferences'].append(entry.preference)
 
-            # Debug: mentees count per project before sorting
             for pid, pdata in project_data.items():
-                print(f"Project ID {pid} - '{pdata['project'].title}': {len(pdata['ranked'])} mentees ranked")
+                log_buffer.write(f"Project ID {pid} - '{pdata['project'].title}': {len(pdata['ranked'])} mentees ranked\n")
 
             assigned_mentees = set()
             all_mentees = set()
 
-            # Sort mentees per project by merged criteria
             for pid, pdata in project_data.items():
                 ranked_list = []
                 for mentee_id, info in pdata['ranked'].items():
@@ -134,15 +131,13 @@ class RankListAdmin(admin.ModelAdmin):
                     best_pref = min(info['preferences'])
                     ranked_list.append((freq, avg_rank, best_pref, mentee_id))
 
-                ranked_list.sort(key=lambda x: (-x[0], x[1], x[2]))  # freq desc, avg_rank asc, pref asc
+                ranked_list.sort(key=lambda x: (-x[0], x[1], x[2]))
                 pdata['sorted_mentees'] = ranked_list
                 all_mentees.update(pdata['ranked'].keys())
 
-                # Debug: top 5 mentees for this project after sorting
                 top_5 = ranked_list[:5]
-                print(f"Top 5 mentees for Project '{pdata['project'].title}': {top_5}")
+                log_buffer.write(f"Top 5 mentees for Project '{pdata['project'].title}': {top_5}\n")
 
-            # Assign mentees by preference order
             for pref in [1, 2, 3]:
                 for pdata in project_data.values():
                     for freq, avg_rank, best_pref, mentee_id in pdata['sorted_mentees']:
@@ -157,25 +152,40 @@ class RankListAdmin(admin.ModelAdmin):
                             })
                             assigned_mentees.add(mentee_id)
 
-            print(f"Total assigned mentees: {len(assigned_mentees)}")
+            log_buffer.write(f"Total assigned mentees: {len(assigned_mentees)}\n")
             unassigned_mentees = all_mentees - assigned_mentees
-            print(f"Total unassigned mentees: {len(unassigned_mentees)}")
+            log_buffer.write(f"Total unassigned mentees: {len(unassigned_mentees)}\n")
 
-            # Write selected mentees to CSV
             for pdata in project_data.values():
+                project = pdata['project']
+                mentor_name_str = project.mentor
+                project_title_str = project.title
+
+                try:
+                    mentor_obj = Mentor.objects.filter(
+                        user__name=mentor_name_str,
+                    ).filter(
+                        projects__title=project_title_str
+                    ).select_related('user').distinct().get()
+
+                    mentor_roll_number = mentor_obj.user.roll_number
+                except Mentor.DoesNotExist:
+                    mentor_roll_number = 'N/A'
+                except Mentor.MultipleObjectsReturned:
+                    mentor_roll_number = 'Ambiguous'
+
                 for entry in pdata['selected']:
                     selected_writer.writerow([
-                        entry['project'].title,
-                        entry['project'].id,
-                        entry['project'].mentor.user.roll_number,
-                        entry['project'].mentor.user.name,
+                        project.title,
+                        project.id,
+                        mentor_roll_number,
+                        mentor_name_str,
                         entry['mentee'].user.roll_number,
                         entry['mentee'].user.name,
                         round(entry['avg_rank'], 2),
                         entry['preference']
                     ])
 
-            # Write unassigned mentees
             selected_writer.writerow([])
             selected_writer.writerow(['--- Unassigned Mentees ---'])
             selected_writer.writerow(['Mentee Roll Number', 'Mentee Name'])
@@ -189,7 +199,7 @@ class RankListAdmin(admin.ModelAdmin):
 
             zip_file.writestr("selected_mentees.csv", selected_buffer.getvalue())
 
-            # Project summary CSV
+            # Summary CSV
             summary_buffer = io.StringIO()
             summary_writer = csv.writer(summary_buffer)
             summary_writer.writerow(['Project ID', 'Project Title', 'Max Mentees', 'Selected Count', 'Remaining Slots'])
@@ -205,19 +215,79 @@ class RankListAdmin(admin.ModelAdmin):
 
             zip_file.writestr("project_summary.csv", summary_buffer.getvalue())
 
+            # NEW: Logs CSV
+            log_csv_buffer = io.StringIO()
+            log_csv_writer = csv.writer(log_csv_buffer)
+            log_csv_writer.writerow(['Debug Logs'])
+            for line in log_buffer.getvalue().splitlines():
+                log_csv_writer.writerow([line])
+            zip_file.writestr("debug_logs.csv", log_csv_buffer.getvalue())
+            
+                    # Create mentee-level summary buffer
+            mentee_summary_buffer = io.StringIO()
+            mentee_summary_writer = csv.writer(mentee_summary_buffer)
+
+            # Header row (dynamic up to max 3 preferences maybe)
+            header = ['Mentee Roll No', 'Mentee Name']
+            max_projects_per_mentee = 3  # or make dynamic
+            for i in range(1, max_projects_per_mentee + 1):
+                header.extend([
+                    f'Project {i} Title', f'Freq {i}', f'Avg Rank {i}', f'Best Pref {i}'
+                ])
+            header.append('Final Assignment')
+            mentee_summary_writer.writerow(header)
+
+            # Build a mapping: mentee_id -> list of rank entries (grouped by project)
+            mentee_project_info = defaultdict(lambda: defaultdict(list))
+            for entry in rank_entries:
+                mentee_project_info[entry.mentee.id][entry.project.id].append(entry)
+
+            # Mentee ID -> Final assigned project title
+            assigned_projects_by_mentee = {
+                entry['mentee'].id: pdata['project'].title
+                for pdata in project_data.values()
+                for entry in pdata['selected']
+            }
+
+            # Write CSV: one row per mentee
+            for mentee_id, project_dict in mentee_project_info.items():
+                mentee = Mentee.objects.get(id=mentee_id)
+                row = [mentee.user.roll_number, mentee.user.name]
+
+                # Sort project applications by frequency, then avg rank, then pref
+                sorted_projects = []
+                for pid, entries in project_dict.items():
+                    freq = len(entries)
+                    avg_rank = round(mean([e.rank for e in entries]), 2)
+                    best_pref = min(e.preference for e in entries)
+                    sorted_projects.append((freq, avg_rank, best_pref, Project.objects.get(id=pid).title))
+                sorted_projects.sort(key=lambda x: (-x[0], x[1], x[2]))
+
+                for i in range(max_projects_per_mentee):
+                    if i < len(sorted_projects):
+                        freq, avg_rank, best_pref, project_title = sorted_projects[i]
+                        row.extend([project_title, freq, avg_rank, best_pref])
+                    else:
+                        row.extend(['', '', '', ''])
+
+                # Final assignment
+                final_assignment = assigned_projects_by_mentee.get(mentee_id, 'Not Assigned')
+                row.append(final_assignment)
+
+                mentee_summary_writer.writerow(row)
+
+            # Save this in the ZIP
+            zip_file.writestr("mentee_project_summary.csv", mentee_summary_buffer.getvalue())
+
+
+
         zip_buffer.seek(0)
         response = HttpResponse(zip_buffer, content_type='application/zip')
         response['Content-Disposition'] = 'attachment; filename="mentees_and_summary.zip"'
         return response
 
-    actions = [export_selected_mentees_to_csv]
 
-
-# # Admin class for RankList
-# class RankListAdmin(admin.ModelAdmin):
-#     list_per_page = 1000  
-
-#     # Export selected mentees to CSV action
+     # Export selected mentees to CSV action
     @admin.action(description="Export mentees and project summary to ZIP")
     def export_selected_mentees_to_csv_zip(self, request, queryset):
         # Step 0: Setup ZIP buffer
