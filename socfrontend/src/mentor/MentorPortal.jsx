@@ -181,7 +181,7 @@ function MentorPortal({ project, onBack }) {
             CODERS TOGETHER STRONG
           </motion.p>
 
-          <motion.div className="btn_group" variants={stagger}>
+          {/* <motion.div className="btn_group" variants={stagger}>
             <motion.div
               className="btn btn_primary"
               variants={btnGroup}
@@ -194,7 +194,7 @@ function MentorPortal({ project, onBack }) {
                 <IoChevronForwardCircle />
               </IconContext.Provider>
             </motion.div>
-          </motion.div>
+          </motion.div> */}
 
           <motion.div className="review_container" variants={stagger}>
             <motion.p className="total_review" variants={fadeInUp}>
@@ -238,10 +238,12 @@ function MentorPortal({ project, onBack }) {
         </motion.div>
       </motion.div>
 
+      <br></br>
+
       {/* Mentee List Section */}
-      <div ref={menteeListRef}>
+      {/* <div ref={menteeListRef}>
         <MenteeList key={project.id} project={project.id}/>
-      </div>
+      </div> */}
       
     </motion.div>
     
