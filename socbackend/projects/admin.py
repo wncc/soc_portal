@@ -223,7 +223,7 @@ class RankListAdmin(admin.ModelAdmin):
                 log_csv_writer.writerow([line])
             zip_file.writestr("debug_logs.csv", log_csv_buffer.getvalue())
             
-                    # Create mentee-level summary buffer
+            # Create mentee-level summary buffer
             mentee_summary_buffer = io.StringIO()
             mentee_summary_writer = csv.writer(mentee_summary_buffer)
 
@@ -232,7 +232,7 @@ class RankListAdmin(admin.ModelAdmin):
             max_projects_per_mentee = 3  # or make dynamic
             for i in range(1, max_projects_per_mentee + 1):
                 header.extend([
-                    f'Project {i} Title', f'Freq {i}', f'Avg Rank {i}', f'Best Pref {i}'
+                    f'Project {i} Title',f'ID {i}', f'Freq {i}', f'Avg Rank {i}', f'Best Pref {i}'
                 ])
             header.append('Final Assignment')
             mentee_summary_writer.writerow(header)
@@ -260,15 +260,16 @@ class RankListAdmin(admin.ModelAdmin):
                     freq = len(entries)
                     avg_rank = round(mean([e.rank for e in entries]), 2)
                     best_pref = min(e.preference for e in entries)
-                    sorted_projects.append((freq, avg_rank, best_pref, Project.objects.get(id=pid).title))
+                    project = Project.objects.get(id=pid)
+                    sorted_projects.append((freq, avg_rank, best_pref, project.title, project.id))  
                 sorted_projects.sort(key=lambda x: (-x[0], x[1], x[2]))
 
                 for i in range(max_projects_per_mentee):
                     if i < len(sorted_projects):
-                        freq, avg_rank, best_pref, project_title = sorted_projects[i]
-                        row.extend([project_title, freq, avg_rank, best_pref])
+                        freq, avg_rank, best_pref, project_title, project_id = sorted_projects[i]
+                        row.extend([f"{project_title}",f"ID: {project_id}", freq, avg_rank, best_pref])
                     else:
-                        row.extend(['', '', '', ''])
+                        row.extend(['','','', '', ''])
 
                 # Final assignment
                 final_assignment = assigned_projects_by_mentee.get(mentee_id, 'Not Assigned')
@@ -287,106 +288,106 @@ class RankListAdmin(admin.ModelAdmin):
         return response
 
 
-     # Export selected mentees to CSV action
-    @admin.action(description="Export mentees and project summary to ZIP")
-    def export_selected_mentees_to_csv_zip(self, request, queryset):
-        # Step 0: Setup ZIP buffer
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+    #  # Export selected mentees to CSV action
+    # @admin.action(description="Export mentees and project summary to ZIP")
+    # def export_selected_mentees_to_csv_zip(self, request, queryset):
+    #     # Step 0: Setup ZIP buffer
+    #     zip_buffer = io.BytesIO()
+    #     with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
 
-            # ---- CSV 1: Selected Mentees ----
-            selected_buffer = io.StringIO()
-            selected_writer = csv.writer(selected_buffer)
+    #         # ---- CSV 1: Selected Mentees ----
+    #         selected_buffer = io.StringIO()
+    #         selected_writer = csv.writer(selected_buffer)
 
-            selected_writer.writerow(['Project Title', 'Project Id', 'Mentor Roll Number', 'Mentor Name',
-                                    'Mentee Roll Number', 'Mentee Name', 'Rank Given', 'Mentee Preference'])
+    #         selected_writer.writerow(['Project Title', 'Project Id', 'Mentor Roll Number', 'Mentor Name',
+    #                                 'Mentee Roll Number', 'Mentee Name', 'Rank Given', 'Mentee Preference'])
 
-            project_slots = {
-                project.id: {
-                    'project': project,
-                    'max': int(project.mentee_max),
-                    'selected': []
-                }
-                for project in {rank.project for rank in queryset}
-            }
+    #         project_slots = {
+    #             project.id: {
+    #                 'project': project,
+    #                 'max': int(project.mentee_max),
+    #                 'selected': []
+    #             }
+    #             for project in {rank.project for rank in queryset}
+    #         }
 
-            assigned_mentees = set()
+    #         assigned_mentees = set()
 
-            unique_mentees1 = RankList.objects.values_list('mentee', flat=True).count()
-            print("Total mentee applications:", unique_mentees1)
+    #         unique_mentees1 = RankList.objects.values_list('mentee', flat=True).count()
+    #         print("Total mentee applications:", unique_mentees1)
             
-            unique_mentees = RankList.objects.values_list('mentee', flat=True).distinct().count()
-            print("Total unique mentees:", unique_mentees)
+    #         unique_mentees = RankList.objects.values_list('mentee', flat=True).distinct().count()
+    #         print("Total unique mentees:", unique_mentees)
 
             
-            all_rank_entries = RankList.objects.filter(project__in=[p['project'] for p in project_slots.values()]).order_by('rank', 'preference')
+    #         all_rank_entries = RankList.objects.filter(project__in=[p['project'] for p in project_slots.values()]).order_by('rank', 'preference')
 
-            for rank in all_rank_entries:
-                mentee_id = rank.mentee.id
-                project_id = rank.project.id
+    #         for rank in all_rank_entries:
+    #             mentee_id = rank.mentee.id
+    #             project_id = rank.project.id
 
-                if mentee_id not in assigned_mentees:
-                    if len(project_slots[project_id]['selected']) < project_slots[project_id]['max']:
-                        project_slots[project_id]['selected'].append(rank)
-                        assigned_mentees.add(mentee_id)
+    #             if mentee_id not in assigned_mentees:
+    #                 if len(project_slots[project_id]['selected']) < project_slots[project_id]['max']:
+    #                     project_slots[project_id]['selected'].append(rank)
+    #                     assigned_mentees.add(mentee_id)
 
-            for slot in project_slots.values():
-                for selected in slot['selected']:
-                    selected_writer.writerow([
-                        selected.project.title,
-                        selected.project.id,
-                        selected.mentor.user.roll_number,
-                        selected.mentor.user.name,
-                        selected.mentee.user.roll_number,
-                        selected.mentee.user.name,
-                        selected.rank,
-                        selected.preference
-                    ])
+    #         for slot in project_slots.values():
+    #             for selected in slot['selected']:
+    #                 selected_writer.writerow([
+    #                     selected.project.title,
+    #                     selected.project.id,
+    #                     selected.mentor.user.roll_number,
+    #                     selected.mentor.user.name,
+    #                     selected.mentee.user.roll_number,
+    #                     selected.mentee.user.name,
+    #                     selected.rank,
+    #                     selected.preference
+    #                 ])
 
-            # Add unassigned mentees
-            all_mentees = set(RankList.objects.filter(project__in=[p['project'] for p in project_slots.values()]).values_list('mentee', flat=True))
-            unassigned_mentees = all_mentees - assigned_mentees
+    #         # Add unassigned mentees
+    #         all_mentees = set(RankList.objects.filter(project__in=[p['project'] for p in project_slots.values()]).values_list('mentee', flat=True))
+    #         unassigned_mentees = all_mentees - assigned_mentees
 
-            selected_writer.writerow([])
-            selected_writer.writerow(['--- Unassigned Mentees ---'])
-            selected_writer.writerow(['Mentee Roll Number', 'Mentee Name'])
+    #         selected_writer.writerow([])
+    #         selected_writer.writerow(['--- Unassigned Mentees ---'])
+    #         selected_writer.writerow(['Mentee Roll Number', 'Mentee Name'])
 
-            for mentee_id in unassigned_mentees:
-                mentee = Mentee.objects.get(id=mentee_id)
-                selected_writer.writerow([
-                    mentee.user.roll_number,
-                    mentee.user.name
-                ])
+    #         for mentee_id in unassigned_mentees:
+    #             mentee = Mentee.objects.get(id=mentee_id)
+    #             selected_writer.writerow([
+    #                 mentee.user.roll_number,
+    #                 mentee.user.name
+    #             ])
 
-            zip_file.writestr("selected_mentees.csv", selected_buffer.getvalue())
-
-
-            # ---- CSV 2: Project Summary ----
-            summary_buffer = io.StringIO()
-            summary_writer = csv.writer(summary_buffer)
-
-            summary_writer.writerow(['Project ID', 'Project Title', 'Max Mentees', 'Selected Count', 'Remaining Slots'])
-
-            for pid, data in project_slots.items():
-                summary_writer.writerow([
-                    pid,
-                    data['project'].title,
-                    data['max'],
-                    len(data['selected']),
-                    data['max'] - len(data['selected'])
-                ])
-
-            zip_file.writestr("project_summary.csv", summary_buffer.getvalue())
-
-        # Final ZIP response
-        zip_buffer.seek(0)
-        response = HttpResponse(zip_buffer, content_type='application/zip')
-        response['Content-Disposition'] = 'attachment; filename="mentees_and_summary.zip"'
-        return response
+    #         zip_file.writestr("selected_mentees.csv", selected_buffer.getvalue())
 
 
+    #         # ---- CSV 2: Project Summary ----
+    #         summary_buffer = io.StringIO()
+    #         summary_writer = csv.writer(summary_buffer)
 
-    actions = [export_selected_mentees_to_csv_zip,export_selected_mentees_to_csv]
+    #         summary_writer.writerow(['Project ID', 'Project Title', 'Max Mentees', 'Selected Count', 'Remaining Slots'])
+
+    #         for pid, data in project_slots.items():
+    #             summary_writer.writerow([
+    #                 pid,
+    #                 data['project'].title,
+    #                 data['max'],
+    #                 len(data['selected']),
+    #                 data['max'] - len(data['selected'])
+    #             ])
+
+    #         zip_file.writestr("project_summary.csv", summary_buffer.getvalue())
+
+    #     # Final ZIP response
+    #     zip_buffer.seek(0)
+    #     response = HttpResponse(zip_buffer, content_type='application/zip')
+    #     response['Content-Disposition'] = 'attachment; filename="mentees_and_summary.zip"'
+    #     return response
+
+
+
+    actions = [export_selected_mentees_to_csv]
 
 # class MentorAdmin(admin.ModelAdmin):
 #     list_display = ('get_name', 'get_roll_number', 'list_projects')  # Access fields via related user model
@@ -449,8 +450,86 @@ class MentorAdmin(admin.ModelAdmin):
         queryset = queryset.annotate(project_count=models.Count('projects')).order_by('-project_count')  # <-- order by annotated field
         return queryset
 
+
 class MenteePreferencesAdmin(admin.ModelAdmin):
-    search_fields = ('mentee__user__roll_number',)  # Search by roll number of the mentee
+    search_fields = ('mentee__user__roll_number',)
+    list_display = ('mentee', 'project', 'preference')
+    actions = ['export_preferences_csv', 'count_unique_mentees']
+
+    @admin.action(description='Export selected preferences to CSV')
+    def export_preferences_csv(self, request, queryset):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="mentee_preferences_summary.csv"'
+
+        writer = csv.writer(response)
+        # Header row for mentee preferences
+        header = ['Mentee Roll No', 'Mentee Name']
+        for i in range(1, 4):  # Up to 3 preferences
+            header.extend([f'Project {i} Title', f'ID {i}', f'Pref {i}'])
+        writer.writerow(header)
+
+        # Build mapping: mentee_id -> list of (project title, id, preference)
+        mentee_pref_map = defaultdict(list)
+
+        for pref in queryset.select_related('mentee__user', 'project'):
+            mentee = pref.mentee
+            mentee_pref_map[mentee.id].append((
+                mentee.user.roll_number,
+                mentee.user.name,
+                pref.project.title,
+                pref.project.id,
+                pref.preference
+            ))
+
+        # Write rows for each unique mentee with up to 3 preferences
+        for mentee_id, prefs in mentee_pref_map.items():
+            # Sort by preference number (ascending)
+            prefs_sorted = sorted(prefs, key=lambda x: x[4])[:3]
+
+            roll = prefs_sorted[0][0]
+            name = prefs_sorted[0][1]
+            row = [roll, name]
+
+            for pref in prefs_sorted:
+                _, _, title, pid, pref_no = pref
+                row.extend([title, pid, pref_no])
+
+            # Pad if fewer than 3 preferences
+            while len(row) < 2 + 3 * 3:
+                row.extend(['', '', ''])
+
+            writer.writerow(row)
+
+        # Add an empty row before the summary section
+        writer.writerow([])
+        writer.writerow(['Project Summary: Number of Mentees Applied per Project'])
+        writer.writerow(['Project ID', 'Project Title', 'Number of Unique Mentees','Max-Mentees'])
+
+        # Count unique mentees per project in the queryset
+        project_counts = defaultdict(set)  # project_id -> set of mentee_ids
+
+        for pref in queryset:
+            project_counts[pref.project_id].add(pref.mentee_id)
+
+        # Fetch project titles for all unique project IDs in the queryset
+        project_ids = project_counts.keys()
+        projects = Project.objects.filter(id__in=project_ids).in_bulk()
+
+        for pid, mentee_ids in project_counts.items():
+            project = projects.get(pid)
+            if project:
+                writer.writerow([pid, project.title, len(mentee_ids),project.mentee_max])
+
+        return response
+
+
+    @admin.action(description='Count unique mentees in selected preferences')
+    def count_unique_mentees(self, request, queryset):
+        unique_mentees = queryset.values_list('mentee_id', flat=True).distinct()
+        count = unique_mentees.count()
+
+        self.message_user(request, f"There are {count} unique mentees in the selected preferences.")
+
 
 class MenteeWishlistAdmin(admin.ModelAdmin):
     search_fields = ('mentee__user__roll_number',)  # Search by roll number of the mentee
@@ -554,7 +633,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
         writer = csv.writer(response)
         writer.writerow([ 
-            'Title', 'General Category', 'Specific Category', 'Mentee Max',
+            'ID','Title', 'General Category', 'Specific Category', 'Mentee Max',
             'Mentor Names', 'Mentor Roll Numbers', 'Co-Mentor Names', 'Co-Mentor Roll Numbers', 
             'Co-Mentor Info', 'Weekly Meets', 'Description', 'Timeline', 'Checkpoints', 'Prerequisites', 
             'Banner Image Link', 'Code'
@@ -567,7 +646,8 @@ class ProjectAdmin(admin.ModelAdmin):
             co_mentor_names = self.get_co_mentor_names(project)
             co_mentor_roll_numbers = self.get_co_mentor_roll_numbers(project)
 
-            writer.writerow([ 
+            writer.writerow([
+                project.id, 
                 project.title,
                 project.general_category,
                 project.specific_category,
