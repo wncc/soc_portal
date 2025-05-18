@@ -138,25 +138,25 @@ const MenteeList = ({ project }) => {
     setShowRankList(true);
   };
 
-  // const saveRankList = () => {
-  //   const rankListData = rankList.map((mentee) => ({
-  //     mentee_id: mentee.mentee.user_profile.roll_number,
-  //     rank: mentee.rank,
-  //     preference: mentee.mentee.preferences.preference,
-  //   }));
+  const saveRankList = () => {
+    const rankListData = rankList.map((mentee) => ({
+      mentee_id: mentee.mentee.user_profile.roll_number,
+      rank: mentee.rank,
+      preference: mentee.mentee.preferences.preference,
+    }));
 
-  //   axios
-  //     .post(
-  //       `https://socb.tech-iitb.org/api/projects/mentor/ranklist/${project}/`,
-  //       { rank_list: rankListData },
-  //       axiosConfig,
-  //     )
-  //     .then(() => {
-  //       setSuccessMessage('Rank List saved successfully!');
-  //       setTimeout(() => setSuccessMessage(''), 2000);
-  //     })
-  //     .catch((error) => console.error('Error saving rank list:', error));
-  // };
+    axios
+      .post(
+        `https://socb.tech-iitb.org/api/projects/mentor/ranklist/${project}/`,
+        { rank_list: rankListData },
+        axiosConfig,
+      )
+      // .then(() => {
+      //   setSuccessMessage('Rank List saved successfully!');
+      //   setTimeout(() => setSuccessMessage(''), 2000);
+      // })
+      // .catch((error) => console.error('Error saving rank list:', error));
+  };
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -186,16 +186,16 @@ const MenteeList = ({ project }) => {
 
   const prevRankListRef = useRef(rankList);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (JSON.stringify(prevRankListRef.current) !== JSON.stringify(rankList)) {
-        saveRankList();
-        prevRankListRef.current = rankList; // Update previous rank list
-      }
-    }, 2000); // 2 seconds
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (JSON.stringify(prevRankListRef.current) !== JSON.stringify(rankList)) {
+  //       saveRankList();
+  //       prevRankListRef.current = rankList; // Update previous rank list
+  //     }
+  //   }, 2000); // 2 seconds
   
-    return () => clearInterval(interval); // Cleanup
-  }, [rankList]);
+  //   return () => clearInterval(interval); // Cleanup
+  // }, [rankList]);
 
   return (
     <motion.div
