@@ -241,30 +241,31 @@ const MenteeList = ({ project }) => {
         ) : rankList.length === 0 ? (
           <p className="empty-message">No mentees in the rank list yet.</p>
         ) : (
-          <DragDropContext
-            onDragEnd={onDragEnd}
-            dragEndTransition={{ duration: 0.2 }}
-          >
-            <Droppable droppableId="rankList" direction="vertical">
-              {(provided) => (
+          // <DragDropContext
+          //   onDragEnd={onDragEnd}
+          //   dragEndTransition={{ duration: 0.2 }}
+          // >
+          //   <Droppable droppableId="rankList" direction="vertical">
+          //     {(provided) => (
                 <div
                   className="rank-list"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
+                  // {...provided.droppableProps}
+                  // ref={provided.innerRef}
                 >
                   {rankList.map((mentee, index) => (
-                    <Draggable
-                      key={mentee.mentee.preferences.id}
-                      draggableId={String(mentee.mentee.preferences.id)}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          className="rank-card"
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
+                    // <Draggable
+                    //   key={mentee.mentee.preferences.id}
+                    //   draggableId={String(mentee.mentee.preferences.id)}
+                    //   index={index}
+                    // >
+                      // {(provided) => (
+                        // <div
+                        //   className="rank-card"
+                        //   ref={provided.innerRef}
+                        //   {...provided.draggableProps}
+                        //   {...provided.dragHandleProps}
+                        // >
+                         <div className="rank-card">
                           <div className="rank-info">
                             <p>
                               Rank: {index + 1}{' '}
@@ -343,20 +344,20 @@ const MenteeList = ({ project }) => {
                             </button>
                           </div>
                         </div>
-                      )}
-                    </Draggable>
+                    //   )}
+                    // </Draggable>
                   ))}
-                  {provided.placeholder}
+                  {/* {provided.placeholder} */}
                 </div>
               )}
-            </Droppable>
+            {/* </Droppable>
           </DragDropContext>
-        )}
-        <motion.div className="save-modal">
+        )} */}
+        {/* <motion.div className="save-modal">
           <button className="save-button" onClick={saveRankList} style={{ width: '100%', height: '100%' }}>
             Save Rank List
           </button>
-        </motion.div>
+        </motion.div> */}
       </div>
 
       {/* Preference-Based Rank List */}
