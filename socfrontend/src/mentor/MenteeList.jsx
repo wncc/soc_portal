@@ -265,7 +265,7 @@ const MenteeList = ({ project }) => {
                         //   {...provided.draggableProps}
                         //   {...provided.dragHandleProps}
                         // >
-                         <div className="rank-card">
+                         <div key={mentee.mentee.preferences.id} className="rank-card">
                           <div className="rank-info">
                             <p>
                               Rank: {index + 1}{' '}
