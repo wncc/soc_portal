@@ -20,6 +20,7 @@ EMAIL_HOST_USER=your_email@gmail.com
 EMAIL_PASSWORD=your_app_password
 DJANGO_SECRET_KEY=your_secure_secret_key
 DJANGO_DEBUG=False
+DATABASE_URL=sqlite:///db.sqlite3
 ```
 
 ### Frontend (.env)
@@ -29,6 +30,7 @@ Create a `.env` file in the `socfrontend` directory with the following content:
 ```
 REACT_APP_BACKEND_URL=https://socb.tech-iitb.org/api
 REACT_APP_API_URL=https://socb.tech-iitb.org
+REACT_APP_FRONTEND_URL = https://wncc-soc.tech-iitb.org
 DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
 REACT_APP_ENV=production
 ```

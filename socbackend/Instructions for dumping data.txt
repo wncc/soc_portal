@@ -1,0 +1,31 @@
+python manage.py dumpdata > data.json
+(itc backend)
+../rclone copy data.json gdrive:soc2025files/
+./rclone copy /app/data.json gdrive:soc2025files/
+
+python manage.py loaddata data.json
+(localhost)
+
+https://chatgpt.com/share/68283626-c6d0-800b-906c-72e57fbc6445
+
+apt update && apt install curl -y
+
+ARCH=$(uname -m)
+if [ "$ARCH" = "x86_64" ]; then ARCH=amd64; fi
+RCLONE_VERSION=$(curl -s https://api.github.com/repos/rclone/rclone/releases/latest | grep tag_name | cut -d '"' -f 4)
+curl -O https://downloads.rclone.org/${RCLONE_VERSION}/rclone-${RCLONE_VERSION}-linux-${ARCH}.zip
+
+apt-get update && apt-get install unzip -y
+
+unzip rclone-*-linux-*.zip
+cd rclone-*-linux-*
+
+./rclone version
+ ./rclone config
+Choose n for new remote
+
+Name: gdrive
+
+Type: drive
+
+20
