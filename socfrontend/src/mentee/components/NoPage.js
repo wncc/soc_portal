@@ -1,6 +1,3 @@
-// mentee/pages/NoPage.jsx
-import React from 'react';
-
 export default function NoPage() {
   return (
     <section>

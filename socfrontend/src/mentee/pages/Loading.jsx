@@ -199,7 +199,7 @@ const Loading = () => {
     const doSSOLogin = async () => {
       try {
         const ssoRes = await api.post(
-          `https://socb.tech-iitb.org/api/accounts/get-sso-user/`,
+          `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`,
           { accessid },
         );
 
@@ -218,7 +218,7 @@ const Loading = () => {
 
         try {
           // Attempt to register
-          await api.post(`https://socb.tech-iitb.org/api/accounts/register_sso/`, formData);
+          await api.post(`${process.env.REACT_APP_BACKEND_URL}/accounts/register_sso/`, formData);
           console.log('Registered successfully');
 
           // Now try logging in
@@ -250,7 +250,7 @@ const Loading = () => {
         loginForm.append('role', role);
 
         const loginRes = await api.post(
-          `https://socb.tech-iitb.org/api/accounts/token_sso/`,
+          `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`,
           loginForm,
         );
 

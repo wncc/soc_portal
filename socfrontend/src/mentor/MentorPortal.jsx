@@ -76,7 +76,7 @@ function MentorPortal({ project, onBack }) {
     // You can replace this URL with the correct endpoint to fetch the current mentor's data
     axios
       .get(
-        `https://socb.tech-iitb.org/api/projects/mentor/profile/${project.id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${project.id}`,
         axiosConfig,
       )
       .then((response) => {
@@ -106,7 +106,7 @@ function MentorPortal({ project, onBack }) {
 
     try {
       const response = await axios.get(
-        `https://socb.tech-iitb.org/api/projects/download-banner/`,
+        `${process.env.REACT_APP_BACKEND_URL}/projects/download-banner/`,
         {
           params: { file_url: fileUrl, id: project.id },
           headers: axiosConfig.headers,
@@ -138,7 +138,7 @@ function MentorPortal({ project, onBack }) {
   }, [mentorPath, mentorProj]);
 
   // console.log('what ',bannerImage);
-  const fullImageUrl = `https://socb.tech-iitb.org/media/${bannerImage}`;
+  const fullImageUrl = `${process.env.REACT_APP_API_URL}/media/${bannerImage}`;
   // console.log(fullImageUrl);
 
   // Function to scroll to a section

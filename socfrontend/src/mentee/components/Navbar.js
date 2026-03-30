@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation,useNavigate } from 'react-router-dom';
 import wncc_logo from '../../assets/wncc-logo.png';
 import PropTypes from 'prop-types';

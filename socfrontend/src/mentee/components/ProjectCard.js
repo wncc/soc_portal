@@ -37,7 +37,7 @@ export default function ProjectCard(props) {
     if (!Added) {
       // Add to wishlist
       api
-        .post(`https://socb.tech-iitb.org/api/projects/wishlist/`, details, axiosConfig) // Updated URL
+        .post(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`, details, axiosConfig) // Updated URL
         .then((res) => {
           // console.log('Added to wishlist:', res.data);
           setAdded(true);
@@ -52,7 +52,7 @@ export default function ProjectCard(props) {
     } else {
       // Remove from wishlist
       api
-        .delete(`https://socb.tech-iitb.org/api/projects/wishlist?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
+        .delete(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
         .then((res) => {
           // console.log('Removed from wishlist:', res.data);
           setAdded(false);

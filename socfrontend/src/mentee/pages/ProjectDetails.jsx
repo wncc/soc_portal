@@ -1,5 +1,3 @@
-import React from 'react';
-//import ProjectTimeline from '../components/ProjectTimeline';
 import { useState , useEffect } from 'react';
 import api from '../../utils/api';
 import ProjectTitle from '../components/ProjectTitle';
@@ -32,15 +30,14 @@ export default function ProjectDetails(props) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`https://socb.tech-iitb.org/api/projects/${ProjectId}/`)
+    api.get(`${process.env.REACT_APP_BACKEND_URL}/projects/${ProjectId}/`)
       .then((response) => {
         // Assuming the response contains the image URL
         // console.log(response.data);
 
         if (response.data.banner_image) {
-          response.data.banner_image = `https://socb.tech-iitb.org${response.data.banner_image}`;
+          response.data.banner_image = `${process.env.REACT_APP_API_URL}${response.data.banner_image}`;
         }
-
         response.data.description = response.data.description.split('\\r\\n').join('<br>');
         response.data.description = response.data.description.replace(
           /(https?:\/\/[^\s]+)/g,
@@ -55,7 +52,7 @@ export default function ProjectDetails(props) {
 
   const [Added, setAdded] = useState();
   useEffect(() => {
-    api.get('https://socb.tech-iitb.org/api/projects/wishlist/')
+    api.get(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`)
       .then((response) => {
         // console.log(response.data);
         setWishlist(response.data);
@@ -90,7 +87,7 @@ export default function ProjectDetails(props) {
       // console.log(formData);
           
       api
-        .post('https://socb.tech-iitb.org/api/projects/wishlist/', formData)
+        .post(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`, formData)
         .then((res) => {
           // console.log('hi',res);
           setAdded(true);
@@ -99,7 +96,7 @@ export default function ProjectDetails(props) {
     } 
     else {
             
-      api.delete(`https://socb.tech-iitb.org/api/projects/wishlist?project_id=${details.id}`)
+      api.delete(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist?project_id=${details.id}`)
         .then((res) => {
           // console.log(res);
           setAdded(false);

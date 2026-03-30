@@ -35,7 +35,7 @@ export default function App() {
   
   useEffect(() => { 
     api
-      .get('https://socb.tech-iitb.org/api/accounts/isloggedin/')
+      .get(`${process.env.REACT_APP_BACKEND_URL}/accounts/isloggedin/`)
       .then((res) => {
         // console.log(res.data.status);
         setAuthToken(res.data.status === 'YES');
@@ -98,17 +98,6 @@ export default function App() {
           <Route path="*" element={<NoPage />} />
         </Routes>
 
-        {/* You can enable this section once these components are ready */}
-        {/* <div className="containerscrollable">
-          <Reviews Name="abc" text="what he has to say" value={0} />
-          <Reviews Name="abc" text="what he has to say" value={50} />
-          <Reviews Name="cde" text="what he has to say" value={50} />
-          <div>
-            <button onClick={<Button />}>
-              click
-            </button>
-          </div>
-        </div> */}
       </div>
     </>
   );

@@ -11,7 +11,7 @@ function PreferenceFormFilled() {
   const fetchPreferenceList = useCallback(() => {
     setIsLoading(true);
     api
-      .get('https://socb.tech-iitb.org/api/projects/preference/')
+      .get(`${process.env.REACT_APP_BACKEND_URL}/projects/preference/`)
       .then((response) => {
         setDetails(response.data);
         setIsLoading(false);
@@ -69,12 +69,12 @@ function PreferenceFormFilled() {
               ) : (
                 <div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 pt-16">
                   {details.map((project, index) => {
-                    // if (!project.project.banner_image.includes(':8000')) {
-                    //   project.project.banner_image = `http://127.0.0.1:8000${project.project.banner_image}`;
-                    // }
-                    if (project.project.banner_image && !project.project.banner_image.includes('socb.tech-iitb.org')) {
-                      project.project.banner_image = `https://socb.tech-iitb.org${project.project.banner_image}`;
+                    if (!project.project.banner_image.includes(':8000')) {
+                      project.project.banner_image = `http://127.0.0.1:8000${project.project.banner_image}`;
                     }
+                    // if (project.project.banner_image && !project.project.banner_image.includes('socb.tech-iitb.org')) {
+                    //   project.project.banner_image = `https://socb.tech-iitb.org${project.project.banner_image}`;
+                    // }
                     return (
                       <div key={index}>
                         <ProjectCard

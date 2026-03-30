@@ -25,7 +25,8 @@ Install JS packages
 
 ```shell
   cd socfrontend
-  npm install
+  npm i -g pnpm
+  pnpm install
 ```
 Backend Configurations
 
@@ -38,7 +39,7 @@ Run Application
 
 ```shell
   # Frontend (in ./socfrontend/)
-  npm run start
+  pnpm start
   # Backend (in ./socbackend/)
   python manage.py runserver
 ```

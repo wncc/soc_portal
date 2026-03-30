@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://socb.tech-iitb.org/',
+  baseURL: `${process.env.REACT_APP_API_URL}/`,
   // withCredentials: true,  // This is crucial for sending cookies
   // headers: {
   //   'Content-Type': 'application/json',

@@ -34,7 +34,7 @@ const Form = () => {
     const fetchMentorData = async () => {
       try {
         const response = await axios.get(
-          `https://socb.tech-iitb.org/api/projects/mentor/profile`,
+          `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile`,
           axiosConfig,
         );
         // console.log('Mentor Data:', response.data);
@@ -71,7 +71,7 @@ const Form = () => {
     try {
       // First request
       const profileResponse = await axios.post(
-        `https://socb.tech-iitb.org/api/projects/mentor/profile/`,
+        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`,
         formData,
         axiosConfig,
       );

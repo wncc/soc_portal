@@ -17,7 +17,7 @@ function Home() {
       const role = localStorage.getItem('role');
       if (role === 'mentee') {
         try {
-          const res = await axios.get('https://socb.tech-iitb.org/api/projects/mentee/profile/',axiosConfig);
+          const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/projects/mentee/profile/`,axiosConfig);
           const phone = res.data.mentee.user_profile.phone_number;
 
           if (phone === '0000000000') {

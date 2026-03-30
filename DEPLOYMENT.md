@@ -28,9 +28,9 @@ Create a `.env` file in the `socfrontend` directory with the following content:
 
 ```
 REACT_APP_BACKEND_URL=https://socb.tech-iitb.org/api
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
+REACT_APP_API_URL=https://socb.tech-iitb.org
 DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
+REACT_APP_ENV=production
 ```
 
 ## Deployment Steps
@@ -38,7 +38,7 @@ DOMAIN_NAME=https://wncc-soc.tech-iitb.org/
 1. Clone the repository on your server:
 
    ```
-   git clone https://github.com/DeepakSilaych/soc_portal.git
+   git clone https://github.com/wncc/soc_portal.git
    cd soc_portal
    ```
 

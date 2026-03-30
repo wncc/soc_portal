@@ -35,7 +35,7 @@ const EditProject = () => {
     const fetchProjectDetails = async () => {
       try {
         const response = await axios.get(
-          `https://socb.tech-iitb.org/api/projects/${projectId}/`,
+          `${process.env.REACT_APP_BACKEND_URL}/projects/${projectId}/`,
           axiosConfig
         );
         const projectData = response.data;
@@ -80,7 +80,7 @@ const EditProject = () => {
 
     try {
       const response = await axios.put(
-        `https://socb.tech-iitb.org/api/projects/mentor/profile/${projectId}/`,
+        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${projectId}/`,
         formData,
         axiosConfig
       );

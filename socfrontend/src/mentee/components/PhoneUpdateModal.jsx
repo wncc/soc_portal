@@ -11,11 +11,11 @@ const PhoneUpdateModal = ({ onClose }) => {
     onClose();
     try {
       if (role === 'mentor') {
-        await api.patch(`https://socb.tech-iitb.org/api/projects/mentor/profile/`, {
+        await api.patch(`${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`, {
           phone_number: phone,
         });
       } else if (role === 'mentee') {
-        await api.patch(`https://socb.tech-iitb.org/api/projects/mentee/profile/`, {
+        await api.patch(`${process.env.REACT_APP_BACKEND_URL}/projects/mentee/profile/`, {
           phone_number: phone,
         });
       } else {

@@ -1,34 +1,31 @@
-# Frontend Development
+# Frontend Setup and Run
 
-## Required Skills
+Before running anything, create and fill the `.env` file in the `socfrontend` folder.
 
-Note that this project is completely beginner-friendly, none of the required skills are hard and fast prerequisites, you can always learn as you go!
+You can copy from `.env.example` and then update the values as needed.
 
-- React - [YouTube Tutorial](https://www.youtube.com/playlist?list=PLu0W_9lII9agx66oZnT6IyhcMIbUMNMdt)
-- JavaScript - [Tutorial](https://github.com/wncc/learners-space/blob/master/Web%20Development/Week%203/Bootstap%2BJavaScript.md)
+To test SSO button locally, change the project id in SSOButton.js and redirect it to localhost instead of production url.
 
-## Project Statement
+Install pnpm globally:
 
-This project aims at creating a functional, user-friendly portal for WnCC's annual **Seasons of Code (SoC)**. The portal's objective is to bring together the various processes running in the background throughout the SoC projects' duration. Students will be able to register as mentors and mentees, float and apply for projects and access checkpoint and submission forms all in one place.
+```bash
+npm i -g pnpm
+```
 
-- **Home Page:** This page provides a general overview of SoC, along with some statistics and reviews from previous years.
+Install dependencies:
 
-- **Registration:** Students can register as either mentors or mentees via the registration page. A form collects their details (Name, Roll Number, Contact Number, Email ID) and asks them to set a password. The user profile is created and sent to the Django backend, using which students can access their dashboard by simply entering their roll number and password in the login page.
+```bash
+pnpm install
+```
 
-- **Add Project:** This option is available solely to users registered as mentors. They have the option to add one or more projects by providing a title, description, details about the number of mentees and a cover image. They can also edit their existing projects.
+Build the frontend:
 
-- **Current Projects:** When mentors add projects, the project title and cover image should be extracted and displayed on the "Current Projects" page in the form of React cards. Changes from the mentor's side should reflect here as well.
+```bash
+pnpm build
+```
 
-- **Past Certificates:** Using this page, past participants of SoC who have been awarded certificates can download their certificates directly.
+Start the development server:
 
-## Ideas for Improvement
-
-- **Styling the UI:** Although the UI is functional, it has not been styled properly yet.
-
-- **Custom Features:**
-
-You can find more such improvements in issues on which you can contribute.
-
-
-
-<p align="center">Created with :heart: by <Link to="https://itc.gymkhana.iitb.ac.in/wncc/">WnCC</Link></p>
+```bash
+pnpm start
+```
