@@ -132,7 +132,11 @@ const MenteeList = ({ project }) => {
   const removeMenteeFromRankList = (index) => {
     const removedMentee = rankList[index].mentee;
 
-    setRankList((prev) => prev.filter((_, idx) => idx !== index));
+    setRankList((prev) =>
+      prev
+        .filter((_, idx) => idx !== index)
+        .map((entry, idx) => ({ ...entry, rank: idx + 1 })),
+    );
 
     setPreferenceRankList((prev) => [...prev, removedMentee]);
     setShowRankList(true);
@@ -142,20 +146,14 @@ const MenteeList = ({ project }) => {
     const rankListData = rankList.map((mentee) => ({
       mentee_id: mentee.mentee.user_profile.roll_number,
       rank: mentee.rank,
-      preference: mentee.mentee.preferences.preference,
+      preference: mentee.mentee.preferences?.preference ?? mentee.preference,
     }));
 
-    axios
-      .post(
-        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/ranklist/${project}/`,
-        { rank_list: rankListData },
-        axiosConfig,
-      )
-      // .then(() => {
-      //   setSuccessMessage('Rank List saved successfully!');
-      //   setTimeout(() => setSuccessMessage(''), 2000);
-      // })
-      // .catch((error) => console.error('Error saving rank list:', error));
+    return axios.post(
+      `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/ranklist/${project}/`,
+      { rank_list: rankListData },
+      axiosConfig,
+    );
   };
 
   const onDragEnd = (result) => {
@@ -184,18 +182,42 @@ const MenteeList = ({ project }) => {
     setRankList(updatedRankList); // Update state immediately
   };
 
-  const prevRankListRef = useRef(rankList);
+  const prevRankListRef = useRef('[]');
+  const hasFetchedInitialRankList = useRef(false);
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (JSON.stringify(prevRankListRef.current) !== JSON.stringify(rankList)) {
-  //       saveRankList();
-  //       prevRankListRef.current = rankList; // Update previous rank list
-  //     }
-  //   }, 2000); // 2 seconds
-  
-  //   return () => clearInterval(interval); // Cleanup
-  // }, [rankList]);
+  useEffect(() => {
+    if (loadingRankList) {
+      return;
+    }
+
+    const currentSnapshot = JSON.stringify(rankList);
+
+    if (!hasFetchedInitialRankList.current) {
+      prevRankListRef.current = currentSnapshot;
+      hasFetchedInitialRankList.current = true;
+      return;
+    }
+
+    if (currentSnapshot === prevRankListRef.current) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      saveRankList()
+        .then(() => {
+          prevRankListRef.current = currentSnapshot;
+          setSuccessMessage('Rank List saved automatically.');
+          setTimeout(() => setSuccessMessage(''), 1800);
+        })
+        .catch((error) => {
+          console.error('Error saving rank list:', error);
+          setSuccessMessage('Auto-save failed. Please try again.');
+          setTimeout(() => setSuccessMessage(''), 2500);
+        });
+    }, 900);
+
+    return () => clearTimeout(timeoutId);
+  }, [rankList, loadingRankList]);
 
   return (
     <motion.div
