@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import DotGrid from '../components/DotGrid';
 import './SummerOfTech.css';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
@@ -11,7 +12,21 @@ export default function SummerOfTech({ authToken }) {
   const [isManager, setIsManager] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roleModal, setRoleModal] = useState(null); // { domain, options: [{ role, action, label }] }
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    setDarkMode(savedTheme === 'dark');
+    
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setDarkMode(isDark);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    
+    return () => observer.disconnect();
+  }, []);
 
   const fetchDomains = useCallback(async () => {
     try {
@@ -120,12 +135,22 @@ export default function SummerOfTech({ authToken }) {
   }
 
   return (
-    <div className="sot-root" style={{ paddingTop: '72px' }}>
+    <div className="sot-root" style={{ paddingTop: '12px' }}>
       {/* Hero */}
       <section className="sot-hero">
-        <div className="sot-hero-glow" aria-hidden="true" />
+        <DotGrid
+          dotSize={5}
+          gap={15}
+          baseColor={darkMode ? '#000000' : '#d1d5db'}
+          activeColor={darkMode ? '#5227FF' : '#4f46e5'}
+          proximity={120}
+          shockRadius={250}
+          shockStrength={5}
+          resistance={750}
+          returnDuration={1.5}
+        />
         <div className="sot-hero-content">
-          <div className="sot-hero-badge">IIT Bombay · ITC</div>
+          {/* <div className="sot-hero-badge">IIT Bombay · ITC</div> */}
           <h1 className="sot-hero-title">
             Summer of <span className="sot-hero-accent">Tech</span>
           </h1>
@@ -141,7 +166,7 @@ export default function SummerOfTech({ authToken }) {
             <div className="sot-hero-actions">
               {isManager && (
                 <button className="sot-btn-manager" onClick={() => navigate('/manager')}>
-                  ⚙ Manager Dashboard
+                  Manager Dashboard
                 </button>
               )}
               {memberships.length > 0 && (
@@ -154,9 +179,9 @@ export default function SummerOfTech({ authToken }) {
         </div>
 
         {/* Floating orbs */}
-        <div className="sot-orb sot-orb-1" aria-hidden="true" />
-        <div className="sot-orb sot-orb-2" aria-hidden="true" />
-        <div className="sot-orb sot-orb-3" aria-hidden="true" />
+        {/* <div className="sot-orb sot-orb-1" aria-hidden="true" /> */}
+        {/* <div className="sot-orb sot-orb-2" aria-hidden="true" /> */}
+        {/* <div className="sot-orb sot-orb-3" aria-hidden="true" /> */}
       </section>
 
       {/* My Memberships strip (if logged in) */}

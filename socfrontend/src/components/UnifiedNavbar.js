@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import wncc_logo from '../assets/wncc-logo.png';
+import wncc_logo from '../assets/itc-logo.png';
 import api from '../utils/api';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
@@ -82,9 +82,9 @@ export default function UnifiedNavbar() {
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
           <img src={wncc_logo} className="h-10" alt="WnCC Logo" />
-          <span className="self-center text-2xl font-semibold whitespace-nowrap text-white dark:text-white">
+          {/* <span className="self-center text-2xl font-semibold whitespace-nowrap text-white dark:text-white">
             Summer of Tech
-          </span>
+          </span> */}
         </Link>
 
         <button
@@ -159,7 +159,7 @@ export default function UnifiedNavbar() {
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                ⚙️ Manager Dashboard
+                                 Manager Dashboard
                               </span>
                               <span className={`text-xs px-2 py-1 rounded-full ${getRoleBadgeClass('manager')}`}>
                                 Manager

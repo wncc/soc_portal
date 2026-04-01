@@ -59,24 +59,38 @@
   justify-content: center;
   padding: 100px 24px 60px;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0a0a0a;
 }
 
-.sot-hero-glow {
+.dark .sot-hero {
+  background: #0a0a0a;
+}
+
+:root:not(.dark) .sot-hero {
+  background: #f9fafb;
+}
+
+.sot-hero > .dot-grid {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255, 255, 255, 0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 80% 60%, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
   pointer-events: none;
+}
+
+.sot-hero > .dot-grid .dot-grid__canvas {
+  pointer-events: auto;
 }
 
 .sot-hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   text-align: center;
   max-width: 780px;
   margin: 0 auto;
+  pointer-events: auto;
 }
 
 .sot-hero-badge {
@@ -104,8 +118,12 @@
   letter-spacing: -0.02em;
 }
 
+:root:not(.dark) .sot-hero-title {
+  color: #1e293b;
+}
+
 .sot-hero-accent {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: linear-gradient(135deg, #ac24fb, #a70bf5);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -121,12 +139,16 @@
   margin-right: auto;
 }
 
+:root:not(.dark) .sot-hero-sub {
+  color: rgba(30, 41, 59, 0.9);
+}
+
 .sot-btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   background: #ffffff;
-  color: #6366f1;
+  color: #5227FF;
   border: none;
   padding: 16px 36px;
   border-radius: 999px;
@@ -135,6 +157,11 @@
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+:root:not(.dark) .sot-btn-primary {
+  background: #4f46e5;
+  color: #ffffff;
 }
 .sot-btn-primary:hover {
   transform: translateY(-2px);
@@ -157,7 +184,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #d97706, #b45309);
+  /* background: linear-gradient(135deg, #d97706, #b45309); */
+  background: #4f46e5;
   color: #fff;
   border: none;
   padding: 14px 32px;
@@ -166,16 +194,20 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition);
-  box-shadow: 0 0 24px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 24px rgba(59, 34, 220, 0.35);
 }
 .sot-btn-manager:hover {
   transform: translateY(-2px);
-  box-shadow: 0 0 40px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 40px rgba(59, 34, 220, 0.2);
 }
 
 .sot-hero-welcome {
-  color: var(--sot-text-muted);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.9rem;
+}
+
+:root:not(.dark) .sot-hero-welcome {
+  color: var(--sot-text-muted);
 }
 
 /* Floating orbs */
@@ -278,7 +310,7 @@
    Domains Section
    ========================================================= */
 .sot-domains-section {
-  padding: 80px 24px 100px;
+  padding: 40px 24px 100px;
 }
 .sot-domains-inner {
   max-width: 1200px;
