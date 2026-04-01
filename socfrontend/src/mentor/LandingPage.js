@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./LandingPage.scss";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoMailOutline } from "react-icons/io5";
 import { IconContext } from "react-icons";
 import { motion } from "framer-motion";
@@ -31,12 +31,14 @@ const fadeInUp = {
 
 function LandingPage() {
   const navigate = useNavigate();
+  const { domain } = useParams();
   const [mentorName, setMentorName] = useState("");
   const [mentorEmail, setMentorEmail] = useState("");
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState(null); // Store selected project
+  const [selectedProject, setSelectedProject] = useState(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [domainData, setDomainData] = useState(null);
 
   const token = localStorage.getItem("authToken");
   const axiosConfig = {
@@ -46,21 +48,39 @@ function LandingPage() {
     },
   };
 
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchDomainData = async () => {
+      if (!domain) return;
+      
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`,
+          axiosConfig
+        );
+        setDomainData(response.data);
+      } catch (error) {
+        console.error('Error fetching domain data:', error);
+      }
+    };
+    
+    fetchDomainData();
+  }, [domain]);
 
   useEffect(() => {
     const checkPhoneNumber = async () => {
       const role = localStorage.getItem("role");
       if (role === "mentor") {
         try {
-          const res = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`,
-            axiosConfig
-          );
+          const endpoint = domain
+            ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/?domain=${domain}`
+            : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`;
+          
+          const res = await axios.get(endpoint, axiosConfig);
           const phone = res.data.mentor.user_profile.phone_number;
 
           if (phone === "0000000000") {
-            // console.log("hiiii")
             setShowModal(true); // Show the modal if phone number is '0000000000'
           }
         } catch (err) {
@@ -70,16 +90,16 @@ function LandingPage() {
     };
 
     checkPhoneNumber();
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     const fetchMentorData = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile`,
-          axiosConfig
-        );
-        // console.log(response.data);
+        const endpoint = domain
+          ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/?domain=${domain}`
+          : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`;
+        
+        const response = await axios.get(endpoint, axiosConfig);
         setMentorName(response.data.mentor.user_profile.name);
         setMentorEmail(
           response.data.mentor.user_profile.roll_number + "@iitb.ac.in"
@@ -92,7 +112,7 @@ function LandingPage() {
     };
 
     fetchMentorData();
-  }, []);
+  }, [domain]);
 
   return (
     <motion.div initial="initial" animate="animate">
@@ -202,19 +222,36 @@ function LandingPage() {
                   variants={fadeInUp}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedProject(project)} // Set selected project
                 >
-                  <h3>{project.title}</h3>
-                  <p>{project.general_category}</p>
+                  <div onClick={() => setSelectedProject(project)}>
+                    <h3>{project.title}</h3>
+                    <p>{project.general_category}</p>
+                  </div>
+                  {domainData?.project_editing_open && (
+                    <button
+                      className="edit_project_btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(domain ? `/${domain}/mentor/edit-project` : '/mentor/edit-project', {
+                          state: { projectId: project.id }
+                        });
+                      }}
+                      title="Edit Project"
+                    >
+                      ✏️ Edit
+                    </button>
+                  )}
                 </motion.div>
               ))}
-              {/* {projects.length === 0 ? (
+              
+              {/* Add Project Card */}
+              {domainData?.project_creation_open && (
                 <motion.div
                   className="add_project_card"
                   variants={fadeInUp}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate("/mentor/add-project")}
+                  onClick={() => navigate(domain ? `/${domain}/mentor/add-project` : '/mentor/add-project')}
                 >
                   <div className="add_project_content">
                     <motion.div
@@ -234,33 +271,7 @@ function LandingPage() {
                     </motion.p>
                   </div>
                 </motion.div>
-              ) : (
-                <motion.div
-                  className="edit_project_card"
-                  variants={fadeInUp}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate("/mentor/edit-project", { state: { projectId: projects[0].id } })}
-                >
-                  <div className="add_project_content">
-                    <motion.div
-                      className="add_icon"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, ease: easing }}
-                    >
-                      ✎
-                    </motion.div>
-                    <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.6, ease: easing }}
-                    >
-                      Edit Project
-                    </motion.p>
-                  </div>
-                </motion.div>
-              )} */}
+              )}
             </>
           )}
         </motion.div>

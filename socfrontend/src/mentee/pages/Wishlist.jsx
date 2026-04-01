@@ -5,16 +5,22 @@ import { useEffect } from 'react';
 import { useState } from 'react';
 import { useMemo } from 'react';
 import { useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 
 export default function Wishlist() {
   const [details, setDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { domain } = useParams();
+  const navigate = useNavigate();
 
   const fetchWishlist = useCallback(() => {
     setIsLoading(true);
+    const endpoint = domain
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`;
+    
     api
-      .get(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`)
+      .get(endpoint)
       .then((response) => {
         setDetails(response.data);
         setIsLoading(false);
@@ -26,7 +32,7 @@ export default function Wishlist() {
         }
         setIsLoading(false);
       });
-  }, []);
+  }, [domain]);
   useEffect(() => {
     fetchWishlist(); // Call the memoized fetch function
   }, [fetchWishlist]);
@@ -134,12 +140,12 @@ export default function Wishlist() {
                 Keep browsing through the projects and add to wishlist
               </p>
 
-              <Link
-                to="/current_projects"
+              <button
+                onClick={() => navigate(domain ? `/${domain}/current_projects` : '/current_projects')}
                 className="mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring"
               >
                 Browse Projects
-              </Link>
+              </button>
             </div>
           </div>
         </>
@@ -257,6 +263,7 @@ export default function Wishlist() {
                         (item) => item.id === project.id,
                       )}
                       onWishlistChange={fetchWishlist}
+                      domain={domain}
                     />
                   </div>
                 );

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 export default function ProjectCard(props) {
   const [Added, setAdded] = useState(props.isInWishlist);
+  const { domain } = useParams();
+  const currentDomain = props.domain || domain;
 
   // Update state when isInWishlist prop changes
   useEffect(() => {
@@ -20,7 +22,6 @@ export default function ProjectCard(props) {
   const WishlistAdd = () => {
     if (props.isPreferenceFilled) return;
     const token = localStorage.getItem('authToken');
-    // console.log(token);
 
     if (!token) {
       console.log('No authentication token found. Please log in.');
@@ -36,10 +37,14 @@ export default function ProjectCard(props) {
     
     if (!Added) {
       // Add to wishlist
+      const payload = { ...details };
+      if (currentDomain) {
+        payload.domain = currentDomain;
+      }
+      
       api
-        .post(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`, details, axiosConfig) // Updated URL
+        .post(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`, payload, axiosConfig)
         .then((res) => {
-          // console.log('Added to wishlist:', res.data);
           setAdded(true);
         })
         .catch((err) => {
@@ -51,12 +56,17 @@ export default function ProjectCard(props) {
         });
     } else {
       // Remove from wishlist
+      const deleteUrl = currentDomain
+        ? `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/?project_id=${props.ProjectId}&domain=${currentDomain}`
+        : `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist?project_id=${props.ProjectId}`;
+      
       api
-        .delete(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist?project_id=${props.ProjectId}`, axiosConfig) // Updated URL
+        .delete(deleteUrl, axiosConfig)
         .then((res) => {
-          // console.log('Removed from wishlist:', res.data);
           setAdded(false);
-          props.onWishlistChange();
+          if (props.onWishlistChange) {
+            props.onWishlistChange();
+          }
         })
         .catch((err) => {
           if (err.response && err.response.status === 401) {
@@ -68,17 +78,21 @@ export default function ProjectCard(props) {
     }
   };
 
+  const projectDetailLink = currentDomain 
+    ? `/${currentDomain}/current_projects/${props.ProjectId}`
+    : `/current_projects/${props.ProjectId}`;
+
   return (
     <div>
       <article className="overflow-hidden rounded-lg shadow transition hover:shadow-lg">
-        <Link to={`/current_projects/${props.ProjectId}`}>
+        <Link to={projectDetailLink}>
           <img
             alt={props.title}
             src={props.link}
             className="h-56 w-full object-contain"
           />
         </Link>
-        <Link to={`/current_projects/${props.ProjectId}`}>
+        <Link to={projectDetailLink}>
           <div className="bg-rgb(17, 24, 39) p-4 sm:p-6">
             <h3 className="mt-0.5 text-lg line-clamp-1 text-gray-900 dark:text-white">
               Project ID: {props.ProjectId}

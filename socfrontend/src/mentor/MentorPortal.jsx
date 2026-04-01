@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { IoMailOutline, IoChevronForwardCircle, IoStar } from 'react-icons/io5';
 import { IconContext } from 'react-icons';
 import { motion } from 'framer-motion';
+import { useParams } from 'react-router-dom';
 import MenteeList from './MenteeList';
 import axios from 'axios';
 
@@ -63,6 +64,7 @@ function MentorPortal({ project, onBack }) {
   const menteeListRef = useRef(null);
   const token = localStorage.getItem('authToken');
   const [isLoading, setIsLoading] = useState(true);
+  const { domain } = useParams();
 
   const axiosConfig = {
     headers: {
@@ -73,19 +75,17 @@ function MentorPortal({ project, onBack }) {
 
   // Fetch mentor data from the backend
   useEffect(() => {
-    // You can replace this URL with the correct endpoint to fetch the current mentor's data
+    const endpoint = domain
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${project.id}?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${project.id}`;
+    
     axios
-      .get(
-        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${project.id}`,
-        axiosConfig,
-      )
+      .get(endpoint, axiosConfig)
       .then((response) => {
         const matchedProject = response.data.mentor.projects.find((x) => x.id === project.id);
         setMentees(response.data.mentees.length);
         if (matchedProject) {
-          // console.log(matchedProject);
           setMentorProj(matchedProject.title);
-          // console.log('you',matchedProject.bannerImage);
           if (matchedProject.banner_image) {
             setMentorPath(matchedProject.banner_image);
           } else {
@@ -99,7 +99,7 @@ function MentorPortal({ project, onBack }) {
       .catch((error) => {
         console.error('Error fetching mentor data:', error);
       });
-  }, [project]);
+  }, [project, domain]);
   
   const downloadBannerImage = async (fileUrl, title) => {
     if (!fileUrl || !title) return;

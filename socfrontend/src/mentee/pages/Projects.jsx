@@ -2,39 +2,50 @@ import ProjectCard from "../components/ProjectCard";
 import api from "../../utils/api";
 import "../components/Filter.css";
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Projects() {
   const [details, setDetails] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showScroll, setShowScroll] = useState(false);
+  const navigate = useNavigate();
+  const { domain } = useParams();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    const endpoint = domain 
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/`;
+    
     api
-      .get(`${process.env.REACT_APP_BACKEND_URL}/projects/`)
+      .get(endpoint)
       .then((response) => {
         setDetails(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching card image:", error);
+        console.error("Error fetching projects:", error);
       });
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
+    const endpoint = domain
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`;
+    
     api
-      .get(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`)
+      .get(endpoint)
       .then((response) => {
         setWishlist(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching card image:", error);
+        console.error("Error fetching wishlist:", error);
         setIsLoading(false);
       });
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,6 +97,30 @@ export default function Projects() {
 
   return (
     <section className="project-card min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
+      {/* Quick Navigation Bar */}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-3 px-6">
+        <div className="max-w-screen-xl mx-auto flex gap-4">
+          <button
+            onClick={() => navigate(domain ? `/${domain}/current_projects` : '/current_projects')}
+            className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            📚 Projects
+          </button>
+          <button
+            onClick={() => navigate(domain ? `/${domain}/wishlist` : '/wishlist')}
+            className="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            ⭐ Wishlist
+          </button>
+          <button
+            onClick={() => navigate(domain ? `/${domain}/PreferenceForm` : '/PreferenceForm')}
+            className="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            📝 Preferences
+          </button>
+        </div>
+      </div>
+
       <div className="pt-8 flex flex-wrap items-center justify-center gap-4">
         <div className="inline-flex rounded-md shadow-sm" role="group">
           <button
@@ -194,6 +229,7 @@ export default function Projects() {
                 title={project.title}
                 general_category={project.general_category}
                 isInWishlist={wishlist.some((item) => item.id === project.id)}
+                domain={domain}
               />
             </div>
           ))}

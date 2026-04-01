@@ -1,4 +1,7 @@
 import re
+import os
+import secrets
+
 from django.http import JsonResponse
 from django.db.models import Value as V
 from django.db.models.functions import Concat
@@ -7,58 +10,65 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, AuthenticationFailed
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+
+import requests
 
 from socbackend.settings import SIMPLE_JWT
 from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.crypto import get_random_string
 
 from .helpers import fetch_from_sso
-from .models import UserProfile
-from django.contrib.auth.models import User
+from .models import UserProfile, CustomUser
 from .serializers import RegisterUserSerializer, UserAutoCompleteSerializer, UserProfileSerializer
-
-from projects.models import Mentee
-from projects.models import Mentor
-
 from .options import DepartmentChoices, YearChoices
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from .models import CustomUser
+from .customauth import RollNumberBackend
+from .new import CookieJWTAuthentication2
 
 
-from django.utils.crypto import get_random_string
-import os
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _build_memberships_response(user):
+    """
+    Build the memberships array for token responses.
+    Returns (memberships_list, is_manager).
+    """
+    from domains.models import DomainMembership
+    from domains.serializers import MyMembershipSerializer
+
+    memberships = DomainMembership.objects.filter(user=user, is_approved=True).select_related("domain")
+    data = MyMembershipSerializer(memberships, many=True).data
+    is_manager = any(m["role"] == "manager" for m in data)
+    return data, is_manager
 
 
-# views.py
-from rest_framework import generics
-from rest_framework.response import Response
-from .models import DepartmentChoices
+# ---------------------------------------------------------------------------
+# Utility Views
+# ---------------------------------------------------------------------------
 
 class DepartmentListAPIView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
-        departments = DepartmentChoices.choices
-        return Response(departments)
-    
+        return Response(DepartmentChoices.choices)
+
 
 class YearListAPIView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
-        years = YearChoices.choices
-        return Response(years)
- 
- 
-import requests
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-   
-@api_view(['POST'])
+        return Response(YearChoices.choices)
+
+
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def get_sso_user_data(request):
-    accessid = request.data.get('accessid')
+    accessid = request.data.get("accessid")
     if not accessid:
         return Response({"error": "Missing accessid"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -66,10 +76,9 @@ def get_sso_user_data(request):
         print(accessid)
         response = requests.post(
             "http://sso.tech-iitb.org/project/getuserdata",
-            json={"id": accessid}
+            json={"id": accessid},
         )
-        print("Raw SSO response text:", response.text)  # helpful for debugging
-
+        print("Raw SSO response text:", response.text)
         data = response.json()
 
         if response.status_code == 200:
@@ -81,13 +90,17 @@ def get_sso_user_data(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['GET'])
+from .new import CookieJWTAuthentication2
+
+@api_view(["GET"])
+@authentication_classes([CookieJWTAuthentication2])
 @permission_classes([AllowAny])
 def isloggedin(request):
-    if isinstance(request.user, CustomUser):
-        return JsonResponse({"status": "NO"}, status=200)
-    else:
+    if request.user and request.user.is_authenticated:
         return JsonResponse({"status": "YES"}, status=200)
+    else:
+        return JsonResponse({"status": "NO"}, status=200)
+
 
 def generate_verification_token():
     return get_random_string(length=32)
@@ -101,36 +114,28 @@ def verify_email(request, token):
         user.is_active = True
         user.save()
         user_profile.save()
-        mentee = Mentee.objects.create(user=user_profile)
-        mentee.save()
-
-
         return JsonResponse({"success": "verified"}, status=200)
     except UserProfile.DoesNotExist:
         return JsonResponse({"error": "User does not exist"}, status=400)
 
+
 def send_verification_email(user_profile):
-    subject = 'SOC Menteee Registration Verification Link'
+    subject = "SOC Mentee Registration Verification Link"
     message = f"""
     Hi {user_profile.name},
-    
+
     Please click on the link below to verify your email address and complete your registration.
-    
+
     http://localhost:3000/wncc-soc/verify-email/{user_profile.verification_token}
-    
+
     Regards,
     Team WnCC
     """
-
-    from_email = os.getenv("EMAIL_HOST_USER")  # Use the configured sender email
-    recipient_list = [f"{user_profile.roll_number}@iitb.ac.in"]  # IITB email
-    #recipient_list = ["23b2401@iitb.ac.in"]
-
+    from_email = os.getenv("EMAIL_HOST_USER")
+    recipient_list = [f"{user_profile.roll_number}@iitb.ac.in"]
     print(f"Sending email from: {from_email} to: {recipient_list}")
+    send_mail(subject, message, from_email, recipient_list, auth_password="xjsgrdmwcgdvqypt")
 
-    print(from_email,recipient_list,user_profile.verification_token)
-    send_mail(subject, message, from_email, recipient_list,auth_password="xjsgrdmwcgdvqypt")  
-    
 
 def logout(request):
     response = JsonResponse({"success": "logged out"}, status=200)
@@ -138,16 +143,19 @@ def logout(request):
     return response
 
 
+# ---------------------------------------------------------------------------
+# Registration Views
+# ---------------------------------------------------------------------------
+
 class RegisterUserView(APIView):
-    permission_classes = [AllowAny]  
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        roll_number = request.data.get("roll_number").lower()
+        roll_number = request.data.get("roll_number", "").lower()
         password = request.data.get("password")
-        role = request.data.get("role")
 
-        if CustomUser.objects.filter(username=roll_number,role=role).exists():
-            user = CustomUser.objects.get(username=roll_number,role=role)
+        if CustomUser.objects.filter(username=roll_number).exists():
+            user = CustomUser.objects.get(username=roll_number)
             if UserProfile.objects.filter(user=user).exists():
                 user_profile = UserProfile.objects.get(user=user)
                 if user_profile.verified:
@@ -156,14 +164,13 @@ class RegisterUserView(APIView):
                     user.delete()
             else:
                 user.delete()
-            
-        user = CustomUser.objects.create_user(username=roll_number, password=password,role=role)
-        user.is_active = False
 
+        user = CustomUser.objects.create_user(username=roll_number, password=password)
+        user.is_active = False
         user.save()
+
         mutable_copy = request.POST.copy()
         mutable_copy["user"] = user.id
-        
         serializer = RegisterUserSerializer(data=mutable_copy)
 
         if serializer.is_valid():
@@ -172,32 +179,29 @@ class RegisterUserView(APIView):
             user_profile = UserProfile.objects.get(user=user)
             user_profile.verification_token = verification_token
             user_profile.verified = False
-            user = user_profile.user
             user.is_active = False
             user.save()
             user_profile.save()
-            print(f"User profile: {user_profile}")
-            if role == "mentee":
-                Mentee.objects.create(user=user_profile)
-            elif role == "mentor":
-                Mentor.objects.create(user=user_profile)
-            print("mail")
             send_verification_email(user_profile)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-    
+
 
 class RegisterUserViewSSO(APIView):
-    permission_classes = [AllowAny]  
+    """
+    SSO registration — creates a single CustomUser per roll number (no role).
+    Domain-specific roles are added later via DomainMembership.
+    """
+    permission_classes = [AllowAny]
 
     def post(self, request):
         print(request.data)
-        roll_number = request.data.get("roll_number").lower()
+        roll_number = request.data.get("roll_number", "").lower()
         password = request.data.get("password")
-        role = request.data.get("role")
 
-        if CustomUser.objects.filter(username=roll_number,role=role).exists():
-            user = CustomUser.objects.get(username=roll_number,role=role)
+        # If user already exists and is verified, return error
+        if CustomUser.objects.filter(username=roll_number).exists():
+            user = CustomUser.objects.get(username=roll_number)
             if UserProfile.objects.filter(user=user).exists():
                 user_profile = UserProfile.objects.get(user=user)
                 if user_profile.verified:
@@ -206,38 +210,158 @@ class RegisterUserViewSSO(APIView):
                     user.delete()
             else:
                 user.delete()
-            
-        user = CustomUser.objects.create_user(username=roll_number, password=password,role=role)
-        user.is_active = True
 
+        user = CustomUser.objects.create_user(username=roll_number, password=password)
+        user.is_active = True
         user.save()
+
         mutable_copy = request.POST.copy()
         mutable_copy["user"] = user.id
-        
         serializer = RegisterUserSerializer(data=mutable_copy)
 
         if serializer.is_valid():
             serializer.save()
-            verification_token = generate_verification_token()
             user_profile = UserProfile.objects.get(user=user)
-            user_profile.verification_token = verification_token
             user_profile.verified = True
-            user = user_profile.user
             user.is_active = True
             user.save()
             user_profile.save()
-            print(f"User profile: {user_profile}")
-            if role == "mentee":
-                Mentee.objects.create(user=user_profile)
-            elif role == "mentor":
-                Mentor.objects.create(user=user_profile)
-            print("mail")
-            return Response(serializer.data, status=201)
+
+            memberships, is_manager = _build_memberships_response(user)
+            return Response(
+                {**serializer.data, "memberships": memberships, "is_manager": is_manager},
+                status=201,
+            )
         return Response(serializer.errors, status=400)
 
 
-class UserProfileView(APIView):
+# ---------------------------------------------------------------------------
+# Auth Token Views
+# ---------------------------------------------------------------------------
 
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """Legacy password-based login (still works, now role-free)."""
+
+    def post(self, request, *args, **kwargs):
+        mutable_copy = request.POST.copy()
+        username = mutable_copy.get("username", "").lower()
+        password = request.data.get("password")
+
+        backend = RollNumberBackend()
+        user = backend.authenticate(request=request, username=username, password=password)
+
+        if user is None:
+            raise AuthenticationFailed("Invalid roll number or password")
+
+        random_token = secrets.token_urlsafe(16)
+        custom_token = f"{user.id}-{random_token}"
+
+        memberships, is_manager = _build_memberships_response(user)
+
+        response_data = {
+            "access": custom_token,
+            "memberships": memberships,
+            "is_manager": is_manager,
+        }
+        response = JsonResponse(response_data)
+        response.set_cookie(key="auth", value=custom_token, httponly=True)
+        print(f"Cookie set with value: {custom_token}")
+        return response
+
+
+class CustomSSOTokenView(APIView):
+    """
+    SSO token endpoint. No longer requires role parameter — looks up user by username only.
+    Returns memberships array for the frontend to determine where to redirect.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        roll_number = request.data.get("username", "").lower()
+
+        if not roll_number:
+            raise AuthenticationFailed("Roll number is required")
+
+        try:
+            user = CustomUser.objects.get(username=roll_number)
+        except CustomUser.DoesNotExist:
+            raise AuthenticationFailed("User does not exist. Please register first.")
+
+        if not user.is_active:
+            raise AuthenticationFailed("User is not active")
+
+        random_token = secrets.token_urlsafe(16)
+        custom_token = f"{user.id}-{random_token}"
+
+        memberships, is_manager = _build_memberships_response(user)
+
+        response_data = {
+            "access": custom_token,
+            "memberships": memberships,
+            "is_manager": is_manager,
+        }
+
+        response = JsonResponse(response_data)
+        response.set_cookie(key="auth", value=custom_token, httponly=True)
+        print(f"[SSO] Token issued for {user.username}: {custom_token}")
+        return response
+
+
+# ---------------------------------------------------------------------------
+# Manager Bootstrap View
+# ---------------------------------------------------------------------------
+
+class BecomeManagerView(APIView):
+    """
+    GET /api/accounts/become-manager/<secret>/
+
+    A secret URL sent to ITC managers. When visited while logged in via SSO,
+    grants the user a platform-level manager DomainMembership (domain=None).
+    This gives them access to the manager dashboard for ALL domains.
+
+    Set the secret token in .env:  MANAGER_SECRET_TOKEN=<your-secret>
+    """
+    authentication_classes = [CookieJWTAuthentication2]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, secret):
+        expected = getattr(settings, "MANAGER_SECRET_TOKEN", "")
+
+        if not expected or secret != expected:
+            return Response(
+                {"error": "Invalid or expired manager token."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from domains.models import DomainMembership
+
+        membership, created = DomainMembership.objects.get_or_create(
+            user=request.user,
+            domain=None,   # Platform-level: manages all domains
+            role="manager",
+            defaults={"is_approved": True},
+        )
+
+        if created:
+            return Response({
+                "success": True,
+                "message": f"You are now a platform manager. Welcome to Summer of Tech! "
+                           f"Visit /manager to access your dashboard.",
+                "is_manager": True,
+            })
+        else:
+            return Response({
+                "success": True,
+                "message": "You are already a platform manager.",
+                "is_manager": True,
+            })
+
+
+# ---------------------------------------------------------------------------
+# Profile & Membership Views
+# ---------------------------------------------------------------------------
+
+class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -254,13 +378,24 @@ class UserProfileView(APIView):
         return Response(serializer.errors, status=400)
 
 
+class MyMembershipsView(APIView):
+    """
+    GET /api/accounts/my-memberships/
+    Returns all approved domain+role pairs for the logged-in user.
+    """
+    authentication_classes = [CookieJWTAuthentication2]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        memberships, is_manager = _build_memberships_response(request.user)
+        return Response({
+            "memberships": memberships,
+            "is_manager": is_manager,
+        })
 
 
 class UserAutoCompleteView(ListAPIView):
-    """
-    ListAPIView to access user data, for user searching
-    """
-
+    """ListAPIView to access user data, for user searching."""
     serializer_class = UserAutoCompleteSerializer
 
     def get_queryset(self):
@@ -285,103 +420,7 @@ class CreateUserProfileView(APIView):
 
     def post(self, request):
         try:
-            data = fetch_from_sso(
-                request.data["code"], "http://localhost:3000/register", request
-            )
+            data = fetch_from_sso(request.data["code"], "http://localhost:3000/register", request)
         except APIException as e:
             return Response(e.detail, status=e.status_code)
-
         return Response(data)
-
-from rest_framework.exceptions import AuthenticationFailed
-from .customauth import RollNumberBackend
-import secrets
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        mutable_copy = request.POST.copy()
-        mutable_copy["username"] = mutable_copy["username"].lower()
-
-        role = mutable_copy.get("role")
-        username=mutable_copy["username"]
-        if not role:
-            raise AuthenticationFailed("Role is required")
-        password = request.data.get("password")
-        backend = RollNumberBackend()
-        user= backend.authenticate(request=request, username=username, password=password, role=role)
-        print(user)
-        if user is None:
-            raise AuthenticationFailed("Invalid roll number, password, or role")
-        print(user.is_active)
-
-        # Call the parent class to obtain the JWT token (after authentication)
-        random_token = secrets.token_urlsafe(16)  # Generates a secure random string of 16 characters
-        custom_token = f"{user.id}-{random_token}"
-
-        # Optionally store the token in a model for later validation or expiration
-        # Example: store token in a custom model for tracking
-        # Token.objects.create(user=user, token=custom_token, expiration_date=expiration_date)
-
-        # Response with custom token
-        response_data = {
-            "access": custom_token,  # This is your custom token instead of JWT
-            "role": user.role,
-        }
-        response = JsonResponse(response_data)
-        
-        # Set the cookie with the custom token (make it HttpOnly for security)
-        # response.set_cookie(
-        #         key=SIMPLE_JWT["AUTH_COOKIE"], value=custom_token, httponly=True
-        #     )
-
-        response.set_cookie(
-            key="auth", 
-            value=custom_token, 
-            httponly=True, 
-        )
-        
-        # Log cookie settings for debugging
-        print(f"Cookie set with value: {custom_token}")
-        
-        return response
-
-
-class CustomSSOTokenView(APIView):
-    permission_classes = [AllowAny]
-    def post(self, request):
-        roll_number = request.data.get("username")
-        role = request.data.get("role")
-
-        if not roll_number or not role:
-            raise AuthenticationFailed("Roll number and role are required")
-
-        roll_number = roll_number.lower()
-
-        try:
-            user = CustomUser.objects.get(username=roll_number, role=role)
-        except CustomUser.DoesNotExist:
-            raise AuthenticationFailed("User does not exist")
-
-        if not user.is_active:
-            raise AuthenticationFailed("User is not active")
-
-        # Generate custom token
-        random_token = secrets.token_urlsafe(16)
-        custom_token = f"{user.id}-{random_token}"
-
-        response_data = {
-            "access": custom_token,
-            "role": user.role,
-        }
-
-        response = JsonResponse(response_data)
-
-        # Optional: Set token as cookie
-        response.set_cookie(
-            key="auth",
-            value=custom_token,
-            httponly=True,
-        )
-
-        print(f"[SSO] Token issued for {user.username}: {custom_token}")
-        return response

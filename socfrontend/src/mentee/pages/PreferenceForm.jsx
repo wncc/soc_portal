@@ -602,7 +602,7 @@
 // };
 
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import api from '../../utils/api';
 
 export default function PreferenceForm() {
@@ -612,20 +612,29 @@ export default function PreferenceForm() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(false);
   const [error1, setError1] = useState(false);
+  const { domain } = useParams();
 
   useEffect(() => {
+    const endpoint = domain
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`;
+    
     api
-      .get(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`)
+      .get(endpoint)
       .then((response) => setDetails(response.data))
       .catch((error) => console.error('Error fetching projects:', error));
-  }, []);
+  }, [domain]);
 
   useEffect(() => {
+    const endpoint = domain
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/preference/?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/preference`;
+    
     api
-      .get(`${process.env.REACT_APP_BACKEND_URL}/projects/preference`)
+      .get(endpoint)
       .then((response) => setUserPreference(response.data))
       .catch((error) => console.error('Error fetching preferences:', error));
-  }, []);
+  }, [domain]);
 
   const [selectedProjects, setSelectedProjects] = useState(['', '', '']);
   const [data, setData] = useState([
@@ -635,11 +644,11 @@ export default function PreferenceForm() {
   ]);
 
   if (userPreference.length > 0) {
-    return <Navigate to="/PreferenceFormFilled" />;
+    return <Navigate to={domain ? `/${domain}/PreferenceFormFilled` : '/PreferenceFormFilled'} />;
   }
 
   if (submitted) {
-    return <Navigate to="/PreferenceFormFilled" />;
+    return <Navigate to={domain ? `/${domain}/PreferenceFormFilled` : '/PreferenceFormFilled'} />;
   }
 
   return (
@@ -661,9 +670,10 @@ export default function PreferenceForm() {
                 setPage={setPage}
                 selectedProjects={selectedProjects}
                 setSelectedProjects={setSelectedProjects}
-                setSubmitted={setSubmitted} // Pass submit handler to third page only
+                setSubmitted={setSubmitted}
                 setError={setError}
                 setError1={setError1}
+                domain={domain}
               />
             )}
           </form>
@@ -687,6 +697,7 @@ const Page = ({
   setSubmitted,
   setError,
   setError1,
+  domain,
 }) => {
   const [showConfirmPopup, setShowConfirmPopup] = useState(false); // <-- new
   useEffect(() => {
@@ -720,6 +731,9 @@ const Page = ({
     const submitData = filteredData.map((entry) => {
       const formData = new FormData();
       Object.keys(entry).forEach((key) => formData.append(key, entry[key]));
+      if (domain) {
+        formData.append('domain', domain);
+      }
       return api.post(`${process.env.REACT_APP_BACKEND_URL}projects/preference/`, formData);
     });
 

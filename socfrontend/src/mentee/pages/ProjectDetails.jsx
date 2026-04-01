@@ -24,7 +24,7 @@ export default function ProjectDetails(props) {
     'code': '',
     'season': 1,
   });
-  let { ProjectId } = useParams();
+  let { ProjectId, domain } = useParams();
   ProjectId = parseInt(ProjectId);
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,22 +52,22 @@ export default function ProjectDetails(props) {
 
   const [Added, setAdded] = useState();
   useEffect(() => {
-    api.get(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`)
+    const endpoint = domain
+      ? `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/?domain=${domain}`
+      : `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`;
+    
+    api.get(endpoint)
       .then((response) => {
-        // console.log(response.data);
         setWishlist(response.data);
         setIsLoading(false);
-        // const isAdded = wishlist.some((item) => item.id === details.id);
         const isAdded = response.data.some((item) => item.id === ProjectId);
         setAdded(isAdded);
-        // console.log(isAdded);
-            
       })
       .catch((error) => {
         console.error('Error fetching card image:', error);
         setIsLoading(false);
       });
-  }, [Added]);
+  }, [Added, domain, ProjectId]);
 
   const wishDetails = {
     project_id: details.id,
@@ -84,21 +84,24 @@ export default function ProjectDetails(props) {
         
   const WishlistAdd = (e) => {
     if (!Added) {
-      // console.log(formData);
-          
+      if (domain) {
+        formData.append('domain', domain);
+      }
+      
       api
         .post(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/`, formData)
         .then((res) => {
-          // console.log('hi',res);
           setAdded(true);
         })
         .catch((err) => console.log(err));
     } 
     else {
-            
-      api.delete(`${process.env.REACT_APP_BACKEND_URL}/projects/wishlist?project_id=${details.id}`)
+      const deleteUrl = domain
+        ? `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist/?project_id=${details.id}&domain=${domain}`
+        : `${process.env.REACT_APP_BACKEND_URL}/projects/wishlist?project_id=${details.id}`;
+      
+      api.delete(deleteUrl)
         .then((res) => {
-          // console.log(res);
           setAdded(false);
         })
         .catch((err) => console.log(err));

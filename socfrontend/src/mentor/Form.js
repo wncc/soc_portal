@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate, useParams } from 'react-router-dom'; 
 import axios from 'axios';
 import './Form.css';
 
 const Form = () => {
   const navigate = useNavigate();
+  const { domain } = useParams();
+  const [domainData, setDomainData] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -30,15 +33,42 @@ const Form = () => {
     },
   };
 
+  // Fetch domain data to check permissions
+  useEffect(() => {
+    const fetchDomainData = async () => {
+      if (!domain) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`,
+          axiosConfig
+        );
+        setDomainData(response.data);
+        
+        if (!response.data.project_creation_open) {
+          alert('Project creation is currently closed for this domain.');
+          navigate(domain ? `/${domain}/mentor/home` : '/mentor/home');
+        }
+      } catch (error) {
+        console.error('Error fetching domain data:', error);
+      }
+      setLoading(false);
+    };
+    
+    fetchDomainData();
+  }, [domain]);
+
   useEffect(() => {
     const fetchMentorData = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile`,
-          axiosConfig,
-        );
-        // console.log('Mentor Data:', response.data);
-
+        const endpoint = domain
+          ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/?domain=${domain}`
+          : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`;
+        
+        const response = await axios.get(endpoint, axiosConfig);
         const mentorName = response.data.mentor.user_profile.name;
 
         setFormData((prevData) => ({
@@ -51,7 +81,7 @@ const Form = () => {
     };
 
     fetchMentorData();
-  }, []);
+  }, [domain]);
 
   // Handle Input Change
   const handleChange = (e) => {
@@ -69,16 +99,17 @@ const Form = () => {
     }  
 
     try {
-      // First request
-      const profileResponse = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`,
-        formData,
-        axiosConfig,
-      );
+      const endpoint = domain
+        ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/?domain=${domain}`
+        : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/`;
+      
+      const dataToSubmit = domain ? { ...formData, domain } : formData;
+      
+      const profileResponse = await axios.post(endpoint, dataToSubmit, axiosConfig);
       console.log('Project added:', profileResponse.data);
   
       alert('Project submitted successfully!');
-      navigate('/mentor/home');
+      navigate(domain ? `/${domain}/mentor/home` : '/mentor/home');
   
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -88,12 +119,24 @@ const Form = () => {
 
   // console.log(formData);
 
+  if (loading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="flex gap-2">
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lp-container">
       <div className="lp-box">
-        <h1 className="lp-title">SOC Project Submission Form</h1>
+        <h1 className="lp-title">{domainData?.name || 'SOC'} Project Submission Form</h1>
         <p className="lp-description">
-          SOC is a great way to convert your ideas into reality and guide mentees in the process of building an awesome end product.
+          {domainData?.name || 'SOC'} is a great way to convert your ideas into reality and guide mentees in the process of building an awesome end product.
         </p>
         <form className="lp-form" onSubmit={handleSubmit}>
           

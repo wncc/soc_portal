@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import './Form.css'; // Same styling as the original Form
 
 const EditProject = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { domain } = useParams();
   const { projectId } = location.state || {};
+  const [domainData, setDomainData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -30,6 +33,34 @@ const EditProject = () => {
       Authorization: `Bearer ${token}`,
     },
   };
+
+  // Fetch domain data to check permissions
+  useEffect(() => {
+    const fetchDomainData = async () => {
+      if (!domain) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`,
+          axiosConfig
+        );
+        setDomainData(response.data);
+        
+        if (!response.data.project_editing_open) {
+          alert('Project editing is currently closed for this domain.');
+          navigate(domain ? `/${domain}/mentor/home` : '/mentor/home');
+        }
+      } catch (error) {
+        console.error('Error fetching domain data:', error);
+      }
+      setLoading(false);
+    };
+    
+    fetchDomainData();
+  }, [domain]);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -79,24 +110,36 @@ const EditProject = () => {
     }
 
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${projectId}/`,
-        formData,
-        axiosConfig
-      );
+      const endpoint = domain
+        ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${projectId}/?domain=${domain}`
+        : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${projectId}/`;
+      
+      const response = await axios.put(endpoint, formData, axiosConfig);
       console.log('Project updated:', response.data);
       alert('Project updated successfully!');
-      navigate('/mentor/home');
+      navigate(domain ? `/${domain}/mentor/home` : '/mentor/home');
     } catch (error) {
       console.error('Error updating project:', error);
       alert('Failed to update the project.');
     }
   };
 
+  if (loading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="flex gap-2">
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+          <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="lp-container">
       <div className="lp-box">
-        <h1 className="lp-title">Edit SOC Project</h1>
+        <h1 className="lp-title">Edit {domainData?.name || 'SOC'} Project</h1>
         <form className="lp-form" onSubmit={handleSubmit}>
           {/* Same exact form fields as in your add-project form */}
           <div className="lp-form-group">

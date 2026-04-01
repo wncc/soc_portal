@@ -3,12 +3,10 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, password, role, **extra_fields):
+    def create_user(self, username, password, **extra_fields):
         if not username:
             raise ValueError("The Username field is required")
-        if not role:
-            raise ValueError("The Role field is required")
-        user = self.model(username=username, role=role, **extra_fields)
+        user = self.model(username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -16,7 +14,6 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, username, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields['role'] = 'admin'
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError("Superuser must have is_staff=True.")
@@ -27,29 +24,22 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    ROLE_CHOICES = [
-        ('mentee', 'Mentee'),
-        ('mentor', 'Mentor'),
-    ]
-
-    username = models.CharField(max_length=150)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    """
+    One row per real person (roll number).
+    Roles are now determined by DomainMembership, not stored here.
+    """
+    username = models.CharField(max_length=150, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['role']
-
-    class Meta:
-        # Ensure combination of username and role is unique
-        constraints = [
-            models.UniqueConstraint(fields=['username', 'role'], name='unique_username_role')
-        ]
+    REQUIRED_FIELDS = []
 
     def __str__(self):
-        return f"{self.username} ({self.role})"
+        return self.username
+
     
 
 

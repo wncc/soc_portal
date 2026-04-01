@@ -13,6 +13,11 @@ PORTAL_SETTINGS = {
     "CURRENT_ACTIVE_SEASON_ID": 1,
 }
 
+# Secret token for the manager bootstrap URL.
+# Share /become-manager/<MANAGER_SECRET_TOKEN> only with ITC managers.
+# Change this in production via environment variable!
+MANAGER_SECRET_TOKEN = os.getenv("MANAGER_SECRET_TOKEN", "itc-summer-of-tech-admin-2025")
+
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-d+#y%l^0ihv^!n85jt7ckxco6(b=0(a3+e+fml#3t0ef2gbs3k",
@@ -48,6 +53,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "accounts",
     "projects",
+    "domains",
     "gunicorn",
 ]
 

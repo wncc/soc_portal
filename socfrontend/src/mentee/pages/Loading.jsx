@@ -1,145 +1,3 @@
-// import { useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-// import api from "../../utils/api";
-
-// const Loading = () => {
-//   const navigate = useNavigate();
-
-//   const departmentMap = {
-//     AE: "Aerospace Engineering",
-//     BS: "Biosciences and Bioengineering",
-//     CH: "Chemical Engineering",
-//     CY: "Chemistry",
-//     CE: "Civil Engineering",
-//     CSE: "Computer Science and Engineering",
-//     ES: "Earth Sciences",
-//     ECON: "Economics",
-//     EE: "Electrical Engineering",
-//     EN: "Energy Science and Engineering",
-//     EP: "Engineering Physics",
-//     EV: "Environmental Science and Engineering",
-//     HSS: "Humanities and Social Sciences",
-//     IDC: "Industrial Design Centre",
-//     MA: "Mathematics",
-//     ME: "Mechanical Engineering",
-//     MM: "Metallurgical Engineering and Materials Science",
-//     PH: "Physics",
-//     IEOR: "Industrial Engineering and Operations Research",
-//     OTHER: "Other",
-//   };
-
-//   function getYearChoice(degree, passingYear) {
-//     const currentYear = new Date().getFullYear();
-//     const yearsLeft = passingYear - currentYear;
-
-//     if (degree === "B.Tech") {
-//       if (yearsLeft === 4) return "First Year";
-//       if (yearsLeft === 3) return "Second Year";
-//       if (yearsLeft === 2) return "Third Year";
-//       if (yearsLeft === 1) return "Fourth Year";
-//       if (yearsLeft === 0) return "Fifth Year"; // for dual degrees
-//     } else if (degree === "M.Tech") {
-//       return "M.Tech";
-//     } else if (degree === "Ph.D.") {
-//       return "Ph.D.";
-//     }
-//     return "Other";
-//   }
-
-//   useEffect(() => {
-//     const accessid = localStorage.getItem("accessid");
-//     const role = "mentor";
-
-//     const isMentor = true;
-
-//     const doSSOLogin = async () => {
-//       if (!accessid) {
-//         alert("No access ID found");
-//         navigate("/login");
-//         return;
-//       }
-
-//       try {
-//         const ssoRes = await api.post(
-//           `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`,
-//           { accessid }
-//         );
-
-//         const user = ssoRes.data;
-//         console.log("SSO User Data:", user);
-
-//         const department = departmentMap[user.department] || "Other";
-//         const year = getYearChoice(user.degree, user.passing_year);
-
-//         // Step 2: Try registering the user
-//         try {
-//           const formData = new FormData();
-//           formData.append("role", role);
-//           formData.append("name", user.name);
-//           formData.append("roll_number", user.roll);
-//           formData.append("phone_number", "0000000000"); // placeholder
-//           formData.append("password", user.roll); // dummy
-//           formData.append("year", year);
-//           formData.append("department", department);
-
-//           await api.post(
-//             `${process.env.REACT_APP_BACKEND_URL}/accounts/register_sso/`,
-//             formData
-//           );
-//           console.log("User registered successfully via SSO");
-
-//           localStorage.setItem("authtoken", accessid);
-//           localStorage.removeItem('accessid');
-//           localStorage.setItem("role", role);
-
-//           if (isMentor) {
-//             navigate("/mentor/home");
-//           } else {
-//             window.location.reload();
-//           }
-//         } catch (err) {
-//           if (err.response?.data?.error === "User already exists") {
-//             console.log("User already registered, continuing login...");
-//             localStorage.setItem("authToken", accessid);
-//             const authtoken = localStorage.getItem("authtoken");
-//             localStorage.setItem("role", role);
-//             console.log(isMentor,authtoken,role);
-//             localStorage.removeItem('accessid');
-//             if (isMentor) {
-//               navigate("/mentor/home");
-//             } else {
-//               window.location.reload();
-//             }
-//           } else {
-//             console.error("Registration failed", err);
-//             localStorage.removeItem("authtoken");
-//             localStorage.removeItem('accessid');
-//             alert("Failed to register. Please try again.");
-//             navigate("/login");
-//             return;
-//           }
-//         }
-//       } catch (err) {
-//         console.error("SSO Login Failed:", err);
-//         localStorage.removeItem('accessid');
-//         alert("SSO Login failed. Please try again.");
-//         navigate("/login");
-//       }
-//     };
-
-//     doSSOLogin();
-//   }, [navigate]);
-
-//   return (
-//     <div className="flex items-center justify-center h-screen flex-col">
-//       <p className="text-lg text-gray-700">Logging you in via SSO...</p>
-//       ;;;;;;;
-//     </div>
-//   );
-// };
-
-// export default Loading;
-
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
@@ -148,92 +6,102 @@ const Loading = () => {
   const navigate = useNavigate();
 
   const departmentMap = {
-    AE: 'Aerospace Engineering',
-    BS: 'Biosciences and Bioengineering',
-    CH: 'Chemical Engineering',
-    CY: 'Chemistry',
-    CE: 'Civil Engineering',
-    CSE: 'Computer Science and Engineering',
-    ES: 'Earth Sciences',
-    ECON: 'Economics',
-    EE: 'Electrical Engineering',
-    EN: 'Energy Science and Engineering',
-    EP: 'Engineering Physics',
-    EV: 'Environmental Science and Engineering',
-    HSS: 'Humanities and Social Sciences',
-    IDC: 'Industrial Design Centre',
-    MA: 'Mathematics',
-    ME: 'Mechanical Engineering',
+    AE: 'Aerospace Engineering', BS: 'Biosciences and Bioengineering',
+    CH: 'Chemical Engineering', CY: 'Chemistry', CE: 'Civil Engineering',
+    CSE: 'Computer Science and Engineering', ES: 'Earth Sciences',
+    ECON: 'Economics', EE: 'Electrical Engineering', EN: 'Energy Science and Engineering',
+    EP: 'Engineering Physics', EV: 'Environmental Science and Engineering',
+    HSS: 'Humanities and Social Sciences', IDC: 'Industrial Design Centre',
+    MA: 'Mathematics', ME: 'Mechanical Engineering',
     MM: 'Metallurgical Engineering and Materials Science',
-    PH: 'Physics',
-    IEOR: 'Industrial Engineering and Operations Research',
-    OTHER: 'Other',
+    PH: 'Physics', IEOR: 'Industrial Engineering and Operations Research', OTHER: 'Other',
   };
 
   function getYearChoice(degree, passingYear) {
-    const currentYear = new Date().getFullYear();
-    const yearsLeft = passingYear - currentYear;
-
+    const yearsLeft = passingYear - new Date().getFullYear();
     if (degree === 'B.Tech') {
       if (yearsLeft === 4) return 'First Year';
       if (yearsLeft === 3) return 'Second Year';
       if (yearsLeft === 2) return 'Third Year';
       if (yearsLeft === 1) return 'Fourth Year';
-      if (yearsLeft === 0) return 'Fifth Year';
-    } else if (degree === 'M.Tech') return 'M.Tech';
-    else if (degree === 'Ph.D.') return 'Ph.D.';
+      return 'Fifth Year';
+    }
+    if (degree === 'M.Tech') return 'M.Tech';
+    if (degree === 'Ph.D.') return 'Ph.D.';
     return 'Other';
   }
 
-  useEffect(() => {
-    const accessid = localStorage.getItem('accessid');
-    const role = localStorage.getItem('role');
-    const isMentor = role === 'mentor';
-
-    if (!accessid) {
-      alert('No access ID found');
-      navigate('/login');
+  const handleRedirect = (memberships, isManager) => {
+    // If a specific post-login destination was saved (e.g. /become-manager/:secret),
+    // honour it before doing the default membership-based routing.
+    const pending = sessionStorage.getItem('post_login_redirect');
+    if (pending) {
+      sessionStorage.removeItem('post_login_redirect');
+      navigate(pending);
       return;
     }
 
+    // Always redirect to home page after login
+    // User can then choose which domain/role to access
+    navigate('/');
+    window.location.reload(); // Force refresh to update App.js state
+  };
+
+  useEffect(() => {
+    const accessid = localStorage.getItem('accessid');
+    if (!accessid) { alert('No access ID found'); navigate('/login'); return; }
+
     const doSSOLogin = async () => {
       try {
+        // Step 1: Fetch SSO user data
         const ssoRes = await api.post(
-          `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`,
-          { accessid },
+          `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`, { accessid }
         );
-
         const user = ssoRes.data;
         const department = departmentMap[user.department] || 'Other';
         const year = getYearChoice(user.degree, user.passing_year);
 
+        // Step 2: Register user (no role param — one user record per roll number)
         const formData = new FormData();
-        formData.append('role', role);
         formData.append('name', user.name);
         formData.append('roll_number', user.roll);
-        formData.append('phone_number', '0000000000'); // placeholder
-        formData.append('password', user.roll.toLowerCase()); // dummy
+        formData.append('phone_number', '0000000000');
+        formData.append('password', user.roll.toLowerCase());
         formData.append('year', year);
         formData.append('department', department);
 
         try {
-          // Attempt to register
           await api.post(`${process.env.REACT_APP_BACKEND_URL}/accounts/register_sso/`, formData);
-          console.log('Registered successfully');
-
-          // Now try logging in
-          await loginUser(user.roll, role);
         } catch (err) {
-          if (err.response?.data?.error === 'User already exists') {
-            console.log('Already registered. Logging in...');
-            await loginUser(user.roll, role);
-          } else {
-            console.error('Registration failed:', err);
+          if (err.response?.data?.error !== 'User already exists') {
             alert('Registration failed. Try again.');
             localStorage.removeItem('accessid');
             navigate('/login');
+            return;
           }
+          // User already exists — continue to login
         }
+
+        // Step 3: Get auth token (no role param in new architecture)
+        const loginForm = new FormData();
+        loginForm.append('username', user.roll);
+        loginForm.append('password', user.roll.toLowerCase());
+        const loginRes = await api.post(
+          `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`, loginForm
+        );
+
+        const token = loginRes.data.access;
+        const memberships = loginRes.data.memberships || [];
+        const isManager = loginRes.data.is_manager || false;
+
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('memberships', JSON.stringify(memberships));
+        localStorage.setItem('is_manager', isManager ? 'true' : 'false');
+        // Legacy role fallback for components that still read localStorage.role
+        localStorage.setItem('role', memberships.find((m) => m.is_approved)?.role || 'mentee');
+        localStorage.removeItem('accessid');
+
+        handleRedirect(memberships, isManager);
       } catch (err) {
         console.error('SSO Login Failed:', err);
         localStorage.removeItem('accessid');
@@ -242,45 +110,22 @@ const Loading = () => {
       }
     };
 
-    const loginUser = async (roll_number, role) => {
-      try {
-        const loginForm = new FormData();
-        loginForm.append('username', roll_number);
-        loginForm.append('password', roll_number); // since dummy password = roll
-        loginForm.append('role', role);
-
-        const loginRes = await api.post(
-          `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`,
-          loginForm,
-        );
-
-        const token = loginRes.data.access;
-        const userRole = loginRes.data.role;
-
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('role', userRole);
-        localStorage.removeItem('accessid');
-
-        if (userRole === 'mentor') {
-          navigate('/mentor/home');
-        } else {
-          window.location.reload();
-        }
-      } catch (loginErr) {
-        console.log('Login failed:', loginErr);
-        alert('Login failed. Please try again.');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessid');
-        navigate('/login');
-      }
-    };
-
     doSSOLogin();
   }, [navigate]);
 
   return (
-    <div className="flex items-center justify-center h-screen flex-col">
-      <p className="text-lg text-gray-700">Logging you in via SSO...</p>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', background: '#080c14', flexDirection: 'column', gap: '16px',
+      fontFamily: 'Inter, sans-serif',
+    }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: '50%',
+        border: '3px solid rgba(124,58,237,0.2)', borderTopColor: '#7c3aed',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>Logging you in via ITC SSO…</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };

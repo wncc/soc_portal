@@ -2,11 +2,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API_URL}/`,
-  // withCredentials: true,  // This is crucial for sending cookies
-  // headers: {
-  //   'Content-Type': 'application/json',
-  // }
+  baseURL: process.env.REACT_APP_BACKEND_URL,
+  withCredentials: true,
 });
 
 // Add request interceptor to include token from localStorage
