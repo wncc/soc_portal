@@ -2,8 +2,12 @@
 domains/admin.py  —  Admin for Domain and DomainMembership models
 """
 import csv
+from django import forms
 from django.contrib import admin
 from django.http import HttpResponse
+from django.shortcuts import render, redirect
+from django.urls import path
+from django.contrib import messages
 
 from .models import Domain, DomainMembership
 
@@ -30,7 +34,7 @@ class DomainAdmin(admin.ModelAdmin):
     list_display = (
         'slug', 'name', 'is_active', 'order',
         'mentor_count', 'mentee_count', 'manager_count', 'pending_count',
-        'created_at',
+        'created_at', 'bulk_import_link',
     )
     search_fields = ('slug', 'name')
     list_filter = ('is_active',)
@@ -41,6 +45,17 @@ class DomainAdmin(admin.ModelAdmin):
     actions = ['export_members_csv', 'activate_domains', 'deactivate_domains']
 
     readonly_fields = ('created_at',)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<int:domain_id>/bulk-import/',
+                self.admin_site.admin_view(self.bulk_import_view),
+                name='domains_domain_bulk_import',
+            ),
+        ]
+        return custom_urls + urls
 
     fieldsets = (
         (None, {
@@ -77,6 +92,13 @@ class DomainAdmin(admin.ModelAdmin):
         return obj.memberships.filter(is_approved=False).count()
     pending_count.short_description = '⏳ Pending'
 
+    def bulk_import_link(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        url = reverse('admin:domains_domain_bulk_import', args=[obj.pk])
+        return format_html('<a class="button" href="{}">📋 Bulk Import</a>', url)
+    bulk_import_link.short_description = 'Actions'
+
     @admin.action(description='Export all members of selected domains to CSV')
     def export_members_csv(self, request, queryset):
         response = HttpResponse(content_type='text/csv')
@@ -101,6 +123,105 @@ class DomainAdmin(admin.ModelAdmin):
     def deactivate_domains(self, request, queryset):
         updated = queryset.update(is_active=False)
         self.message_user(request, f'Deactivated {updated} domain(s).')
+
+    def bulk_import_view(self, request, domain_id):
+        """Custom view for bulk importing projects into a domain."""
+        from projects.bulk_import import parse_spreadsheet_data, bulk_import_projects as do_import
+        
+        domain = self.get_object(request, domain_id)
+        if domain is None:
+            self.message_user(request, 'Domain not found.', level=messages.ERROR)
+            return redirect('admin:domains_domain_changelist')
+        
+        if request.method == 'POST':
+            raw_data = ''
+            
+            # Check if file was uploaded
+            if 'spreadsheet_file' in request.FILES:
+                uploaded_file = request.FILES['spreadsheet_file']
+                file_name = uploaded_file.name.lower()
+                
+                try:
+                    # Handle Excel files
+                    if file_name.endswith(('.xlsx', '.xls')):
+                        try:
+                            import openpyxl
+                            import io
+                            
+                            # Read Excel file
+                            workbook = openpyxl.load_workbook(io.BytesIO(uploaded_file.read()))
+                            sheet = workbook.active
+                            
+                            # Convert to CSV format
+                            rows = []
+                            for row in sheet.iter_rows(values_only=True):
+                                rows.append(','.join([str(cell) if cell is not None else '' for cell in row]))
+                            raw_data = '\n'.join(rows)
+                        except ImportError:
+                            self.message_user(
+                                request, 
+                                'Excel support not installed. Please install openpyxl: pip install openpyxl',
+                                level=messages.ERROR
+                            )
+                            raw_data = ''
+                    else:
+                        # Handle CSV/TSV files
+                        raw_data = uploaded_file.read().decode('utf-8')
+                except UnicodeDecodeError:
+                    try:
+                        uploaded_file.seek(0)
+                        raw_data = uploaded_file.read().decode('latin-1')
+                    except Exception as e:
+                        self.message_user(request, f'Error reading file: {str(e)}', level=messages.ERROR)
+                        raw_data = ''
+                except Exception as e:
+                    self.message_user(request, f'Error processing file: {str(e)}', level=messages.ERROR)
+                    raw_data = ''
+            else:
+                # Use pasted data
+                raw_data = request.POST.get('spreadsheet_data', '')
+            
+            if not raw_data.strip():
+                self.message_user(request, 'No data provided. Please upload a file or paste data.', level=messages.ERROR)
+            else:
+                try:
+                    rows = parse_spreadsheet_data(raw_data)
+                    if not rows:
+                        self.message_user(request, 'No valid rows found in data.', level=messages.ERROR)
+                    else:
+                        success_count, errors = do_import(domain, rows, request)
+                        
+                        if success_count > 0:
+                            self.message_user(
+                                request,
+                                f'✓ Successfully imported {success_count} project(s) into {domain.name}.',
+                                level=messages.SUCCESS
+                            )
+                        
+                        if errors:
+                            for error in errors[:10]:
+                                self.message_user(request, f'⚠ {error}', level=messages.WARNING)
+                            if len(errors) > 10:
+                                self.message_user(
+                                    request,
+                                    f'... and {len(errors) - 10} more errors.',
+                                    level=messages.WARNING
+                                )
+                        
+                        if not errors or success_count > 0:
+                            return redirect('admin:domains_domain_changelist')
+                        
+                except Exception as e:
+                    self.message_user(request, f'Import failed: {str(e)}', level=messages.ERROR)
+        
+        context = {
+            **self.admin_site.each_context(request),
+            'domain': domain,
+            'opts': self.model._meta,
+            'has_view_permission': self.has_view_permission(request),
+            'title': f'Bulk Import Projects - {domain.name}',
+        }
+        return render(request, 'admin/domains/bulk_import_form.html', context)
 
 
 # ===========================================================================

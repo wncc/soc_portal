@@ -175,10 +175,10 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(Mentor)
 class MentorAdmin(admin.ModelAdmin):
     list_display = (
-        'mentor_name', 'roll_number', 'domain_slug', 'season',
+        'mentor_name', 'roll_number', 'phone_number', 'domain_slug', 'season',
         'project_count', 'project_list',
     )
-    search_fields = ('user__name', 'user__roll_number')
+    search_fields = ('user__name', 'user__roll_number', 'user__phone_number')
     list_filter = ('domain', 'season')
     list_per_page = 1000
     actions = ['export_mentors_csv']
@@ -201,6 +201,11 @@ class MentorAdmin(admin.ModelAdmin):
     roll_number.short_description = 'Roll No'
     roll_number.admin_order_field = 'user__roll_number'
 
+    def phone_number(self, obj):
+        return obj.user.phone_number
+    phone_number.short_description = 'Phone'
+    phone_number.admin_order_field = 'user__phone_number'
+
     def domain_slug(self, obj):
         return obj.domain.slug.upper() if obj.domain else '—'
     domain_slug.short_description = 'Domain'
@@ -221,10 +226,10 @@ class MentorAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="mentors.csv"'
         writer = csv.writer(response)
-        writer.writerow(['Roll No', 'Name', 'Domain', 'Season', '# Projects', 'Projects'])
+        writer.writerow(['Roll No', 'Name', 'Phone', 'Domain', 'Season', '# Projects', 'Projects'])
         for m in queryset.select_related('user', 'domain').prefetch_related('projects'):
             writer.writerow([
-                m.user.roll_number, m.user.name,
+                m.user.roll_number, m.user.name, m.user.phone_number,
                 m.domain.slug if m.domain else '',
                 m.season,
                 m.projects.count(),

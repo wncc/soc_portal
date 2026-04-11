@@ -104,19 +104,19 @@ export default function Projects() {
             onClick={() => navigate(domain ? `/${domain}/current_projects` : '/current_projects')}
             className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            📚 Projects
+             Projects
           </button>
           <button
             onClick={() => navigate(domain ? `/${domain}/wishlist` : '/wishlist')}
             className="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            ⭐ Wishlist
+             Wishlist
           </button>
           <button
             onClick={() => navigate(domain ? `/${domain}/PreferenceForm` : '/PreferenceForm')}
             className="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            📝 Preferences
+             Preferences
           </button>
         </div>
       </div>

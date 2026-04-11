@@ -5,10 +5,49 @@ from accounts.serializers import UserProfileSerializer
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    mentor_details = serializers.SerializerMethodField()
+    co_mentor_details = serializers.SerializerMethodField()
+    
     class Meta:
         model = Project
         fields = "__all__"
         read_only_fields = ["season"]
+    
+    def get_mentor_details(self, obj):
+        """Get linked mentor objects with phone numbers"""
+        mentors = Mentor.objects.filter(projects=obj).select_related('user')
+        return [{
+            'name': m.user.name,
+            'roll_number': m.user.roll_number,
+            'phone_number': m.user.phone_number
+        } for m in mentors]
+    
+    def get_co_mentor_details(self, obj):
+        """Parse co_mentor_info to extract details"""
+        import re
+        if not obj.co_mentor_info or obj.co_mentor_info == 'NA':
+            return []
+        
+        matches = re.findall(r'([A-Za-z\s]+)\s*\((\w+)\)', obj.co_mentor_info)
+        co_mentors = []
+        for name, roll in matches:
+            # Try to get phone number from UserProfile
+            try:
+                from accounts.models import CustomUser, UserProfile
+                user = CustomUser.objects.get(username=roll.strip().lower())
+                profile = UserProfile.objects.get(user=user)
+                co_mentors.append({
+                    'name': name.strip(),
+                    'roll_number': roll.strip(),
+                    'phone_number': profile.phone_number
+                })
+            except:
+                co_mentors.append({
+                    'name': name.strip(),
+                    'roll_number': roll.strip(),
+                    'phone_number': 'Not available'
+                })
+        return co_mentors
 
 
 class BasicProjectSerializer(serializers.ModelSerializer):

@@ -602,7 +602,7 @@
 // };
 
 import React, { useState, useEffect } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 
 export default function PreferenceForm() {
@@ -613,6 +613,7 @@ export default function PreferenceForm() {
   const [error, setError] = useState(false);
   const [error1, setError1] = useState(false);
   const { domain } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const endpoint = domain
@@ -652,7 +653,31 @@ export default function PreferenceForm() {
   }
 
   return (
-    <div className="form h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
+    <div className="form min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
+      {/* Quick Navigation Bar */}
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-3 px-6">
+        <div className="max-w-screen-xl mx-auto flex gap-4">
+          <button
+            onClick={() => navigate(domain ? `/${domain}/current_projects` : '/current_projects')}
+            className="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Projects
+          </button>
+          <button
+            onClick={() => navigate(domain ? `/${domain}/wishlist` : '/wishlist')}
+            className="px-4 py-2 text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+             Wishlist
+          </button>
+          <button
+            onClick={() => navigate(domain ? `/${domain}/PreferenceForm` : '/PreferenceForm')}
+            className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+             Preferences
+          </button>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-lg">
           <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">

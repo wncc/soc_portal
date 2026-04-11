@@ -1,4 +1,19 @@
 python manage.py dumpdata > data.json
+# Set UTF-8 first
+$env:PYTHONIOENCODING="utf-8"
+
+# Dump accounts
+python manage.py dumpdata accounts --indent 2 --output accounts_data.json
+
+# Dump projects
+python manage.py dumpdata projects --indent 2 --output projects_data.json
+python -X utf8 manage.py dumpdata projects --indent 2 --output projects_data.json
+
+# Dump domains
+python manage.py dumpdata domains --indent 2 --output domains_data.json
+
+python -X utf8 manage.py dumpdata accounts projects domains --indent 2 --output data3.json
+
 (itc backend)
 ../rclone copy data.json gdrive:soc2025files/
 ./rclone copy /app/data.json gdrive:soc2025files/

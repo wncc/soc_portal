@@ -138,15 +138,33 @@ export default function ProjectDetails(props) {
                 <div className="h-12 rounded-lg">
                   <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Mentors:</h4>
                   <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
-                    <p>{details.mentor}</p>
+                    {details.mentor_details && details.mentor_details.length > 0 ? (
+                      details.mentor_details.map((mentor, idx) => (
+                        <li key={idx} className="mb-2">
+                          <p className="font-semibold">{mentor.name} ({mentor.roll_number})</p>
+                          <p className="text-sm text-gray-600"> {mentor.phone_number}</p>
+                        </li>
+                      ))
+                    ) : (
+                      <p>{details.mentor}</p>
+                    )}
                   </ul>
                 </div>
                 <div className="h-28 rounded-lg">
                   <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Co-Mentors:</h4>
                   <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
-                    <li>
-                      <p dangerouslySetInnerHTML={{ __html: details.co_mentor_info.replace(/\\r\\n/g, '<br>') }} />
-                    </li>
+                    {details.co_mentor_details && details.co_mentor_details.length > 0 ? (
+                      details.co_mentor_details.map((coMentor, idx) => (
+                        <li key={idx} className="mb-2">
+                          <p className="font-semibold">{coMentor.name} ({coMentor.roll_number})</p>
+                          <p className="text-sm text-gray-600"> {coMentor.phone_number}</p>
+                        </li>
+                      ))
+                    ) : (
+                      <li>
+                        <p dangerouslySetInnerHTML={{ __html: details.co_mentor_info.replace(/\\r\\n/g, '<br>') }} />
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>

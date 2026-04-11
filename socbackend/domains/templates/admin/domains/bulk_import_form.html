@@ -1,0 +1,144 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:domains_domain_changelist' %}">Domains</a>
+    &rsaquo; Bulk Import - {{ domain.name }}
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>📋 Bulk Import Projects into {{ domain.name }}</h1>
+
+<div style="max-width: 1200px; margin: 20px 0;">
+    <div style="background: #000000; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+        <h2>Instructions</h2>
+        
+        <h3>Method 1: Upload File (Easiest)</h3>
+        <ol>
+            <li>Prepare your spreadsheet in Excel/Google Sheets with the required columns</li>
+            <li>Save/Export as CSV or TSV file</li>
+            <li>Click "Choose File" and select your file</li>
+            <li>Click "Import Projects"</li>
+        </ol>
+        
+        <h3>Method 2: Copy & Paste</h3>
+        <ol>
+            <li>Prepare your spreadsheet in Excel/Google Sheets</li>
+            <li>Select all data including headers (Ctrl+A)</li>
+            <li>Copy (Ctrl+C / Cmd+C)</li>
+            <li>Paste into the text area below</li>
+            <li>Click "Import Projects"</li>
+        </ol>
+        
+        <h3>Required Columns:</h3>
+        <ul>
+            <li><strong>title</strong> - Project title (required)</li>
+            <li><strong>mentee_max</strong> - Maximum number of mentees (required)</li>
+            <li><strong>mentor</strong> - Main mentor in format "Name (roll)" or just "roll" (required)</li>
+        </ul>
+        
+        <h3>Optional Columns:</h3>
+        <ul>
+            <li><strong>general_category</strong> - Machine Learning, Development, Blockchain, etc.</li>
+            <li><strong>specific_category</strong> - More specific category</li>
+            <li><strong>co_mentors</strong> - Format: "Name1 (roll1), Name2 (roll2)"</li>
+            <li><strong>weekly_meets</strong> - Number of weekly meetings</li>
+            <li><strong>description</strong> - Project description</li>
+            <li><strong>timeline</strong> - Project timeline</li>
+            <li><strong>checkpoints</strong> - Project checkpoints</li>
+            <li><strong>prerequisites</strong> - Prerequisites for the project</li>
+            <li><strong>banner_image_link</strong> - URL to banner image</li>
+        </ul>
+    </div>
+
+    <div style="background: #8e8e8e; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h3>📝 Spreadsheet Template</h3>
+        <p><strong>Download template files from:</strong></p>
+        <ul>
+            <li><code>socbackend/projects/BULK_IMPORT_TEMPLATE.csv</code> - CSV format</li>
+            <li><code>socbackend/projects/BULK_IMPORT_TEMPLATE.tsv</code> - TSV format</li>
+        </ul>
+        
+        <p><strong>Or copy this header row to your spreadsheet:</strong></p>
+        <pre style="background: rgb(0, 0, 0); padding: 10px; overflow-x: auto; font-size: 12px;">title	general_category	specific_category	mentee_max	mentor	co_mentors	weekly_meets	description	timeline	checkpoints	prerequisites	banner_image_link</pre>
+        
+        <p><strong>Example row:</strong></p>
+        <pre style="background: rgb(0, 0, 0); padding: 10px; overflow-x: auto; font-size: 12px;">AI Chatbot	Machine Learning	NLP	3	John Doe (21b1234)	Alice Smith (21b5678), Bob Jones (21b9012)	2	Build an AI chatbot using transformers	Week 1-2: Setup, Week 3-4: Training	Checkpoint 1: Model selection, Checkpoint 2: Training complete	Python, PyTorch basics	https://example.com/banner.jpg</pre>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" style="margin-top: 20px;">
+        {% csrf_token %}
+        
+        <div style="background: #000000; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0;">Option 1: Upload File (Recommended)</h3>
+            <p>Upload a CSV or TSV file from your computer:</p>
+            <input 
+                type="file" 
+                name="spreadsheet_file" 
+                id="spreadsheet_file" 
+                accept=".csv,.tsv,.txt,.xlsx,.xls"
+                style="padding: 10px; border: 2px solid #417690; border-radius: 4px; background: rgb(20, 8, 8);"
+            />
+            <p style="margin-top: 10px; color: #dddddd; font-size: 13px;">
+                <strong>Accepted formats:</strong> .csv, .tsv, .xlsx, .xls, .txt
+            </p>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0; color: #999; font-weight: bold;">
+            — OR —
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h3> Option 2: Paste Data</h3>
+            <label for="spreadsheet_data" style="display: block; font-weight: bold; margin-bottom: 10px;">
+                Paste your spreadsheet data here (tab-separated or comma-separated):
+            </label>
+            <textarea 
+                name="spreadsheet_data" 
+                id="spreadsheet_data" 
+                rows="15" 
+                style="width: 100%; font-family: monospace; padding: 10px; border: 2px solid #ddd; border-radius: 4px;"
+                placeholder="Paste your copied spreadsheet data here...&#10;&#10;Example:&#10;title&#9;mentee_max&#9;mentor&#10;AI Chatbot&#9;3&#9;John (21b1234)&#10;Web3 DApp&#9;2&#9;Sarah (21b3456)"
+            ></textarea>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="submit" style="background: #417690; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                ✓ Import Projects
+            </button>
+            <a href="{% url 'admin:domains_domain_changelist' %}" style="margin-left: 10px; padding: 12px 24px; text-decoration: none; color: #666; border: 1px solid #ddd; border-radius: 4px; display: inline-block;">
+                Cancel
+            </a>
+        </div>
+    </form>
+    
+    <script>
+        // Clear textarea when file is selected
+        document.getElementById('spreadsheet_file').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                document.getElementById('spreadsheet_data').value = '';
+                document.getElementById('spreadsheet_data').placeholder = 'File selected: ' + this.files[0].name;
+            }
+        });
+        
+        // Clear file when textarea is used
+        document.getElementById('spreadsheet_data').addEventListener('input', function() {
+            if (this.value.trim()) {
+                document.getElementById('spreadsheet_file').value = '';
+            }
+        });
+    </script>
+</div>
+
+<style>
+    pre {
+        white-space: pre;
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
