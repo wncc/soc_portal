@@ -11,11 +11,8 @@ Key upgrades over the old admin:
 """
 
 import csv
-import io
 import re
-import zipfile
 from collections import defaultdict
-from statistics import mean
 
 from django.contrib import admin
 from django.db import models as dj_models
@@ -72,7 +69,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('domain', 'general_category')
     list_per_page = 1000
     inlines = [RankListInline]
-    actions = ['export_projects_csv', 'add_co_mentor_as_mentor', 'clear_banner_images']
+    actions = ['export_projects_csv', 'add_co_mentor_as_mentor', 'link_all_mentors', 'clear_banner_images']
 
     # ---- Computed columns ----
 
@@ -161,6 +158,83 @@ class ProjectAdmin(admin.ModelAdmin):
                 except UserProfile.DoesNotExist:
                     self.message_user(request, f'✗ No profile found for roll: {roll_number}')
         self.message_user(request, 'Co-mentor linking complete.')
+    
+    @admin.action(description='Link ALL mentors (main + co-mentors) to projects')
+    def link_all_mentors(self, request, queryset):
+        """
+        Links both main mentors and co-mentors to projects.
+        Creates DomainMembership and Mentor objects automatically.
+        """
+        from domains.models import DomainMembership
+        
+        linked_count = 0
+        not_found_count = 0
+        
+        for project in queryset.select_related('domain'):
+            rolls_to_link = []
+            
+            # Extract main mentor roll
+            mentor_match = re.search(r'\((\w+)\)', project.mentor)
+            if mentor_match:
+                rolls_to_link.append(mentor_match.group(1).lower())
+            elif project.mentor and project.mentor.lower() != 'na':
+                rolls_to_link.append(project.mentor.strip().lower())
+            
+            # Extract co-mentor rolls
+            if project.co_mentor_info and project.co_mentor_info.upper() != 'NA':
+                co_matches = re.findall(r'\((\w+)\)', project.co_mentor_info)
+                rolls_to_link.extend([r.lower() for r in co_matches])
+            
+            # Link each mentor
+            for roll in rolls_to_link:
+                try:
+                    user = CustomUser.objects.get(username=roll)
+                    profile = UserProfile.objects.get(user=user)
+                    
+                    # Create DomainMembership if doesn't exist
+                    membership, _ = DomainMembership.objects.get_or_create(
+                        user=user,
+                        domain=project.domain,
+                        role='mentor',
+                        defaults={'is_approved': True}
+                    )
+                    
+                    # Create Mentor object if doesn't exist
+                    mentor, created = Mentor.objects.get_or_create(
+                        user=profile,
+                        domain=project.domain,
+                        defaults={'season': '1'}
+                    )
+                    
+                    # Link project
+                    if project not in mentor.projects.all():
+                        mentor.projects.add(project)
+                        linked_count += 1
+                        self.message_user(
+                            request,
+                            f'✓ Linked {roll} to "{project.title}"'
+                        )
+                    
+                except CustomUser.DoesNotExist:
+                    not_found_count += 1
+                    self.message_user(
+                        request,
+                        f'✗ User not found: {roll} (will auto-link when they register)',
+                        level='warning'
+                    )
+                except UserProfile.DoesNotExist:
+                    not_found_count += 1
+                    self.message_user(
+                        request,
+                        f'✗ Profile not found: {roll}',
+                        level='warning'
+                    )
+        
+        self.message_user(
+            request,
+            f'Linking complete: {linked_count} linked, {not_found_count} not found',
+            level='success' if not_found_count == 0 else 'warning'
+        )
 
     @admin.action(description='Clear banner images for selected projects')
     def clear_banner_images(self, request, queryset):
@@ -176,12 +250,12 @@ class ProjectAdmin(admin.ModelAdmin):
 class MentorAdmin(admin.ModelAdmin):
     list_display = (
         'mentor_name', 'roll_number', 'phone_number', 'domain_slug', 'season',
-        'project_count', 'project_list',
+        'has_logged_in', 'project_count', 'project_list',
     )
     search_fields = ('user__name', 'user__roll_number', 'user__phone_number')
-    list_filter = ('domain', 'season')
+    list_filter = ('domain', 'season', 'user__user__last_login')
     list_per_page = 1000
-    actions = ['export_mentors_csv']
+    actions = ['export_mentors_csv', 'show_not_logged_in']
 
     def get_queryset(self, request):
         return (
@@ -205,6 +279,12 @@ class MentorAdmin(admin.ModelAdmin):
         return obj.user.phone_number
     phone_number.short_description = 'Phone'
     phone_number.admin_order_field = 'user__phone_number'
+    
+    def has_logged_in(self, obj):
+        # Check if user has ever logged in (has last_login set)
+        return '✅' if obj.user.user.last_login else '❌'
+    has_logged_in.short_description = 'Logged In'
+    has_logged_in.admin_order_field = 'user__user__last_login'
 
     def domain_slug(self, obj):
         return obj.domain.slug.upper() if obj.domain else '—'
@@ -226,16 +306,30 @@ class MentorAdmin(admin.ModelAdmin):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="mentors.csv"'
         writer = csv.writer(response)
-        writer.writerow(['Roll No', 'Name', 'Phone', 'Domain', 'Season', '# Projects', 'Projects'])
+        writer.writerow(['Roll No', 'Name', 'Phone', 'Domain', 'Season', 'Logged In', '# Projects', 'Projects'])
         for m in queryset.select_related('user', 'domain').prefetch_related('projects'):
             writer.writerow([
                 m.user.roll_number, m.user.name, m.user.phone_number,
                 m.domain.slug if m.domain else '',
                 m.season,
+                'Yes' if m.user.user.last_login else 'No',
                 m.projects.count(),
                 '; '.join(p.title for p in m.projects.all()),
             ])
         return response
+    
+    @admin.action(description='Show mentors who have NOT logged in')
+    def show_not_logged_in(self, request, queryset):
+        not_logged_in = queryset.filter(user__user__last_login__isnull=True)
+        count = not_logged_in.count()
+        if count == 0:
+            self.message_user(request, 'All selected mentors have logged in!')
+        else:
+            self.message_user(
+                request,
+                f'{count} mentors have NOT logged in yet. Use filter "Last login: Unknown" to see them.',
+                level='warning'
+            )
 
 
 # ===========================================================================
@@ -431,7 +525,7 @@ class RankListAdmin(admin.ModelAdmin):
     list_filter = ('project__domain', 'preference', 'rank')
     list_per_page = 1000
     ordering = ('project', 'rank')
-    actions = ['export_ranklist_csv', 'generate_final_selection']
+    actions = ['export_ranklist_csv']
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
@@ -460,9 +554,6 @@ class RankListAdmin(admin.ModelAdmin):
         return ', '.join(m.user.name for m in mentors) or '—'
     mentor_names_for_project.short_description = 'Mentors'
 
-    # -------------------------------------------------------------------------
-    # Export raw ranklist CSV
-    # -------------------------------------------------------------------------
     @admin.action(description='Export selected rank entries to CSV')
     def export_ranklist_csv(self, request, queryset):
         response = HttpResponse(content_type='text/csv')
@@ -483,194 +574,4 @@ class RankListAdmin(admin.ModelAdmin):
                 entry.mentee.user.roll_number, entry.mentee.user.name,
                 entry.rank, entry.preference,
             ])
-        return response
-
-    # -------------------------------------------------------------------------
-    # Generate final selection ZIP
-    # (preserved from original, updated for no-mentor-FK ranklist)
-    # -------------------------------------------------------------------------
-    @admin.action(description='Generate final mentee selection (ZIP with 3 CSVs)')
-    def generate_final_selection(self, request, queryset):
-        """
-        For each project in the selected ranklist entries:
-          1. Aggregate ranks across all mentors (now trivial — no dedup needed)
-          2. Sort by: frequency (desc), avg_rank (asc), best_preference (asc)
-          3. Assign mentees by preference round (pref 1 first, then 2, then 3)
-          4. Output ZIP: selected_mentees.csv, project_summary.csv,
-                         mentee_project_summary.csv, debug_logs.csv
-        """
-        zip_buffer = io.BytesIO()
-        log_buffer = io.StringIO()
-
-        with zipfile.ZipFile(zip_buffer, 'w') as zf:
-            projects = {entry.project for entry in queryset}
-            log_buffer.write(f'Projects in selection: {len(projects)}\n')
-
-            # Fetch all ranklist entries for these projects
-            all_entries = (
-                RankList.objects
-                .filter(project__in=projects)
-                .select_related('project', 'mentee__user')
-            )
-            log_buffer.write(f'Total RankList entries: {all_entries.count()}\n')
-
-            project_data = {
-                p.id: {
-                    'project': p,
-                    'max': int(p.mentee_max),
-                    'ranked': {},   # mentee_id -> {rank, preference}
-                    'selected': [],
-                }
-                for p in projects
-            }
-
-            # NEW: Because ranklist is per (project, mentee) there are no duplicates.
-            # Each entry is already the single source of truth.
-            for entry in all_entries:
-                pid = entry.project.id
-                mid = entry.mentee.id
-                project_data[pid]['ranked'][mid] = {
-                    'rank': entry.rank,
-                    'preference': entry.preference,
-                    'mentee': entry.mentee,
-                }
-
-            # Build sorted list per project
-            for pid, pdata in project_data.items():
-                sorted_mentees = sorted(
-                    pdata['ranked'].items(),
-                    key=lambda kv: (kv[1]['rank'], kv[1]['preference']),
-                )
-                pdata['sorted_mentees'] = sorted_mentees
-                log_buffer.write(
-                    f"Project '{pdata['project'].title}': "
-                    f"{len(sorted_mentees)} ranked mentees, max={pdata['max']}\n"
-                )
-
-            # Assign by preference round
-            assigned_mentees = set()
-            all_mentee_ids = set()
-            for pdata in project_data.values():
-                all_mentee_ids.update(pdata['ranked'].keys())
-
-            for pref_round in [1, 2, 3]:
-                for pdata in project_data.values():
-                    for mentee_id, info in pdata['sorted_mentees']:
-                        if mentee_id in assigned_mentees:
-                            continue
-                        if info['preference'] != pref_round:
-                            continue
-                        if len(pdata['selected']) < pdata['max']:
-                            pdata['selected'].append({
-                                'mentee': info['mentee'],
-                                'rank': info['rank'],
-                                'preference': info['preference'],
-                                'project': pdata['project'],
-                            })
-                            assigned_mentees.add(mentee_id)
-
-            log_buffer.write(f'Total assigned: {len(assigned_mentees)}\n')
-            log_buffer.write(f'Total unassigned: {len(all_mentee_ids - assigned_mentees)}\n')
-
-            # --- CSV 1: selected_mentees.csv ---
-            sel_buf = io.StringIO()
-            sel_writer = csv.writer(sel_buf)
-            sel_writer.writerow([
-                'Domain', 'Project ID', 'Project Title',
-                'Mentor Names', 'Mentor Rolls',
-                'Mentee Roll', 'Mentee Name', 'Rank', 'Mentee Preference',
-            ])
-            for pdata in project_data.values():
-                p = pdata['project']
-                mentors = Mentor.objects.filter(projects=p).select_related('user')
-                mentor_names = ', '.join(m.user.name for m in mentors) or '—'
-                mentor_rolls = ', '.join(m.user.roll_number for m in mentors) or '—'
-                domain = p.domain.slug if p.domain else ''
-                for entry in pdata['selected']:
-                    sel_writer.writerow([
-                        domain, p.id, p.title,
-                        mentor_names, mentor_rolls,
-                        entry['mentee'].user.roll_number,
-                        entry['mentee'].user.name,
-                        entry['rank'], entry['preference'],
-                    ])
-
-            # Unassigned section
-            sel_writer.writerow([])
-            sel_writer.writerow(['--- Unassigned Mentees ---'])
-            sel_writer.writerow(['Roll No', 'Name', 'Domain'])
-            for mid in all_mentee_ids - assigned_mentees:
-                m = next(
-                    pdata['ranked'][mid]['mentee']
-                    for pdata in project_data.values()
-                    if mid in pdata['ranked']
-                )
-                domain = m.domain.slug if m.domain else ''
-                sel_writer.writerow([m.user.roll_number, m.user.name, domain])
-
-            zf.writestr('selected_mentees.csv', sel_buf.getvalue())
-
-            # --- CSV 2: project_summary.csv ---
-            sum_buf = io.StringIO()
-            sum_writer = csv.writer(sum_buf)
-            sum_writer.writerow(['Domain', 'Project ID', 'Project Title', 'Max', 'Selected', 'Remaining'])
-            for pdata in project_data.values():
-                p = pdata['project']
-                sum_writer.writerow([
-                    p.domain.slug if p.domain else '',
-                    p.id, p.title, pdata['max'],
-                    len(pdata['selected']),
-                    pdata['max'] - len(pdata['selected']),
-                ])
-            zf.writestr('project_summary.csv', sum_buf.getvalue())
-
-            # --- CSV 3: mentee_project_summary.csv ---
-            mp_buf = io.StringIO()
-            mp_writer = csv.writer(mp_buf)
-            header = ['Roll No', 'Name', 'Domain']
-            for i in range(1, 4):
-                header.extend([f'Project {i}', f'Rank {i}', f'Pref {i}'])
-            header.append('Final Assignment')
-            mp_writer.writerow(header)
-
-            # Build per-mentee view
-            mentee_projects = defaultdict(list)
-            for pdata in project_data.values():
-                for mid, info in pdata['sorted_mentees']:
-                    mentee_projects[mid].append(info)
-
-            assigned_by_mentee = {
-                entry['mentee'].id: pdata['project'].title
-                for pdata in project_data.values()
-                for entry in pdata['selected']
-            }
-
-            for mid, infos in mentee_projects.items():
-                m = next(
-                    pdata['ranked'][mid]['mentee']
-                    for pdata in project_data.values()
-                    if mid in pdata['ranked']
-                )
-                domain = m.domain.slug if m.domain else ''
-                row = [m.user.roll_number, m.user.name, domain]
-                for info in infos[:3]:
-                    row.extend([info['mentee'].user.roll_number, info['rank'], info['preference']])
-                while len(row) < 3 + 3 * 3:
-                    row.extend(['', '', ''])
-                row.append(assigned_by_mentee.get(mid, 'Not Assigned'))
-                mp_writer.writerow(row)
-
-            zf.writestr('mentee_project_summary.csv', mp_buf.getvalue())
-
-            # --- CSV 4: debug_logs.csv ---
-            log_csv = io.StringIO()
-            log_writer = csv.writer(log_csv)
-            log_writer.writerow(['Debug Log'])
-            for line in log_buffer.getvalue().splitlines():
-                log_writer.writerow([line])
-            zf.writestr('debug_logs.csv', log_csv.getvalue())
-
-        zip_buffer.seek(0)
-        response = HttpResponse(zip_buffer, content_type='application/zip')
-        response['Content-Disposition'] = 'attachment; filename="final_selection.zip"'
         return response

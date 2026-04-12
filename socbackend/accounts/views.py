@@ -3,7 +3,7 @@ import os
 import secrets
 
 from django.http import JsonResponse
-from django.db.models import Value as V
+from django.db.models import Value as V, Q
 from django.db.models.functions import Concat
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,6 +13,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from django.db import models
 
 import requests
 
@@ -45,6 +46,64 @@ def _build_memberships_response(user):
     data = MyMembershipSerializer(memberships, many=True).data
     is_manager = any(m["role"] == "manager" for m in data)
     return data, is_manager
+
+
+def _auto_link_mentor_projects(user):
+    """
+    Auto-link projects to mentor on first login.
+    Searches for projects where mentor field contains this user's roll number.
+    Also creates DomainMembership and Mentor objects automatically.
+    """
+    try:
+        from projects.models import Project, Mentor
+        from domains.models import DomainMembership
+        
+        profile = UserProfile.objects.get(user=user)
+        roll = profile.roll_number.lower()
+        
+        # Find projects where this user is mentioned as mentor or co-mentor
+        import re
+        
+        # Search in mentor field
+        projects_as_mentor = Project.objects.filter(
+            models.Q(mentor__icontains=roll) | 
+            models.Q(co_mentor_info__icontains=roll)
+        ).select_related('domain')
+        
+        linked_count = 0
+        for project in projects_as_mentor:
+            # Verify roll number match (exact match in parentheses or standalone)
+            mentor_match = re.search(rf'\b{re.escape(roll)}\b', project.mentor.lower())
+            co_mentor_match = re.search(rf'\b{re.escape(roll)}\b', project.co_mentor_info.lower())
+            
+            if mentor_match or co_mentor_match:
+                # Create DomainMembership automatically (no need to apply!)
+                membership, _ = DomainMembership.objects.get_or_create(
+                    user=user,
+                    domain=project.domain,
+                    role='mentor',
+                    defaults={'is_approved': True}
+                )
+                
+                # Get or create Mentor object for this domain
+                mentor_obj, created = Mentor.objects.get_or_create(
+                    user=profile,
+                    domain=project.domain,
+                    defaults={'season': '1'}
+                )
+                
+                # Link project if not already linked
+                if project not in mentor_obj.projects.all():
+                    mentor_obj.projects.add(project)
+                    linked_count += 1
+        
+        if linked_count > 0:
+            print(f"[AUTO-LINK] Linked {linked_count} projects to {roll} (DomainMembership + Mentor created)")
+        
+        return linked_count
+    except Exception as e:
+        print(f"[AUTO-LINK ERROR] {str(e)}")
+        return 0
 
 
 # ---------------------------------------------------------------------------
@@ -252,6 +311,14 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         if user is None:
             raise AuthenticationFailed("Invalid roll number or password")
+        
+        # Update last_login timestamp
+        from django.utils import timezone
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
+        
+        # Auto-link projects on login
+        _auto_link_mentor_projects(user)
 
         random_token = secrets.token_urlsafe(16)
         custom_token = f"{user.id}-{random_token}"
@@ -265,7 +332,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         }
         response = JsonResponse(response_data)
         response.set_cookie(key="auth", value=custom_token, httponly=True)
-        print(f"Cookie set with value: {custom_token}")
+        print(f"Cookie set with value: {custom_token} | last_login updated")
         return response
 
 
@@ -289,6 +356,14 @@ class CustomSSOTokenView(APIView):
 
         if not user.is_active:
             raise AuthenticationFailed("User is not active")
+        
+        # Update last_login timestamp (Django's built-in field)
+        from django.utils import timezone
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
+        
+        # Auto-link projects on login
+        _auto_link_mentor_projects(user)
 
         random_token = secrets.token_urlsafe(16)
         custom_token = f"{user.id}-{random_token}"
@@ -303,7 +378,7 @@ class CustomSSOTokenView(APIView):
 
         response = JsonResponse(response_data)
         response.set_cookie(key="auth", value=custom_token, httponly=True)
-        print(f"[SSO] Token issued for {user.username}: {custom_token}")
+        print(f"[SSO] Token issued for {user.username}: {custom_token} | last_login updated")
         return response
 
 
@@ -362,6 +437,7 @@ class BecomeManagerView(APIView):
 # ---------------------------------------------------------------------------
 
 class UserProfileView(APIView):
+    authentication_classes = [CookieJWTAuthentication2]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -376,6 +452,16 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+    
+    def patch(self, request):
+        """Update phone number specifically"""
+        user_profile = UserProfile.objects.get(user=request.user)
+        phone = request.data.get('phone_number')
+        if phone:
+            user_profile.phone_number = phone
+            user_profile.save()
+            return Response({"success": True, "phone_number": phone})
+        return Response({"error": "Phone number required"}, status=400)
 
 
 class MyMembershipsView(APIView):
@@ -388,9 +474,18 @@ class MyMembershipsView(APIView):
 
     def get(self, request):
         memberships, is_manager = _build_memberships_response(request.user)
+        
+        # Check if phone number is missing
+        try:
+            profile = UserProfile.objects.get(user=request.user)
+            needs_phone = not profile.phone_number or profile.phone_number.strip() == ""
+        except UserProfile.DoesNotExist:
+            needs_phone = True
+        
         return Response({
             "memberships": memberships,
             "is_manager": is_manager,
+            "needs_phone_update": needs_phone,
         })
 
 

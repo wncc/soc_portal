@@ -31,7 +31,7 @@ python manage.py createsuperuser
 ## 5. Load dummy data for local testing
 
 ```bash
-python manage.py loaddata data.json
+python manage.py loaddata data3.json
 ```
 
 ## 6. Runserver

@@ -13,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             "id",
-            "role",
         ]
         extra_kwargs = {
             "password": {"style": {"input_type": "password"}, "write_only": True}
@@ -26,11 +25,6 @@ class UserSerializer(serializers.ModelSerializer):
         validate_password(password)
 
         return password
-    
-    def validate_role(self, role):
-        if role not in ['mentor', 'mentee']:
-            raise serializers.ValidationError("Role must be either 'mentor' or 'mentee'")
-        return role
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):

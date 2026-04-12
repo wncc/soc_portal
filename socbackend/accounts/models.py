@@ -70,7 +70,7 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(
         upload_to=upload_to_location, blank=True, default=""
     )
-    phone_number = models.CharField(max_length=15, blank=False, null=False)
+    phone_number = models.CharField(max_length=15, blank=True, null=False, default="")
     roll_number = models.CharField(
         "roll number",
         max_length=9,
@@ -83,13 +83,6 @@ class UserProfile(models.Model):
     )
     verified = models.BooleanField(default=False)
     verification_token = models.CharField(max_length=32, blank=True, default="")
-
-    ROLE_CHOICES = [
-        ('mentee', 'Mentee'),
-        ('mentor', 'Mentor'),
-    ]
-
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='mentee')
 
     def __str__(self):
         return f"{self.roll_number} - {self.user.username}"

@@ -5,6 +5,7 @@ import UnifiedNavbar from './components/UnifiedNavbar';
 import Login from './mentee/pages/Login';
 import Projects from './mentee/pages/Projects';
 import './mentee/components/scrollable.css';
+import PhoneNumberModal from './components/PhoneNumberModal';
 
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
@@ -79,6 +80,7 @@ export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
   const [isManager, setIsManager] = useState(localStorage.getItem('is_manager') === 'true');
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [needsPhoneUpdate, setNeedsPhoneUpdate] = useState(false);
   const role = localStorage.getItem('role');
   const location = useLocation();
 
@@ -108,6 +110,8 @@ export default function App() {
             if (r.data.memberships) {
               localStorage.setItem('memberships', JSON.stringify(r.data.memberships));
             }
+            // Check if phone number update is needed
+            setNeedsPhoneUpdate(r.data.needs_phone_update || false);
           }).catch(() => {});
         }
         setIsCheckingAuth(false);
@@ -137,6 +141,9 @@ export default function App() {
       <div className="background">
         <URLGuard />
         {!hideNavbar && <UnifiedNavbar />}
+        {needsPhoneUpdate && authToken && (
+          <PhoneNumberModal onClose={() => setNeedsPhoneUpdate(false)} />
+        )}
         <Routes>
           {/* ============================================================
               Public / Home
