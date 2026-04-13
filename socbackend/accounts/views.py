@@ -193,8 +193,8 @@ def isloggedin(request):
     else:
         print("[ISLOGGEDIN DEBUG] User NOT logged in")
         print("="*80 + "\n")
-        # Clear invalid cookie if present
-        response = JsonResponse({"status": "NO"}, status=200)
+        # Return 401 to trigger frontend auth cleanup
+        response = JsonResponse({"status": "NO", "error": "Not authenticated"}, status=401)
         if request.COOKIES.get('auth'):
             print("[ISLOGGEDIN DEBUG] Clearing invalid auth cookie")
             response.delete_cookie('auth')

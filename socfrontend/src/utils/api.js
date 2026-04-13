@@ -1,6 +1,6 @@
 // src/utils/api.js
 import axios from 'axios';
-import { clearAuthData } from './auth';
+import { clearAuthData, isTokenValid } from './auth';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -17,6 +17,16 @@ api.interceptors.request.use(
     if (!isSSO) {
       const token = localStorage.getItem('authToken');
       if (token) {
+        // Validate token format before using it
+        if (!isTokenValid(token)) {
+          console.log('[API] Invalid token format detected - clearing auth data');
+          clearAuthData();
+          // Reject the request and redirect to login
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+          return Promise.reject(new Error('Invalid token format'));
+        }
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
@@ -35,8 +45,10 @@ api.interceptors.response.use(
       // Token is invalid or expired - clear all auth data
       console.log('[API] 401 Unauthorized - clearing auth data');
       clearAuthData();
-      // Redirect to login
-      window.location.href = '/login';
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/loading')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },

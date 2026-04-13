@@ -50,18 +50,32 @@ class CookieJWTAuthentication2(BaseAuthentication):
             # Check if the token is valid
             if not token or len(token) < 16:
                 print(f"[AUTH DEBUG] Token validation failed: Invalid format (length: {len(token) if token else 0})")
-                return None  # Return None instead of raising exception
+                return None
 
-            # Validate the token format
-            if not self.is_token_valid(token):
-                print(f"[AUTH DEBUG] Token validation failed: is_token_valid returned False")
-                return None  # Return None instead of raising exception
+            # Validate the token format (should be "<user_id>-<random>")
+            if '-' not in token:
+                print(f"[AUTH DEBUG] Token validation failed: Missing separator")
+                return None
+                
+            parts = token.split('-', 1)
+            if len(parts) != 2:
+                print(f"[AUTH DEBUG] Token validation failed: Invalid format")
+                return None
+                
+            try:
+                user_id = int(parts[0])
+                if user_id <= 0:
+                    print(f"[AUTH DEBUG] Token validation failed: Invalid user_id")
+                    return None
+            except ValueError:
+                print(f"[AUTH DEBUG] Token validation failed: user_id not a number")
+                return None
 
             # Get user from token
             user = self.get_user_from_token(token)
             if not user:
                 print(f"[AUTH DEBUG] Token validation failed: No user found for token")
-                return None  # Return None instead of raising exception
+                return None
             
             print(f"[AUTH DEBUG] Token validation SUCCESS: User {user.username} (ID: {user.id})")
             # Return the user if valid
@@ -70,12 +84,7 @@ class CookieJWTAuthentication2(BaseAuthentication):
         except Exception as e:
             print(f"[AUTH DEBUG] Token validation EXCEPTION: {e}")
             logger.error(f"Error during token validation: {e}")
-            return None  # Return None instead of raising exception
-
-    def is_token_valid(self, token):
-        # Here you should implement the logic to validate the token format, expiration, etc.
-        # For simplicity, let's assume we just check if the token is a valid length
-        return True
+            return None
 
     def get_user_from_token(self, token):
         try:
@@ -86,12 +95,23 @@ class CookieJWTAuthentication2(BaseAuthentication):
             user_id = int(user_id_str)
             print(f"[AUTH DEBUG] Extracted user_id: {user_id}")
 
-            # Return the CustomUser directly — this is what AUTH_USER_MODEL is,
-            # so request.user will always be a CustomUser instance.
+            # Return the CustomUser directly
             user = CustomUser.objects.get(pk=user_id)
+            
+            # Check if user is active
+            if not user.is_active:
+                print(f"[AUTH DEBUG] User {user.username} is not active")
+                return None
+                
             print(f"[AUTH DEBUG] Found user: {user.username} (ID: {user.id})")
             return user
 
+        except (ValueError, IndexError) as e:
+            print(f"[AUTH DEBUG] Error parsing token: {e}")
+            return None
+        except CustomUser.DoesNotExist:
+            print(f"[AUTH DEBUG] User not found in database")
+            return None
         except Exception as e:
-            print(f"[AUTH DEBUG] Error getting user from token: {e}")
+            print(f"[AUTH DEBUG] Unexpected error getting user from token: {e}")
             return None

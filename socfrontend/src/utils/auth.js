@@ -78,6 +78,18 @@ export const getAuthToken = () => {
 };
 
 /**
+ * Validate if token format is correct (basic check)
+ */
+export const isTokenValid = (token) => {
+  if (!token) return false;
+  // Token format: "<user_id>-<random>"
+  const parts = token.split('-');
+  if (parts.length < 2) return false;
+  const userId = parseInt(parts[0]);
+  return !isNaN(userId) && userId > 0;
+};
+
+/**
  * Save authentication data after successful login
  * Only call this after verifying the login was successful
  */
