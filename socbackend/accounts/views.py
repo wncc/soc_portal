@@ -125,28 +125,53 @@ class YearListAPIView(APIView):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def get_sso_user_data(request):
+    print("\n" + "="*80)
+    print("[SSO DEBUG] get_sso_user_data called")
+    print(f"[SSO DEBUG] Request method: {request.method}")
+    print(f"[SSO DEBUG] Request headers: {dict(request.headers)}")
+    print(f"[SSO DEBUG] Request data: {request.data}")
+    print(f"[SSO DEBUG] Request user: {request.user}")
+    print(f"[SSO DEBUG] Is authenticated: {request.user.is_authenticated if hasattr(request.user, 'is_authenticated') else 'N/A'}")
+    
     accessid = request.data.get("accessid")
+    print(f"[SSO DEBUG] Extracted accessid: {accessid}")
+    
     if not accessid:
+        print("[SSO DEBUG] ERROR: Missing accessid")
         return Response({"error": "Missing accessid"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        print(f"[SSO] Fetching user data for accessid: {accessid[:20]}...")
+        print(f"[SSO DEBUG] Fetching user data for accessid: {accessid[:20]}...")
+        print(f"[SSO DEBUG] Calling: http://sso.tech-iitb.org/project/getuserdata")
+        
         response = requests.post(
             "http://sso.tech-iitb.org/project/getuserdata",
             json={"id": accessid},
         )
-        print("Raw SSO response text:", response.text)
+        
+        print(f"[SSO DEBUG] SSO response status: {response.status_code}")
+        print(f"[SSO DEBUG] SSO response text: {response.text}")
+        
         data = response.json()
+        print(f"[SSO DEBUG] SSO response JSON: {data}")
 
         if response.status_code == 200:
+            print(f"[SSO DEBUG] SUCCESS: Returning user data")
+            print("="*80 + "\n")
             return Response(data, status=status.HTTP_200_OK)
         else:
+            print(f"[SSO DEBUG] ERROR: SSO returned status {response.status_code}")
+            print("="*80 + "\n")
             return Response({"error": "Failed to fetch user data"}, status=response.status_code)
 
     except Exception as e:
-        print(f"[SSO ERROR] {str(e)}")
+        print(f"[SSO DEBUG] EXCEPTION: {str(e)}")
+        import traceback
+        print(f"[SSO DEBUG] Traceback: {traceback.format_exc()}")
+        print("="*80 + "\n")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -255,43 +280,60 @@ class RegisterUserViewSSO(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print(request.data)
+        print("\n" + "="*80)
+        print("[SSO REGISTER DEBUG] RegisterUserViewSSO called")
+        print(f"[SSO REGISTER DEBUG] Request data: {request.data}")
+        
         roll_number = request.data.get("roll_number", "").lower()
         password = request.data.get("password")
+        print(f"[SSO REGISTER DEBUG] Roll number: {roll_number}")
 
         # If user already exists and is verified, return error
         if CustomUser.objects.filter(username=roll_number).exists():
+            print(f"[SSO REGISTER DEBUG] User {roll_number} already exists")
             user = CustomUser.objects.get(username=roll_number)
             if UserProfile.objects.filter(user=user).exists():
                 user_profile = UserProfile.objects.get(user=user)
                 if user_profile.verified:
+                    print(f"[SSO REGISTER DEBUG] ERROR: User {roll_number} already verified")
                     return Response({"error": "User already exists"}, status=400)
                 else:
+                    print(f"[SSO REGISTER DEBUG] Deleting unverified user {roll_number}")
                     user.delete()
             else:
+                print(f"[SSO REGISTER DEBUG] Deleting user {roll_number} without profile")
                 user.delete()
 
+        print(f"[SSO REGISTER DEBUG] Creating new user {roll_number}")
         user = CustomUser.objects.create_user(username=roll_number, password=password)
         user.is_active = True
         user.save()
+        print(f"[SSO REGISTER DEBUG] User created: {user.username} (ID: {user.id})")
 
         mutable_copy = request.POST.copy()
         mutable_copy["user"] = user.id
         serializer = RegisterUserSerializer(data=mutable_copy)
 
         if serializer.is_valid():
+            print(f"[SSO REGISTER DEBUG] Serializer valid, saving profile")
             serializer.save()
             user_profile = UserProfile.objects.get(user=user)
             user_profile.verified = True
             user.is_active = True
             user.save()
             user_profile.save()
+            print(f"[SSO REGISTER DEBUG] Profile saved and verified")
 
             memberships, is_manager = _build_memberships_response(user)
+            print(f"[SSO REGISTER DEBUG] SUCCESS: User registered with {len(memberships)} memberships")
+            print("="*80 + "\n")
             return Response(
                 {**serializer.data, "memberships": memberships, "is_manager": is_manager},
                 status=201,
             )
+        
+        print(f"[SSO REGISTER DEBUG] ERROR: Serializer errors: {serializer.errors}")
+        print("="*80 + "\n")
         return Response(serializer.errors, status=400)
 
 
@@ -345,31 +387,44 @@ class CustomSSOTokenView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        print("\n" + "="*80)
+        print("[SSO TOKEN DEBUG] CustomSSOTokenView called")
+        print(f"[SSO TOKEN DEBUG] Request data: {request.data}")
+        
         roll_number = request.data.get("username", "").lower()
+        print(f"[SSO TOKEN DEBUG] Roll number: {roll_number}")
 
         if not roll_number:
+            print("[SSO TOKEN DEBUG] ERROR: Roll number missing")
             raise AuthenticationFailed("Roll number is required")
 
         try:
             user = CustomUser.objects.get(username=roll_number)
+            print(f"[SSO TOKEN DEBUG] User found: {user.username} (ID: {user.id})")
         except CustomUser.DoesNotExist:
+            print(f"[SSO TOKEN DEBUG] ERROR: User {roll_number} does not exist")
             raise AuthenticationFailed("User does not exist. Please register first.")
 
         if not user.is_active:
+            print(f"[SSO TOKEN DEBUG] ERROR: User {roll_number} is not active")
             raise AuthenticationFailed("User is not active")
         
         # Update last_login timestamp (Django's built-in field)
         from django.utils import timezone
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
+        print(f"[SSO TOKEN DEBUG] Updated last_login for {user.username}")
         
         # Auto-link projects on login
-        _auto_link_mentor_projects(user)
+        linked = _auto_link_mentor_projects(user)
+        print(f"[SSO TOKEN DEBUG] Auto-linked {linked} projects")
 
         random_token = secrets.token_urlsafe(16)
         custom_token = f"{user.id}-{random_token}"
+        print(f"[SSO TOKEN DEBUG] Generated token: {custom_token}")
 
         memberships, is_manager = _build_memberships_response(user)
+        print(f"[SSO TOKEN DEBUG] Memberships: {len(memberships)}, is_manager: {is_manager}")
 
         response_data = {
             "access": custom_token,
@@ -379,7 +434,8 @@ class CustomSSOTokenView(APIView):
 
         response = JsonResponse(response_data)
         response.set_cookie(key="auth", value=custom_token, httponly=True)
-        print(f"[SSO] Token issued for {user.username}: {custom_token} | last_login updated")
+        print(f"[SSO TOKEN DEBUG] SUCCESS: Token issued and cookie set")
+        print("="*80 + "\n")
         return response
 
 
