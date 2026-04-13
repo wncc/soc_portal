@@ -1,5 +1,6 @@
 // src/utils/api.js
 import axios from 'axios';
+import { clearAuthData } from './auth';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -31,10 +32,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token is invalid or expired
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('is_manager');
-      localStorage.removeItem('memberships');
+      // Token is invalid or expired - clear all auth data
+      console.log('[API] 401 Unauthorized - clearing auth data');
+      clearAuthData();
       // Redirect to login
       window.location.href = '/login';
     }

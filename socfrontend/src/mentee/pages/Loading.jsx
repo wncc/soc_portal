@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
+import { clearAuthData, saveAuthData } from '../../utils/auth';
 
 const Loading = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const Loading = () => {
         } catch (err) {
           if (err.response?.data?.error !== 'User already exists') {
             alert('Registration failed. Try again.');
-            localStorage.removeItem('accessid');
+            clearAuthData();
             navigate('/login');
             return;
           }
@@ -86,26 +87,49 @@ const Loading = () => {
         const loginForm = new FormData();
         loginForm.append('username', user.roll);
         loginForm.append('password', user.roll.toLowerCase());
-        const loginRes = await api.post(
-          `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`, loginForm
-        );
+        
+        let loginRes;
+        try {
+          loginRes = await api.post(
+            `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`, loginForm
+          );
+        } catch (loginErr) {
+          console.error('Token generation failed:', loginErr);
+          clearAuthData();
+          alert('Login failed. Please try again.');
+          navigate('/login');
+          return;
+        }
+
+        // Only save to localStorage if login was successful
+        if (!loginRes || !loginRes.data || !loginRes.data.access) {
+          console.error('Invalid login response:', loginRes);
+          clearAuthData();
+          alert('Login failed. Invalid response from server.');
+          navigate('/login');
+          return;
+        }
 
         const token = loginRes.data.access;
         const memberships = loginRes.data.memberships || [];
         const isManager = loginRes.data.is_manager || false;
 
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('memberships', JSON.stringify(memberships));
-        localStorage.setItem('is_manager', isManager ? 'true' : 'false');
-        // Legacy role fallback for components that still read localStorage.role
-        localStorage.setItem('role', memberships.find((m) => m.is_approved)?.role || 'mentee');
+        // Save to localStorage only after successful login
+        const saved = saveAuthData(token, memberships, isManager);
+        if (!saved) {
+          alert('Failed to save login data. Please try again.');
+          navigate('/login');
+          return;
+        }
+        
         localStorage.removeItem('accessid');
 
         handleRedirect(memberships, isManager);
       } catch (err) {
         console.error('SSO Login Failed:', err);
-        localStorage.removeItem('accessid');
-        alert('SSO Login failed. Try again.');
+        // Clean up ALL localStorage data on failure
+        clearAuthData();
+        alert('SSO Login failed. Please try again.');
         navigate('/login');
       }
     };
