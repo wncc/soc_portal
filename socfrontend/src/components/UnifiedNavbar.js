@@ -61,8 +61,8 @@ export default function UnifiedNavbar() {
 
   const getDomainName = (slug) => {
     const map = {
-      soc: 'Summer of Code',
-      soq: 'Summer of Quants',
+      soc: 'Seasons of Code',
+      soq: 'Summer of Quant',
       sor: 'Summer of Robotics',
     };
     return map[slug] || slug.toUpperCase();

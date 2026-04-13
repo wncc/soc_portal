@@ -475,10 +475,16 @@ class MyMembershipsView(APIView):
     def get(self, request):
         memberships, is_manager = _build_memberships_response(request.user)
         
-        # Check if phone number is missing
+        # Check if phone number is missing or invalid
         try:
             profile = UserProfile.objects.get(user=request.user)
-            needs_phone = not profile.phone_number or profile.phone_number.strip() == ""
+            phone = profile.phone_number or ""
+            # Consider empty, whitespace-only, or all zeros as needing update
+            needs_phone = (
+                not phone.strip() or 
+                phone.strip() == "0000000000" or
+                len(phone.strip()) < 10
+            )
         except UserProfile.DoesNotExist:
             needs_phone = True
         

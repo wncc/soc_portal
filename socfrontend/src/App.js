@@ -100,8 +100,15 @@ export default function App() {
       .get(`${BACKEND}/accounts/isloggedin/`)
       .then((res) => {
         const loggedIn = res.data.status === 'YES';
-        setAuthToken(loggedIn ? localStorage.getItem('authToken') : null);
-        if (loggedIn) {
+        if (!loggedIn) {
+          // Clear invalid tokens
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('is_manager');
+          localStorage.removeItem('memberships');
+          setAuthToken(null);
+          setIsManager(false);
+        } else {
+          setAuthToken(localStorage.getItem('authToken'));
           // Refresh memberships on each load
           api.get(`${BACKEND}/accounts/my-memberships/`).then((r) => {
             const manager = r.data.is_manager || false;
@@ -117,6 +124,12 @@ export default function App() {
         setIsCheckingAuth(false);
       })
       .catch(() => {
+        // On error, clear everything
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('is_manager');
+        localStorage.removeItem('memberships');
+        setAuthToken(null);
+        setIsManager(false);
         setIsCheckingAuth(false);
       });
   }, [location]);
