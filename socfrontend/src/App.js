@@ -123,8 +123,9 @@ export default function App() {
         }
         setIsCheckingAuth(false);
       })
-      .catch(() => {
-        // On error, clear everything
+      .catch((error) => {
+        // On error (including 401 for invalid token), clear everything
+        console.log('[APP] isloggedin check failed:', error.response?.status);
         localStorage.removeItem('authToken');
         localStorage.removeItem('is_manager');
         localStorage.removeItem('memberships');

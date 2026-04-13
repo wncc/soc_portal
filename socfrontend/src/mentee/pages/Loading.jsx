@@ -50,15 +50,32 @@ const Loading = () => {
 
   useEffect(() => {
     const accessid = localStorage.getItem('accessid');
-    if (!accessid) { alert('No access ID found'); navigate('/login'); return; }
+    if (!accessid) { 
+      console.log('[LOADING] No access ID found in localStorage');
+      // Check URL params as fallback
+      const params = new URLSearchParams(window.location.search);
+      const urlAccessId = params.get('accessid');
+      if (urlAccessId) {
+        console.log('[LOADING] Found accessid in URL params');
+        localStorage.setItem('accessid', urlAccessId);
+      } else {
+        console.error('[LOADING] No access ID found - redirecting to login');
+        navigate('/login'); 
+        return;
+      }
+    }
 
     const doSSOLogin = async () => {
       try {
+        const currentAccessId = localStorage.getItem('accessid');
+        console.log('[LOADING] Starting SSO login with accessid:', currentAccessId?.substring(0, 20) + '...');
+        
         // Step 1: Fetch SSO user data
         const ssoRes = await api.post(
-          `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`, { accessid }
+          `${process.env.REACT_APP_BACKEND_URL}/accounts/get-sso-user/`, { accessid: currentAccessId }
         );
         const user = ssoRes.data;
+        console.log('[LOADING] SSO user data received:', user.roll);
         const department = departmentMap[user.department] || 'Other';
         const year = getYearChoice(user.degree, user.passing_year);
 
@@ -73,13 +90,16 @@ const Loading = () => {
 
         try {
           await api.post(`${process.env.REACT_APP_BACKEND_URL}/accounts/register_sso/`, formData);
+          console.log('[LOADING] User registered successfully');
         } catch (err) {
           if (err.response?.data?.error !== 'User already exists') {
+            console.error('[LOADING] Registration failed:', err);
             alert('Registration failed. Try again.');
             clearAuthData();
             navigate('/login');
             return;
           }
+          console.log('[LOADING] User already exists, continuing to login');
           // User already exists — continue to login
         }
 
@@ -90,11 +110,13 @@ const Loading = () => {
         
         let loginRes;
         try {
+          console.log('[LOADING] Requesting auth token...');
           loginRes = await api.post(
             `${process.env.REACT_APP_BACKEND_URL}/accounts/token_sso/`, loginForm
           );
+          console.log('[LOADING] Auth token received');
         } catch (loginErr) {
-          console.error('Token generation failed:', loginErr);
+          console.error('[LOADING] Token generation failed:', loginErr);
           clearAuthData();
           alert('Login failed. Please try again.');
           navigate('/login');
@@ -122,14 +144,16 @@ const Loading = () => {
           return;
         }
         
+        console.log('[LOADING] Auth data saved successfully');
         localStorage.removeItem('accessid');
 
         handleRedirect(memberships, isManager);
       } catch (err) {
-        console.error('SSO Login Failed:', err);
+        console.error('[LOADING] SSO Login Failed:', err);
+        console.error('[LOADING] Error details:', err.response?.data || err.message);
         // Clean up ALL localStorage data on failure
         clearAuthData();
-        alert('SSO Login failed. Please try again.');
+        alert(`SSO Login failed: ${err.response?.data?.error || err.message || 'Unknown error'}`);
         navigate('/login');
       }
     };

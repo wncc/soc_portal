@@ -186,19 +186,31 @@ def isloggedin(request):
     print(f"[ISLOGGEDIN DEBUG] User: {request.user}")
     print(f"[ISLOGGEDIN DEBUG] Is authenticated: {request.user.is_authenticated if hasattr(request.user, 'is_authenticated') else False}")
     
+    # Check if a token was provided (in cookie or header)
+    has_token = bool(request.COOKIES.get('auth') or request.headers.get('Authorization'))
+    print(f"[ISLOGGEDIN DEBUG] Has token: {has_token}")
+    
     if request.user and request.user.is_authenticated:
         print(f"[ISLOGGEDIN DEBUG] User IS logged in: {request.user.username}")
         print("="*80 + "\n")
         return JsonResponse({"status": "YES"}, status=200)
     else:
         print("[ISLOGGEDIN DEBUG] User NOT logged in")
-        print("="*80 + "\n")
-        # Return 401 to trigger frontend auth cleanup
-        response = JsonResponse({"status": "NO", "error": "Not authenticated"}, status=401)
-        if request.COOKIES.get('auth'):
-            print("[ISLOGGEDIN DEBUG] Clearing invalid auth cookie")
-            response.delete_cookie('auth')
-        return response
+        
+        # If token was provided but authentication failed, return 401 and clear cookie
+        if has_token:
+            print("[ISLOGGEDIN DEBUG] Invalid token detected - returning 401")
+            print("="*80 + "\n")
+            response = JsonResponse({"status": "NO", "error": "Invalid or expired token"}, status=401)
+            if request.COOKIES.get('auth'):
+                print("[ISLOGGEDIN DEBUG] Clearing invalid auth cookie")
+                response.delete_cookie('auth')
+            return response
+        else:
+            # No token provided - user is simply not logged in (not an error)
+            print("[ISLOGGEDIN DEBUG] No token provided - returning 200")
+            print("="*80 + "\n")
+            return JsonResponse({"status": "NO"}, status=200)
 
 
 def generate_verification_token():

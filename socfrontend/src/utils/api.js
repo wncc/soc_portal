@@ -17,16 +17,6 @@ api.interceptors.request.use(
     if (!isSSO) {
       const token = localStorage.getItem('authToken');
       if (token) {
-        // Validate token format before using it
-        if (!isTokenValid(token)) {
-          console.log('[API] Invalid token format detected - clearing auth data');
-          clearAuthData();
-          // Reject the request and redirect to login
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
-          }
-          return Promise.reject(new Error('Invalid token format'));
-        }
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
@@ -44,9 +34,16 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token is invalid or expired - clear all auth data
       console.log('[API] 401 Unauthorized - clearing auth data');
+      
+      // Don't redirect if this is the isloggedin check (App.js handles it)
+      const isLoginCheck = error.config?.url?.includes('/accounts/isloggedin/');
+      
       clearAuthData();
-      // Only redirect if not already on login page
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/loading')) {
+      
+      // Only redirect if not already on login/loading page and not a login check
+      if (!isLoginCheck && 
+          !window.location.pathname.includes('/login') && 
+          !window.location.pathname.includes('/loading')) {
         window.location.href = '/login';
       }
     }
