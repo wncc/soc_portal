@@ -1,117 +1,87 @@
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
 import logging
-from .models import CustomUser, UserProfile
+from .models import CustomUser
 
 logger = logging.getLogger(__name__)
+
 
 class CookieJWTAuthentication2(BaseAuthentication):
     """
     Custom authentication that validates tokens from cookies or Authorization header.
-    Returns None for invalid tokens (allows unauthenticated access).
-    Views can use @permission_classes([IsAuthenticated]) to require valid auth.
+    Checks the ActiveToken table to support server-side logout (token invalidation).
+    Returns None for missing/invalid tokens (allows unauthenticated access).
+    Views use @permission_classes([IsAuthenticated]) to require valid auth.
     """
+
     def authenticate(self, request):
         print("\n" + "-"*80)
         print("[AUTH DEBUG] CookieJWTAuthentication2.authenticate called")
         print(f"[AUTH DEBUG] Request path: {request.path}")
-        print(f"[AUTH DEBUG] Request method: {request.method}")
-        
-        # Try to get token from Authorization header
+
+        # Prefer Authorization header, fall back to cookie
         token = request.headers.get("Authorization")
-        print(f"[AUTH DEBUG] Authorization header: {token}")
-        
         if not token:
-            # Try to get from cookie
-            cookie_token = request.COOKIES.get('auth')
-            print(f"[AUTH DEBUG] Cookie 'auth': {cookie_token}")
-            
-            if not cookie_token:
-                print("[AUTH DEBUG] No token found - returning None (unauthenticated)")
+            token = request.COOKIES.get('auth')
+            if not token:
+                print("[AUTH DEBUG] No token found - unauthenticated")
                 print("-"*80 + "\n")
-                # Return None = no authentication provided (not an error)
                 return None
-            token = cookie_token
-        
-        # Remove "Bearer " from the token if it exists
-        token = token.replace("Bearer ", "")
-        print(f"[AUTH DEBUG] Cleaned token: {token[:30]}...")
-        logger.debug(f"Received token: {token}")
-        
+        else:
+            token = token.replace("Bearer ", "")
+
+        token = token.replace("Bearer ", "")  # safe double-strip
+        print(f"[AUTH DEBUG] Token (first 30): {token[:30]}...")
+
         result = self.validate_custom_token(token)
-        print(f"[AUTH DEBUG] Authentication result: {result}")
+        print(f"[AUTH DEBUG] Result: {result}")
         print("-"*80 + "\n")
         return result
 
     def validate_custom_token(self, token):
         try:
-            print(f"[AUTH DEBUG] Validating token: {token[:30]}...")
-            
-            # Check if the token is valid
-            if not token or len(token) < 16:
-                print(f"[AUTH DEBUG] Token validation failed: Invalid format (length: {len(token) if token else 0})")
+            if not token or len(token) < 16 or '-' not in token:
+                print("[AUTH DEBUG] Token format invalid")
                 return None
 
-            # Validate the token format (should be "<user_id>-<random>")
-            if '-' not in token:
-                print(f"[AUTH DEBUG] Token validation failed: Missing separator")
-                return None
-                
             parts = token.split('-', 1)
             if len(parts) != 2:
-                print(f"[AUTH DEBUG] Token validation failed: Invalid format")
                 return None
-                
+
             try:
                 user_id = int(parts[0])
                 if user_id <= 0:
-                    print(f"[AUTH DEBUG] Token validation failed: Invalid user_id")
                     return None
             except ValueError:
-                print(f"[AUTH DEBUG] Token validation failed: user_id not a number")
                 return None
 
-            # Get user from token
+            # --- Server-side invalidation check ---
+            # On logout, the ActiveToken row is deleted.
+            # Even if the auth cookie persists in the browser, this check
+            # rejects the token, effectively logging the user out.
+            from .models import ActiveToken
+            if not ActiveToken.objects.filter(token=token).exists():
+                print(f"[AUTH DEBUG] Token not in ActiveToken table - logged out")
+                return None
+
             user = self.get_user_from_token(token)
             if not user:
-                print(f"[AUTH DEBUG] Token validation failed: No user found for token")
                 return None
-            
-            print(f"[AUTH DEBUG] Token validation SUCCESS: User {user.username} (ID: {user.id})")
-            # Return the user if valid
+
+            print(f"[AUTH DEBUG] Auth SUCCESS: {user.username}")
             return user, None
 
         except Exception as e:
-            print(f"[AUTH DEBUG] Token validation EXCEPTION: {e}")
-            logger.error(f"Error during token validation: {e}")
+            logger.error(f"Token validation error: {e}")
             return None
 
     def get_user_from_token(self, token):
         try:
-            print(f"[AUTH DEBUG] Extracting user from token: {token[:30]}...")
-            
-            # Token is structured as "<user_id>-<random>"
-            user_id_str, _ = token.split('-', 1)
-            user_id = int(user_id_str)
-            print(f"[AUTH DEBUG] Extracted user_id: {user_id}")
-
-            # Return the CustomUser directly
+            user_id = int(token.split('-', 1)[0])
             user = CustomUser.objects.get(pk=user_id)
-            
-            # Check if user is active
             if not user.is_active:
-                print(f"[AUTH DEBUG] User {user.username} is not active")
+                print(f"[AUTH DEBUG] User {user.username} inactive")
                 return None
-                
-            print(f"[AUTH DEBUG] Found user: {user.username} (ID: {user.id})")
             return user
-
-        except (ValueError, IndexError) as e:
-            print(f"[AUTH DEBUG] Error parsing token: {e}")
-            return None
-        except CustomUser.DoesNotExist:
-            print(f"[AUTH DEBUG] User not found in database")
-            return None
-        except Exception as e:
-            print(f"[AUTH DEBUG] Unexpected error getting user from token: {e}")
+        except (ValueError, CustomUser.DoesNotExist, Exception) as e:
+            print(f"[AUTH DEBUG] get_user error: {e}")
             return None

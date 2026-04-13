@@ -249,6 +249,7 @@ def send_verification_email(user_profile):
 
 
 @api_view(["GET"])
+@authentication_classes([CookieJWTAuthentication2])
 @permission_classes([AllowAny])
 def logout(request):
     print("\n" + "="*80)
@@ -256,25 +257,33 @@ def logout(request):
     
     response = JsonResponse({"success": "logged out"}, status=200)
     
-    cookie_names = [SIMPLE_JWT["AUTH_COOKIE"], 'sessionid', 'csrftoken']
+    # --- Server-side invalidation ---
+    # Delete all active tokens for this user (or the specific token from cookie/header).
+    # This makes the auth cookie useless even if the browser keeps it.
+    from .models import ActiveToken
+    token = request.COOKIES.get('auth') or request.headers.get('Authorization', '').replace('Bearer ', '')
+    if token:
+        deleted, _ = ActiveToken.objects.filter(token=token).delete()
+        print(f"[LOGOUT DEBUG] Deleted {deleted} token(s) from ActiveToken table")
     
+    # Also clear all tokens for the user if we know who they are
+    if request.user and request.user.is_authenticated:
+        ActiveToken.objects.filter(user=request.user).delete()
+        print(f"[LOGOUT DEBUG] Cleared all tokens for user {request.user.username}")
+    
+    cookie_names = [SIMPLE_JWT["AUTH_COOKIE"], 'sessionid', 'csrftoken']
     for cookie_name in cookie_names:
-        # Delete without domain (matches cookies set against the exact host)
         response.delete_cookie(cookie_name, path='/', samesite='None')
-        # Delete with domain variants
         response.delete_cookie(cookie_name, path='/', domain='.tech-iitb.org', samesite='None')
         response.delete_cookie(cookie_name, path='/', domain='socb.tech-iitb.org', samesite='None')
         response.delete_cookie(cookie_name, path='/', domain='.socb.tech-iitb.org', samesite='None')
     
-    # Also invalidate Django's server-side session if one exists
     if hasattr(request, 'session'):
         request.session.flush()
     
-    print("[LOGOUT DEBUG] All cookies cleared and session flushed")
+    print("[LOGOUT DEBUG] Logout complete")
     print("="*80 + "\n")
-    
     return response
-
 
 
 # ---------------------------------------------------------------------------
@@ -431,6 +440,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             samesite="None",  # Required for cross-origin (wncc-soc.tech-iitb.org → socb.tech-iitb.org)
             secure=True,      # Required when samesite=None
         )
+        # Save token server-side so logout can invalidate it
+        from .models import ActiveToken
+        ActiveToken.objects.create(user=user, token=custom_token)
         print(f"Cookie set with value: {custom_token} | last_login updated")
         return response
 
@@ -497,6 +509,9 @@ class CustomSSOTokenView(APIView):
             samesite="None",  # Required for cross-origin (wncc-soc.tech-iitb.org → socb.tech-iitb.org)
             secure=True,      # Required when samesite=None
         )
+        # Save token server-side so logout can invalidate it
+        from .models import ActiveToken
+        ActiveToken.objects.create(user=user, token=custom_token)
         print(f"[SSO TOKEN DEBUG] SUCCESS: Token issued and cookie set")
         print("="*80 + "\n")
         return response

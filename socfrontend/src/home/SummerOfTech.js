@@ -459,12 +459,22 @@ export default function SummerOfTech({ authToken }) {
       try {
         await api.post(`${BACKEND}/domains/${domain.slug}/members/`, { role });
         setRoleModal(null);
+        
+        // Refresh memberships immediately so the UI reflects the new role
+        // without requiring a manual page reload.
+        const res = await api.get(`${BACKEND}/accounts/my-memberships/`);
+        const freshMemberships = res.data.memberships || [];
+        const managerFlag = res.data.is_manager || false;
+        setMemberships(freshMemberships);
+        setIsManager(managerFlag);
+        // Sync to localStorage so URLGuard allows the route
+        localStorage.setItem('memberships', JSON.stringify(freshMemberships));
+        localStorage.setItem('is_manager', managerFlag ? 'true' : 'false');
+
         if (role === 'mentee') {
-          alert('Successfully registered as mentee! You can now browse projects.');
           navigate(`/${domain.slug}/current_projects`);
         } else {
           alert('Successfully applied as mentor! Your application is pending approval.');
-          fetchMemberships();
         }
       } catch (err) {
         alert(err.response?.data?.error || 'Failed to apply');

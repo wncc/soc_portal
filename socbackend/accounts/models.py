@@ -90,3 +90,16 @@ class UserProfile(models.Model):
     @property
     def is_authenticated(self):
         return self.user.is_authenticated
+
+
+class ActiveToken(models.Model):
+    """
+    Tracks currently valid custom auth tokens.
+    On logout, the token row is deleted — making the cookie useless even if it persists.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='active_tokens')
+    token = models.CharField(max_length=255, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.token[:20]}..."
