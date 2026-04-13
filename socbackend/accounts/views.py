@@ -421,6 +421,7 @@ class CustomSSOTokenView(APIView):
     SSO token endpoint. No longer requires role parameter — looks up user by username only.
     Returns memberships array for the frontend to determine where to redirect.
     """
+    authentication_classes = []  # Disable authentication for token generation
     permission_classes = [AllowAny]
 
     def post(self, request):
