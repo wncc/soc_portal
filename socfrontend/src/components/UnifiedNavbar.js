@@ -42,24 +42,21 @@ export default function UnifiedNavbar() {
 
   const handleLogout = async () => {
     try {
-      // Call backend logout to clear cookies
+      // Call backend logout to clear session cookies
       await api.get(`${BACKEND}/accounts/logout/`);
     } catch (error) {
       console.error('[LOGOUT] Backend logout failed:', error);
     }
     
-    // Clear all localStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('role');
-    localStorage.removeItem('memberships');
-    localStorage.removeItem('is_manager');
-    localStorage.removeItem('accessid');
+    // Wipe ALL localStorage so nothing leaks back after reload
+    localStorage.clear();
     
     console.log('[LOGOUT] All auth data cleared');
     
-    // Navigate and reload
-    navigate('/login', { replace: true });
-    window.location.reload();
+    // Use location.replace so we don't push a history entry and
+    // the page fully reloads — which also re-sends the now-expired cookie
+    // headers from the backend response above, letting the browser purge them.
+    window.location.replace('/login');
   };
 
   const toggleDarkMode = () => {

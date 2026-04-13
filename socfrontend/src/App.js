@@ -134,7 +134,7 @@ export default function App() {
         setIsManager(false);
         setIsCheckingAuth(false);
       });
-  }, [location]);
+  }, []);  // Run ONCE on mount — not on every route change (that caused redirect on navigation)
 
   if (isCheckingAuth) {
     return (
@@ -154,7 +154,7 @@ export default function App() {
   return (
     <>
       <div className="background">
-        <URLGuard />
+        <URLGuard isCheckingAuth={isCheckingAuth} />
         <BackButtonGuard />
         {!hideNavbar && <UnifiedNavbar />}
         {needsPhoneUpdate && authToken && (

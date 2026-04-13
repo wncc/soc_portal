@@ -14,18 +14,16 @@ function Logout() {
       } catch (err) {
         console.log('Logout API error (continuing anyway):', err);
       } finally {
-        // Always clear client-side data regardless of API result
-        clearAuthData();
-        navigate('/login');
-        // Small delay before reload to ensure navigation completes
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        // Wipe ALL localStorage so nothing leaks back
+        localStorage.clear();
+        // Hard redirect — ensures the expired-cookie Set-Cookie headers from
+        // the backend response are processed before React remounts.
+        window.location.replace('/login');
       }
     };
     
     performLogout();
-  }, [navigate]);
+  }, []);
 
   return (
     <div style={{

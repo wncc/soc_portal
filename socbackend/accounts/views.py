@@ -256,18 +256,24 @@ def logout(request):
     
     response = JsonResponse({"success": "logged out"}, status=200)
     
-    # Delete all auth-related cookies with all possible domain variations
+    # 'auth' cookie was set without an explicit domain, so delete it the same way.
+    # Trying multiple domain variants ensures we catch cookies set by different
+    # parts of the stack (Django session middleware, etc.).
     cookie_names = [SIMPLE_JWT["AUTH_COOKIE"], 'sessionid', 'csrftoken']
-    domains = ['.tech-iitb.org', 'socb.tech-iitb.org', '.socb.tech-iitb.org', None]
     
     for cookie_name in cookie_names:
-        for domain in domains:
-            if domain:
-                response.delete_cookie(cookie_name, domain=domain, path='/')
-            else:
-                response.delete_cookie(cookie_name, path='/')
+        # Delete without domain (matches cookies set against the exact host)
+        response.delete_cookie(cookie_name, path='/')
+        # Delete with parent-domain variants (catches cookies scoped to .tech-iitb.org)
+        response.delete_cookie(cookie_name, path='/', domain='.tech-iitb.org')
+        response.delete_cookie(cookie_name, path='/', domain='socb.tech-iitb.org')
+        response.delete_cookie(cookie_name, path='/', domain='.socb.tech-iitb.org')
     
-    print("[LOGOUT DEBUG] All cookies cleared")
+    # Also invalidate Django's server-side session if one exists
+    if hasattr(request, 'session'):
+        request.session.flush()
+    
+    print("[LOGOUT DEBUG] All cookies cleared and session flushed")
     print("="*80 + "\n")
     
     return response

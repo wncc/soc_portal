@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-export default function URLGuard() {
+export default function URLGuard({ isCheckingAuth }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    // Don't run while the app is still verifying auth status
+    if (isCheckingAuth) return;
+
     const authToken = localStorage.getItem('authToken');
     const role = localStorage.getItem('role');
     const path = location.pathname;
@@ -22,7 +25,7 @@ export default function URLGuard() {
       return;
     }
     
-    // Still loading role
+    // Still loading role — don't redirect, let the normal auth flow handle it
     if (!role && authToken) return;
     
     // Extract domain from path if it's a domain-scoped route
@@ -40,6 +43,13 @@ export default function URLGuard() {
       const memberships = JSON.parse(membershipsStr || '[]');
       console.log('URLGuard - Parsed memberships:', memberships);
       
+      // If memberships haven't loaded yet (empty array from fresh login), don't block —
+      // let the page load and rely on backend auth to reject if truly unauthorized.
+      if (!membershipsStr || memberships.length === 0) {
+        console.log('URLGuard - Memberships not loaded yet, allowing through');
+        return;
+      }
+      
       // Check role-based access
       const isMentorRoute = routeType === 'mentor';
       const isMenteeRoute = ['current_projects', 'wishlist', 'PreferenceForm', 'PreferenceFormFilled'].includes(routeType);
@@ -50,8 +60,8 @@ export default function URLGuard() {
         // For mentor routes, look for mentor role specifically
         domainMembership = memberships.find(m => m.domain === domain && m.role === 'mentor');
       } else if (isMenteeRoute) {
-        // For mentee routes, look for mentee role specifically
-        domainMembership = memberships.find(m => m.domain === domain && m.role === 'mentee');
+        // For mentee routes, look for mentee OR manager role (managers can browse too)
+        domainMembership = memberships.find(m => m.domain === domain && (m.role === 'mentee' || m.role === 'manager'));
       } else {
         // For other routes, just check domain membership
         domainMembership = memberships.find(m => m.domain === domain);
@@ -95,7 +105,7 @@ export default function URLGuard() {
     } else if (role === 'mentor' && menteeRoutes.includes(normalizedPath)) {
       navigate('/', { replace: true });
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, isCheckingAuth]);
 
   return null;
 }
