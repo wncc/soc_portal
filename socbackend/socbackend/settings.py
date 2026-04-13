@@ -154,10 +154,17 @@ SSO_BAD_CERT = True  # Set to False if you have a valid certificate
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# DATABASES = {
+#     "default": dj_database_url.config(
+#         DATABASE_URL,
+#         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+#         conn_max_age=600,
+#     )
+# }
+
 DATABASES = {
-    "default": dj_database_url.config(
-        DATABASE_URL,
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    "default": dj_database_url.parse(
+        os.environ["DATABASE_URL"],
         conn_max_age=600,
     )
 }
