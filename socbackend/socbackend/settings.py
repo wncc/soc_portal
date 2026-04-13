@@ -127,11 +127,15 @@ TEMPLATES = [
 WSGI_APPLICATION = "socbackend.wsgi.application"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ("accounts.custom_auth.CookieJWTAuthentication",'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "accounts.new.CookieJWTAuthentication2",
+        "rest_framework.authentication.SessionAuthentication",
+    ),
+    # No default permission class — each view declares its own.
+    # Views that need auth use: permission_classes = [IsAuthenticated]
+    # Views that are public use:  permission_classes = [] or [AllowAny]
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-        "accounts.permissions.HasUserProfile",
+        "rest_framework.permissions.AllowAny",
     ),
 }
 

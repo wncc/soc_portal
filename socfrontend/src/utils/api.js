@@ -1,6 +1,6 @@
 // src/utils/api.js
 import axios from 'axios';
-import { clearAuthData, isTokenValid } from './auth';
+import { isTokenValid } from './auth';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
@@ -38,7 +38,8 @@ api.interceptors.response.use(
       // Don't redirect if this is the isloggedin check (App.js handles it)
       const isLoginCheck = error.config?.url?.includes('/accounts/isloggedin/');
       
-      clearAuthData();
+      // Wipe everything so no stale keys survive
+      localStorage.clear();
       
       // Only redirect if not already on login/loading page and not a login check
       if (!isLoginCheck && 

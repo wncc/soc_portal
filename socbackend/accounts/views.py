@@ -256,18 +256,15 @@ def logout(request):
     
     response = JsonResponse({"success": "logged out"}, status=200)
     
-    # 'auth' cookie was set without an explicit domain, so delete it the same way.
-    # Trying multiple domain variants ensures we catch cookies set by different
-    # parts of the stack (Django session middleware, etc.).
     cookie_names = [SIMPLE_JWT["AUTH_COOKIE"], 'sessionid', 'csrftoken']
     
     for cookie_name in cookie_names:
         # Delete without domain (matches cookies set against the exact host)
-        response.delete_cookie(cookie_name, path='/')
-        # Delete with parent-domain variants (catches cookies scoped to .tech-iitb.org)
-        response.delete_cookie(cookie_name, path='/', domain='.tech-iitb.org')
-        response.delete_cookie(cookie_name, path='/', domain='socb.tech-iitb.org')
-        response.delete_cookie(cookie_name, path='/', domain='.socb.tech-iitb.org')
+        response.delete_cookie(cookie_name, path='/', samesite='None')
+        # Delete with domain variants
+        response.delete_cookie(cookie_name, path='/', domain='.tech-iitb.org', samesite='None')
+        response.delete_cookie(cookie_name, path='/', domain='socb.tech-iitb.org', samesite='None')
+        response.delete_cookie(cookie_name, path='/', domain='.socb.tech-iitb.org', samesite='None')
     
     # Also invalidate Django's server-side session if one exists
     if hasattr(request, 'session'):
@@ -277,6 +274,7 @@ def logout(request):
     print("="*80 + "\n")
     
     return response
+
 
 
 # ---------------------------------------------------------------------------
@@ -426,7 +424,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             "is_manager": is_manager,
         }
         response = JsonResponse(response_data)
-        response.set_cookie(key="auth", value=custom_token, httponly=True)
+        response.set_cookie(
+            key="auth",
+            value=custom_token,
+            httponly=True,
+            samesite="None",  # Required for cross-origin (wncc-soc.tech-iitb.org → socb.tech-iitb.org)
+            secure=True,      # Required when samesite=None
+        )
         print(f"Cookie set with value: {custom_token} | last_login updated")
         return response
 
@@ -486,7 +490,13 @@ class CustomSSOTokenView(APIView):
         }
 
         response = JsonResponse(response_data)
-        response.set_cookie(key="auth", value=custom_token, httponly=True)
+        response.set_cookie(
+            key="auth",
+            value=custom_token,
+            httponly=True,
+            samesite="None",  # Required for cross-origin (wncc-soc.tech-iitb.org → socb.tech-iitb.org)
+            secure=True,      # Required when samesite=None
+        )
         print(f"[SSO TOKEN DEBUG] SUCCESS: Token issued and cookie set")
         print("="*80 + "\n")
         return response
