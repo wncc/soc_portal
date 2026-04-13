@@ -6,6 +6,7 @@ import Login from './mentee/pages/Login';
 import Projects from './mentee/pages/Projects';
 import './mentee/components/scrollable.css';
 import PhoneNumberModal from './components/PhoneNumberModal';
+import { BackButtonGuard } from './hooks/usePreventBackAfterLogout';
 
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
@@ -154,6 +155,7 @@ export default function App() {
     <>
       <div className="background">
         <URLGuard />
+        <BackButtonGuard />
         {!hideNavbar && <UnifiedNavbar />}
         {needsPhoneUpdate && authToken && (
           <PhoneNumberModal onClose={() => setNeedsPhoneUpdate(false)} />

@@ -15,6 +15,10 @@ const clearCookie = (name) => {
   // Clear for specific subdomain
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.socb.tech-iitb.org;`;
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=socb.tech-iitb.org;`;
+  
+  // Clear for localhost (development)
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;`;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.localhost;`;
 };
 
 /**

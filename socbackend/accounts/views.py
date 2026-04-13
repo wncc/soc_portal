@@ -256,19 +256,16 @@ def logout(request):
     
     response = JsonResponse({"success": "logged out"}, status=200)
     
-    # Delete all auth-related cookies
-    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"], domain='.tech-iitb.org')
-    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"], domain='socb.tech-iitb.org')
-    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"])  # Current domain
+    # Delete all auth-related cookies with all possible domain variations
+    cookie_names = [SIMPLE_JWT["AUTH_COOKIE"], 'sessionid', 'csrftoken']
+    domains = ['.tech-iitb.org', 'socb.tech-iitb.org', '.socb.tech-iitb.org', None]
     
-    # Also clear session and csrf cookies
-    response.delete_cookie('sessionid', domain='.tech-iitb.org')
-    response.delete_cookie('sessionid', domain='socb.tech-iitb.org')
-    response.delete_cookie('sessionid')
-    
-    response.delete_cookie('csrftoken', domain='.tech-iitb.org')
-    response.delete_cookie('csrftoken', domain='socb.tech-iitb.org')
-    response.delete_cookie('csrftoken')
+    for cookie_name in cookie_names:
+        for domain in domains:
+            if domain:
+                response.delete_cookie(cookie_name, domain=domain, path='/')
+            else:
+                response.delete_cookie(cookie_name, path='/')
     
     print("[LOGOUT DEBUG] All cookies cleared")
     print("="*80 + "\n")

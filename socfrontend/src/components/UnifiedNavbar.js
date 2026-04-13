@@ -40,12 +40,26 @@ export default function UnifiedNavbar() {
     }
   }, [authToken]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Call backend logout to clear cookies
+      await api.get(`${BACKEND}/accounts/logout/`);
+    } catch (error) {
+      console.error('[LOGOUT] Backend logout failed:', error);
+    }
+    
+    // Clear all localStorage
     localStorage.removeItem('authToken');
     localStorage.removeItem('role');
     localStorage.removeItem('memberships');
     localStorage.removeItem('is_manager');
-    window.location.href = '/';
+    localStorage.removeItem('accessid');
+    
+    console.log('[LOGOUT] All auth data cleared');
+    
+    // Navigate and reload
+    navigate('/login', { replace: true });
+    window.location.reload();
   };
 
   const toggleDarkMode = () => {

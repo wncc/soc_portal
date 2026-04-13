@@ -4,12 +4,26 @@ import { useNavigate, useLocation } from 'react-router-dom';
 export default function URLGuard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = localStorage.getItem('role');
 
   useEffect(() => {
-    if (!role) return;
-
+    const authToken = localStorage.getItem('authToken');
+    const role = localStorage.getItem('role');
     const path = location.pathname;
+    
+    // Define public paths that don't require auth
+    const publicPaths = ['/', '/login', '/loading', '/p23logad'];
+    const isBecomeManagerPath = /^\/become-manager\/.+$/.test(path);
+    const isPublicPath = publicPaths.includes(path) || isBecomeManagerPath;
+    
+    // Redirect to login if no auth token on protected route
+    if (!authToken && !isPublicPath) {
+      console.log('[URLGuard] No auth token - redirecting to login');
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    // Still loading role
+    if (!role && authToken) return;
     
     // Extract domain from path if it's a domain-scoped route
     const domainMatch = path.match(/^\/([a-z]+)\/(mentor|current_projects|wishlist|PreferenceForm|PreferenceFormFilled)/);
@@ -56,24 +70,24 @@ export default function URLGuard() {
       return; // Allow access
     }
     
-    // Allow legacy routes
+    // Legacy routes
     const mentorRoutes = ['/mentor/home', '/mentor/add-project', '/mentor/edit-project'];
     const menteeRoutes = ['/PreferenceFormFilled', '/current_projects', '/wishlist', '/PreferenceForm'];
     const authRoutes = ['/login', '/p23logad', '/loading'];
-    const publicRoutes = ['/', '/manager', '/become-manager'];
+    const managerRoutes = ['/', '/manager', '/become-manager'];
     
     const normalizedPath = path.replace(/\/+$/, '');
-    const isProjectDetailsRoute = /^\/current_projects\/[^/]+$/.test(path) || /^\/[a-z]+\/current_projects\/[^/]+$/.test(path);
-    const isBecomeManagerRoute = /^\/become-manager\/.+$/.test(path);
+    const isProjectDetails = /^\/current_projects\/[^/]+$/.test(path) || /^\/[a-z]+\/current_projects\/[^/]+$/.test(path);
+    const isBecomeManagerPath2 = /^\/become-manager\/.+$/.test(path);
     
-    // Allow public routes
-    if (publicRoutes.includes(normalizedPath) || isBecomeManagerRoute) return;
+    // Allow manager and public routes
+    if (managerRoutes.includes(normalizedPath) || isBecomeManagerPath2) return;
     
     // Allow auth routes
     if (authRoutes.includes(normalizedPath)) return;
     
     // Allow project details
-    if (isProjectDetailsRoute) return;
+    if (isProjectDetails) return;
     
     // Check role-based access for legacy routes
     if (role === 'mentee' && mentorRoutes.includes(normalizedPath)) {
@@ -81,7 +95,7 @@ export default function URLGuard() {
     } else if (role === 'mentor' && menteeRoutes.includes(normalizedPath)) {
       navigate('/', { replace: true });
     }
-  }, [location.pathname, role, navigate]);
+  }, [location.pathname, navigate]);
 
   return null;
 }
