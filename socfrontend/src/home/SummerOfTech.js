@@ -381,9 +381,10 @@ export default function SummerOfTech({ authToken }) {
   const fetchDomains = useCallback(async () => {
     try {
       const res = await api.get(`${BACKEND}/domains/`);
-      setDomains(res.data);
+      setDomains(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       console.error('Failed to fetch domains', e);
+      setDomains([]);
     }
   }, []);
 
@@ -1032,7 +1033,7 @@ export default function SummerOfTech({ authToken }) {
             </p>
           </div>
 
-          {domains.length === 0 ? (
+          {!Array.isArray(domains) || domains.length === 0 ? (
             <div className="sot-empty">
               <p>No domains published yet. Check back soon!</p>
             </div>
