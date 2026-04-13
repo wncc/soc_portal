@@ -9,13 +9,35 @@ const api = axios.create({
 // Add request interceptor to include token from localStorage
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Don't add token for SSO login endpoints
+    const ssoEndpoints = ['/accounts/get-sso-user/', '/accounts/register_sso/', '/accounts/token_sso/'];
+    const isSSO = ssoEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
+    if (!isSSO) {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  },
+);
+
+// Add response interceptor to handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('is_manager');
+      localStorage.removeItem('memberships');
+      // Redirect to login
+      window.location.href = '/login';
+    }
     return Promise.reject(error);
   },
 );

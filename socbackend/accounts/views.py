@@ -132,7 +132,7 @@ def get_sso_user_data(request):
         return Response({"error": "Missing accessid"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        print(accessid)
+        print(f"[SSO] Fetching user data for accessid: {accessid[:20]}...")
         response = requests.post(
             "http://sso.tech-iitb.org/project/getuserdata",
             json={"id": accessid},
@@ -146,6 +146,7 @@ def get_sso_user_data(request):
             return Response({"error": "Failed to fetch user data"}, status=response.status_code)
 
     except Exception as e:
+        print(f"[SSO ERROR] {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
