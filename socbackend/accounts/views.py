@@ -181,10 +181,24 @@ from .new import CookieJWTAuthentication2
 @authentication_classes([CookieJWTAuthentication2])
 @permission_classes([AllowAny])
 def isloggedin(request):
+    print("\n" + "="*80)
+    print("[ISLOGGEDIN DEBUG] Checking login status")
+    print(f"[ISLOGGEDIN DEBUG] User: {request.user}")
+    print(f"[ISLOGGEDIN DEBUG] Is authenticated: {request.user.is_authenticated if hasattr(request.user, 'is_authenticated') else False}")
+    
     if request.user and request.user.is_authenticated:
+        print(f"[ISLOGGEDIN DEBUG] User IS logged in: {request.user.username}")
+        print("="*80 + "\n")
         return JsonResponse({"status": "YES"}, status=200)
     else:
-        return JsonResponse({"status": "NO"}, status=200)
+        print("[ISLOGGEDIN DEBUG] User NOT logged in")
+        print("="*80 + "\n")
+        # Clear invalid cookie if present
+        response = JsonResponse({"status": "NO"}, status=200)
+        if request.COOKIES.get('auth'):
+            print("[ISLOGGEDIN DEBUG] Clearing invalid auth cookie")
+            response.delete_cookie('auth')
+        return response
 
 
 def generate_verification_token():
@@ -277,6 +291,7 @@ class RegisterUserViewSSO(APIView):
     SSO registration — creates a single CustomUser per roll number (no role).
     Domain-specific roles are added later via DomainMembership.
     """
+    authentication_classes = []  # Disable authentication for registration
     permission_classes = [AllowAny]
 
     def post(self, request):
