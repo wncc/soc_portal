@@ -11,9 +11,12 @@ Key upgrades over the old admin:
 """
 
 import csv
+import os
 import re
+import requests
 from collections import defaultdict
 
+from django.conf import settings
 from django.contrib import admin
 from django.db import models as dj_models
 from django.http import HttpResponse
@@ -69,7 +72,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('domain', 'general_category')
     list_per_page = 1000
     inlines = [RankListInline]
-    actions = ['export_projects_csv', 'add_co_mentor_as_mentor', 'link_all_mentors', 'clear_banner_images']
+    actions = ['export_projects_csv', 'add_co_mentor_as_mentor', 'link_all_mentors', 'download_banner_images', 'clear_banner_images']
 
     # ---- Computed columns ----
 
@@ -236,6 +239,75 @@ class ProjectAdmin(admin.ModelAdmin):
             level='success' if not_found_count == 0 else 'warning'
         )
 
+    @admin.action(description='Download banner images from links for selected projects')
+    def download_banner_images(self, request, queryset):
+        """
+        Downloads banner images from banner_image_link and saves to media/projects/
+        Updates banner_image field with the local path.
+        """
+        projects_folder = os.path.join(settings.MEDIA_ROOT, 'projects')
+        os.makedirs(projects_folder, exist_ok=True)
+        
+        success_count = 0
+        skip_count = 0
+        error_count = 0
+        
+        for project in queryset:
+            if not project.banner_image_link:
+                skip_count += 1
+                continue
+            
+            filename = f"{project.id}.png"
+            file_path = os.path.join(projects_folder, filename)
+            relative_file_path = f"projects/{filename}"
+            
+            # Skip if already downloaded
+            if os.path.exists(file_path):
+                if not project.banner_image:
+                    project.banner_image = relative_file_path
+                    project.save()
+                skip_count += 1
+                continue
+            
+            try:
+                file_url = project.banner_image_link
+                
+                # Convert Google Drive links
+                if 'drive.google.com' in file_url:
+                    match = file_url.split('/d/')[-1].split('/')[0]
+                    file_url = f'https://drive.google.com/uc?export=download&id={match}'
+                
+                response = requests.get(file_url, stream=True, timeout=10)
+                if response.status_code != 200:
+                    self.message_user(
+                        request,
+                        f'✗ Failed to download for "{project.title}" (Status: {response.status_code})',
+                        level='warning'
+                    )
+                    error_count += 1
+                    continue
+                
+                with open(file_path, 'wb') as file:
+                    for chunk in response.iter_content(1024):
+                        file.write(chunk)
+                
+                project.banner_image = relative_file_path
+                project.save()
+                success_count += 1
+                
+            except Exception as e:
+                self.message_user(
+                    request,
+                    f'✗ Error downloading "{project.title}": {str(e)}',
+                    level='error'
+                )
+                error_count += 1
+        
+        self.message_user(
+            request,
+            f'Banner download complete: {success_count} downloaded, {skip_count} skipped, {error_count} errors'
+        )
+    
     @admin.action(description='Clear banner images for selected projects')
     def clear_banner_images(self, request, queryset):
         queryset.update(banner_image=None)

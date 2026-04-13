@@ -985,12 +985,14 @@ export default function SummerOfTech({ authToken }) {
         </div>
         <div className="p-8 font-mono flex flex-col justify-center">
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-indigo-600 text-5xl animate-fade-up flex flex-row">Institute Technical Council</h1>
-            <h1 className="text-indigo-600 text-5xl animate-fade-up flex flex-row">Presents</h1>
+            <h1 className="text-indigo-600 text-4xl animate-fade-up flex flex-row">Institute Technical Council</h1>
+            <h3 className="text-indigo-600 text-3xl animate-fade-up flex flex-row">Presents</h3>
             <h1 className="text-indigo-600 text-4xl animate-fade-up flex flex-row">Summer of Tech</h1>
           </div>
           <div className="mt-10 flex flex-col items-center dark:text-white ">
-            <h1 className="animate-fade-up text-justify utilities">Welcome to Summer of Tech, the flagship event of the Web and Coding Club at IIT Bombay! We invite all aspiring coders and innovators to embark on an exhilarating journey of project development. Embrace the spirit of creativity as you delve into the realms of technology and coding. Whether you're a seasoned programmer or just starting your coding odyssey, Seasons of Code offers a platform for you to showcase your skills and bring your ideas to life. Join us in shaping the future of technology, one line of code at a time. Let's code, innovate, and inspire together!</h1>
+            <h1 className="animate-fade-up text-justify utilities">Summer of Tech (ITSA) 2026-27 is the Institute Technical Council’s flagship summer initiative, a gateway for students to truly explore the spirit of technology at IIT Bombay. It brings together a vibrant ecosystem of student driven programs that transform curiosity into creation, combining thoughtful mentorship with the freedom to innovate. 
+Through initiatives such as ITSP, SOC, SoS, SOQ, KSP, and SOR, Summer of Tech spans a wide spectrum of learning, from building real world products and writing code to exploring science, robotics, astronomy, and quantitative finance. Students do not just study concepts, they bring ideas to life through projects, collaboration, and continuous discovery.
+At its core, Summer of Tech celebrates the joy of learning by doing. It offers flexibility, depth, and a strong community that encourages experimentation and growth. Whether you are beginning your journey or refining your skills, it provides the perfect platform to turn ambition into meaningful impact.</h1>
             {!authToken ? (
               <button
                 className="animate-fade-up inline-flex items-center gap-2 rounded border border-indigo-600 bg-indigo-600 px-8 py-3 text-white hover:bg-transparent hover:text-indigo-600 focus:outline-none focus:ring active:text-indigo-500 mt-10"
