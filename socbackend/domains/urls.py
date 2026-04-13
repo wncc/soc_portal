@@ -19,6 +19,7 @@ urlpatterns = [
 
     # Domain members management
     path("<str:slug>/members/", views.DomainMembersView.as_view(), name="domain-members"),
+    path("<str:slug>/members/bulk-approve-mentors/", views.BulkApproveMentorsView.as_view(), name="bulk-approve-mentors"),
     path("<str:slug>/members/<int:membership_id>/", views.DomainMemberDetailView.as_view(), name="domain-member-detail"),
 ]
 

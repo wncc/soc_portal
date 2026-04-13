@@ -47,6 +47,17 @@ export default function MembersPanel({ domain, onClose }) {
     }
   };
 
+  const handleBulkApproveMentors = async () => {
+    if (!window.confirm('Approve all pending mentors?')) return;
+    try {
+      const res = await api.post(`${BACKEND}/domains/${domain.slug}/members/bulk-approve-mentors/`);
+      alert(res.data.message);
+      fetchMembers();
+    } catch (e) {
+      alert('Failed to bulk approve: ' + (e.response?.data?.error || e.message));
+    }
+  };
+
   const filtered = members.filter((m) => {
     if (tab === 'pending') return !m.is_approved;
     if (tab === 'all') return true;
@@ -81,6 +92,19 @@ export default function MembersPanel({ domain, onClose }) {
             </button>
           ))}
         </div>
+
+        {/* Bulk Actions */}
+        {pendingCount > 0 && (
+          <div style={{ padding: '12px 24px', borderBottom: '1px solid #e5e7eb' }}>
+            <button 
+              className="mp-btn-approve" 
+              onClick={handleBulkApproveMentors}
+              style={{ fontSize: '14px', padding: '8px 16px' }}
+            >
+              ✓ Approve All Pending Mentors
+            </button>
+          </div>
+        )}
 
         {/* List */}
         {loading ? (

@@ -215,6 +215,30 @@ class DomainMemberDetailView(APIView):
         return Response({"message": "Membership removed."})
 
 
+class BulkApproveMentorsView(APIView):
+    """
+    POST /api/domains/<slug>/members/bulk-approve-mentors/  -> approve all pending mentors
+    """
+    authentication_classes = [CookieJWTAuthentication2]
+    permission_classes = [IsAuthenticated, IsDomainManager]
+
+    def post(self, request, slug):
+        try:
+            domain = Domain.objects.get(slug=slug, is_active=True)
+        except Domain.DoesNotExist:
+            return Response({"error": "Domain not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        pending_mentors = DomainMembership.objects.filter(
+            domain=domain,
+            role="mentor",
+            is_approved=False
+        )
+        count = pending_mentors.count()
+        pending_mentors.update(is_approved=True)
+
+        return Response({"message": f"Approved {count} mentor(s).", "count": count})
+
+
 class AllDomainsForManagerView(APIView):
     """
     GET /api/domains/all/  -> list ALL domains (including inactive) for manager dashboard
