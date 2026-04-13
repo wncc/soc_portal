@@ -364,7 +364,7 @@
 // }
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import './SummerOfTech.css';
 
@@ -375,8 +375,9 @@ export default function SummerOfTech({ authToken }) {
   const [memberships, setMemberships] = useState([]);
   const [isManager, setIsManager] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [roleModal, setRoleModal] = useState(null); // { domain, options: [{ role, action, label }] }
+  const [roleModal, setRoleModal] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchDomains = useCallback(async () => {
     try {
@@ -389,23 +390,33 @@ export default function SummerOfTech({ authToken }) {
   }, []);
 
   const fetchMemberships = useCallback(async () => {
-    if (!authToken) return;
+    const token = authToken || localStorage.getItem('authToken');
+    if (!token) return;
     try {
       const res = await api.get(`${BACKEND}/accounts/my-memberships/`);
       setMemberships(res.data.memberships || []);
-      
-      // Update local state and sync to localStorage for routing guards
       const managerFlag = res.data.is_manager || false;
       setIsManager(managerFlag);
       localStorage.setItem('is_manager', managerFlag ? 'true' : 'false');
+      localStorage.setItem('memberships', JSON.stringify(res.data.memberships || []));
     } catch (e) {
       console.error('Failed to fetch memberships', e);
     }
   }, [authToken]);
 
+  // Initial load
   useEffect(() => {
     Promise.all([fetchDomains(), fetchMemberships()]).finally(() => setLoading(false));
   }, [fetchDomains, fetchMemberships]);
+
+  // Re-fetch when navigating back to home so new domains and memberships appear
+  // without needing a manual page reload
+  useEffect(() => {
+    if (location.pathname === '/') {
+      fetchDomains();
+      fetchMemberships();
+    }
+  }, [location, fetchDomains, fetchMemberships]);
 
   const getMyRoles = (domainSlug) =>
     memberships

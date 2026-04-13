@@ -102,7 +102,6 @@ export default function App() {
       .then((res) => {
         const loggedIn = res.data.status === 'YES';
         if (!loggedIn) {
-          // Clear invalid tokens
           localStorage.removeItem('authToken');
           localStorage.removeItem('is_manager');
           localStorage.removeItem('memberships');
@@ -110,22 +109,10 @@ export default function App() {
           setIsManager(false);
         } else {
           setAuthToken(localStorage.getItem('authToken'));
-          // Refresh memberships on each load
-          api.get(`${BACKEND}/accounts/my-memberships/`).then((r) => {
-            const manager = r.data.is_manager || false;
-            setIsManager(manager);
-            localStorage.setItem('is_manager', manager ? 'true' : 'false');
-            if (r.data.memberships) {
-              localStorage.setItem('memberships', JSON.stringify(r.data.memberships));
-            }
-            // Check if phone number update is needed
-            setNeedsPhoneUpdate(r.data.needs_phone_update || false);
-          }).catch(() => {});
         }
         setIsCheckingAuth(false);
       })
       .catch((error) => {
-        // On error (including 401 for invalid token), clear everything
         console.log('[APP] isloggedin check failed:', error.response?.status);
         localStorage.removeItem('authToken');
         localStorage.removeItem('is_manager');
@@ -134,7 +121,27 @@ export default function App() {
         setIsManager(false);
         setIsCheckingAuth(false);
       });
-  }, []);  // Run ONCE on mount — not on every route change (that caused redirect on navigation)
+  }, []);  // Run ONCE on mount to validate the token
+
+  // Separately refresh memberships on every navigation so:
+  // - domain cards show correct "Explore" vs "Login to explore"
+  // - manager route has up-to-date is_manager flag
+  // This does NOT recheck auth validity (no redirects), just refreshes data.
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    api.get(`${BACKEND}/accounts/my-memberships/`)
+      .then((r) => {
+        const manager = r.data.is_manager || false;
+        setIsManager(manager);
+        localStorage.setItem('is_manager', manager ? 'true' : 'false');
+        if (r.data.memberships) {
+          localStorage.setItem('memberships', JSON.stringify(r.data.memberships));
+        }
+        setNeedsPhoneUpdate(r.data.needs_phone_update || false);
+      })
+      .catch(() => {});
+  }, [location]);  // Runs on every navigation to keep data fresh
 
   if (isCheckingAuth) {
     return (
