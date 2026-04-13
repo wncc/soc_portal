@@ -7,19 +7,24 @@ function Logout() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    api.get(`${process.env.REACT_APP_BACKEND_URL}/accounts/logout/`)
-      .then((res) => {
+    const performLogout = async () => {
+      try {
+        // Call backend to clear server-side cookies
+        await api.get(`${process.env.REACT_APP_BACKEND_URL}/accounts/logout/`);
+      } catch (err) {
+        console.log('Logout API error (continuing anyway):', err);
+      } finally {
+        // Always clear client-side data regardless of API result
         clearAuthData();
         navigate('/login');
-        window.location.reload();
-      })
-      .catch(err => {
-        console.log('Logout error:', err);
-        // Clear data even if API call fails
-        clearAuthData();
-        navigate('/login');
-        window.location.reload();
-      });
+        // Small delay before reload to ensure navigation completes
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      }
+    };
+    
+    performLogout();
   }, [navigate]);
 
   return (

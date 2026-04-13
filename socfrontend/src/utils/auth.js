@@ -2,7 +2,23 @@
 // Centralized authentication utilities
 
 /**
- * Clear all authentication and user data from localStorage
+ * Clear a specific cookie by name
+ */
+const clearCookie = (name) => {
+  // Clear for current domain
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  
+  // Clear for parent domain (tech-iitb.org)
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.tech-iitb.org;`;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=tech-iitb.org;`;
+  
+  // Clear for specific subdomain
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.socb.tech-iitb.org;`;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=socb.tech-iitb.org;`;
+};
+
+/**
+ * Clear all authentication and user data from localStorage AND cookies
  * Use this function whenever logging out or when authentication fails
  */
 export const clearAuthData = () => {
@@ -18,7 +34,12 @@ export const clearAuthData = () => {
     localStorage.removeItem(key);
   });
   
-  console.log('[AUTH] Cleared all authentication data from localStorage');
+  // Clear all auth-related cookies
+  clearCookie('auth');
+  clearCookie('csrftoken');
+  clearCookie('sessionid');
+  
+  console.log('[AUTH] Cleared all authentication data from localStorage and cookies');
 };
 
 /**
@@ -76,6 +97,9 @@ export const saveAuthData = (token, memberships, isManager) => {
     localStorage.setItem('role', approvedMembership?.role || 'mentee');
     
     console.log('[AUTH] Saved authentication data to localStorage');
+    console.log('[AUTH] Token:', token.substring(0, 20) + '...');
+    console.log('[AUTH] Memberships:', memberships?.length || 0);
+    console.log('[AUTH] Is Manager:', isManager);
     return true;
   } catch (error) {
     console.error('[AUTH] Error saving auth data:', error);

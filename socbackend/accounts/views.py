@@ -236,9 +236,31 @@ def send_verification_email(user_profile):
     send_mail(subject, message, from_email, recipient_list, auth_password="xjsgrdmwcgdvqypt")
 
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
 def logout(request):
+    print("\n" + "="*80)
+    print("[LOGOUT DEBUG] Logout endpoint called")
+    
     response = JsonResponse({"success": "logged out"}, status=200)
-    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"])
+    
+    # Delete all auth-related cookies
+    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"], domain='.tech-iitb.org')
+    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"], domain='socb.tech-iitb.org')
+    response.delete_cookie(SIMPLE_JWT["AUTH_COOKIE"])  # Current domain
+    
+    # Also clear session and csrf cookies
+    response.delete_cookie('sessionid', domain='.tech-iitb.org')
+    response.delete_cookie('sessionid', domain='socb.tech-iitb.org')
+    response.delete_cookie('sessionid')
+    
+    response.delete_cookie('csrftoken', domain='.tech-iitb.org')
+    response.delete_cookie('csrftoken', domain='socb.tech-iitb.org')
+    response.delete_cookie('csrftoken')
+    
+    print("[LOGOUT DEBUG] All cookies cleared")
+    print("="*80 + "\n")
+    
     return response
 
 
