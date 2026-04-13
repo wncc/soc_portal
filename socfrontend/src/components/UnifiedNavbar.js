@@ -91,12 +91,9 @@ export default function UnifiedNavbar() {
   return (
     <nav className="bg-indigo-600 border-gray-200 dark:bg-gray-900 dark:border-gray-700 shadow-xl opacity-90 relative z-[9999]">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+        <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
           <img src={wncc_logo} className="h-10" alt="WnCC Logo" />
-          {/* <span className="self-center text-2xl font-semibold whitespace-nowrap text-white dark:text-white">
-            Summer of Tech
-          </span> */}
-        </Link>
+        </a>
 
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -128,12 +125,12 @@ export default function UnifiedNavbar() {
 
             {/* Home Link */}
             <li className="flex items-center">
-              <Link
-                to="/"
+              <a
+                href="/"
                 className="block py-2 px-3 text-white rounded hover:bg-gray-100 hover:text-gray-500 md:hover:bg-transparent md:border-0 md:hover:text-gray-200 md:p-0"
               >
                 Home
-              </Link>
+              </a>
             </li>
 
             {authToken ? (
