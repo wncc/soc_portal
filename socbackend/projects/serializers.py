@@ -61,13 +61,13 @@ class MenteePreferenceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MenteePreference
-        fields = "__all__"
+        fields = ["id", "mentee", "project", "sop", "preference"]
 
 
 class MenteePreferenceSaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenteePreference
-        fields = "__all__"
+        fields = ["id", "mentee", "project", "sop", "preference"]
 
 
 class MenteeSerializer(serializers.ModelSerializer):

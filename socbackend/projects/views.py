@@ -203,7 +203,7 @@ class ProjectPreference(APIView):
         except Mentee.DoesNotExist:
             return Response({"error": "You are not a mentee in this domain."}, status=status.HTTP_404_NOT_FOUND)
         
-        preferences = MenteePreference.objects.filter(mentee=mentee)
+        preferences = MenteePreference.objects.filter(mentee=mentee).order_by('preference')
         serializer = MenteePreferenceSerializer(preferences, many=True)
         return Response(serializer.data)
 
@@ -222,10 +222,21 @@ class ProjectPreference(APIView):
         except Mentee.DoesNotExist:
             return Response({"error": "You are not a mentee in this domain."}, status=status.HTTP_404_NOT_FOUND)
         
-        project_id = request.data["project"]
-        preference = request.data["preference"]
-        sop = request.data["sop"]
-        project = Project.objects.get(pk=project_id)
+        project_id = request.data.get("project")
+        preference = request.data.get("preference")
+        sop = request.data.get("sop", "").strip()
+        
+        # Validation
+        if not project_id:
+            return Response({"error": "Project is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not sop:
+            return Response({"error": "SOP is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            project = Project.objects.get(pk=project_id, domain=domain)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found in this domain."}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = MenteePreferenceSaveSerializer(
             data={"mentee": mentee.id, "project": project.id, "preference": preference, "sop": sop}
         )

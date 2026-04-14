@@ -608,10 +608,8 @@ import api from '../../utils/api';
 export default function PreferenceForm() {
   const [details, setDetails] = useState([]);
   const [userPreference, setUserPreference] = useState([]);
-  const [page, setPage] = useState(1);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState(false);
-  const [error1, setError1] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const { domain } = useParams();
   const navigate = useNavigate();
 
@@ -637,7 +635,6 @@ export default function PreferenceForm() {
       .catch((error) => console.error('Error fetching preferences:', error));
   }, [domain]);
 
-  const [selectedProjects, setSelectedProjects] = useState(['', '', '']);
   const [data, setData] = useState([
     { project: '', sop: '', preference: 1 },
     { project: '', sop: '', preference: 2 },
@@ -649,8 +646,57 @@ export default function PreferenceForm() {
   }
 
   if (submitted) {
-    return <Navigate to={domain ? `/${domain}/PreferenceFormFilled` : '/PreferenceFormFilled'} />;
+    window.location.href = domain ? `/${domain}/PreferenceFormFilled` : '/PreferenceFormFilled';
+    return null;
   }
+
+  const handleSubmit = () => {
+    setErrorMsg('');
+    
+    // Filter out empty preferences
+    const filledPrefs = data.filter(d => d.project || d.sop);
+    
+    // Validation
+    if (filledPrefs.length === 0) {
+      setErrorMsg('At least one preference must be filled.');
+      return;
+    }
+    
+    for (let pref of filledPrefs) {
+      if (pref.project && !pref.sop.trim()) {
+        setErrorMsg('Project selected but SOP is missing.');
+        return;
+      }
+      if (!pref.project && pref.sop.trim()) {
+        setErrorMsg('SOP filled but project is not selected.');
+        return;
+      }
+    }
+    
+    // Check for duplicate projects
+    const projectIds = filledPrefs.map(p => p.project);
+    if (new Set(projectIds).size !== projectIds.length) {
+      setErrorMsg('Cannot select the same project multiple times.');
+      return;
+    }
+    
+    // Submit only filled preferences
+    const submitPromises = filledPrefs.map((pref) => {
+      const formData = new FormData();
+      formData.append('project', pref.project);
+      formData.append('sop', pref.sop);
+      formData.append('preference', pref.preference);
+      if (domain) formData.append('domain', domain);
+      return api.post(`${process.env.REACT_APP_BACKEND_URL}/projects/preference/`, formData);
+    });
+    
+    Promise.all(submitPromises)
+      .then(() => setSubmitted(true))
+      .catch((err) => {
+        console.error(err);
+        setErrorMsg(err.response?.data?.error || 'Failed to submit preferences.');
+      });
+  };
 
   return (
     <div className="form min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
@@ -679,229 +725,99 @@ export default function PreferenceForm() {
       </div>
 
       <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-lg">
-          <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl mb-6">
             Preference Form
           </h1>
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-8">
+            Fill 1, 2, or all 3 preferences. At least one is required.
+          </p>
 
-          {/* Remove onSubmit to prevent form auto-submitting */}
-          <form className="mt-6 space-y-4 p-4 shadow-2xl sm:p-6 lg:p-8">
-            {page >= 1 && page <= 3 && (
-              <Page
+          {errorMsg && (
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-600 dark:text-red-400 text-sm">{errorMsg}</p>
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {[1, 2, 3].map((num) => (
+              <PreferenceCard
+                key={num}
+                num={num}
                 data={data}
                 setData={setData}
                 details={details}
-                page={page}
-                setPage={setPage}
-                selectedProjects={selectedProjects}
-                setSelectedProjects={setSelectedProjects}
-                setSubmitted={setSubmitted}
-                setError={setError}
-                setError1={setError1}
-                domain={domain}
               />
-            )}
-          </form>
+            ))}
+          </div>
 
-          {error && <p className="text-red-500">Please fill SOPs.</p>}
-          {error1 && <p className="text-red-500">Select 3 unique projects.</p>}
+          <button
+            onClick={handleSubmit}
+            className="mt-8 w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700"
+          >
+            Submit Preferences
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-const Page = ({
-  data,
-  setData,
-  details,
-  page,
-  setPage,
-  selectedProjects,
-  setSelectedProjects,
-  setSubmitted,
-  setError,
-  setError1,
-  domain,
-}) => {
-  const [showConfirmPopup, setShowConfirmPopup] = useState(false); // <-- new
-  useEffect(() => {
-    setSelectedProjects([...selectedProjects]); // Ensures state persistence
-  }, [page]);
-
-  const handleSubmitClick = (e) => {
-    e.preventDefault();
-    setError(false);
-    setError1(false);
-
-    const filteredData = data.filter(({ project, sop }) => project.trim() !== '');
-
-    if (filteredData.length === 0) {
-      setError(true);
-      return;
-    }
-
-    const selectedProjectIDs = filteredData.map((entry) => entry.project);
-    if (new Set(selectedProjectIDs).size !== selectedProjectIDs.length) {
-      setError1(true);
-      return;
-    }
-
-    setShowConfirmPopup(true); // <-- show confirmation popup
-  };
-
-  const actuallySubmit = () => {
-    const filteredData = data.filter(({ project, sop }) => project.trim() !== '');
-
-    const submitData = filteredData.map((entry) => {
-      const formData = new FormData();
-      Object.keys(entry).forEach((key) => formData.append(key, entry[key]));
-      if (domain) {
-        formData.append('domain', domain);
-      }
-      return api.post(`${process.env.REACT_APP_BACKEND_URL}projects/preference/`, formData);
-    });
-
-    Promise.all(submitData)
-      .then(() => setSubmitted(true))
-      .catch(() => setError(true));
-  };
-
-  const handleNextPage = () => setPage(page + 1);
-  const handlePrevPage = () => setPage(page - 1);
-
+const PreferenceCard = ({ num, data, setData, details }) => {
+  const selectedProjects = data.map(d => d.project).filter(p => p);
+  
   const handleProjectChange = (e) => {
-    const { value } = e.target;
-    const newSelectedProjects = [...selectedProjects];
-    newSelectedProjects[page - 1] = value;
-    setSelectedProjects(newSelectedProjects);
-
     const newData = [...data];
-    newData[page - 1].project = value;
+    newData[num - 1].project = e.target.value;
     setData(newData);
   };
 
   const handleSOPChange = (e) => {
     const newData = [...data];
-    newData[page - 1].sop = e.target.value;
+    newData[num - 1].sop = e.target.value;
     setData(newData);
   };
 
   const availableProjects = details.filter(
-    (p) => !selectedProjects.includes(p.id.toString()) || p.id.toString() === selectedProjects[page - 1],
+    (p) => !selectedProjects.includes(p.id.toString()) || p.id.toString() === data[num - 1].project
   );
 
-  const handleConfirm = () => {
-    setShowConfirmPopup(false);
-    actuallySubmit();
-  };
-
-  const handleCancel = () => {
-    setShowConfirmPopup(false);
-  };
-
-
   return (
-    <div>
-      <div className="inline-block relative w-full">
-        <label htmlFor="project" className="block text-sm font-medium">{`Project ${page}`}</label>
-        <select
-          id="project"
-          name="project"
-          className="w-full rounded-lg border-gray-200 p-4 text-sm shadow-sm dark:bg-gray-800"
-          onChange={handleProjectChange}
-          value={selectedProjects[page - 1]}
-          required
-        >
-          <option value="">Please select</option>
-          {availableProjects.map(({ id, title }) => (
-            <option key={id} value={id}>{`Project ID: ${id} - ${title}`}</option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="sop" className="block text-sm font-medium">Statement of Purpose</label>
-        <textarea
-          id="sop"
-          className="mt-2 w-full rounded-lg border-gray-200 p-4 shadow-sm dark:bg-gray-800"
-          rows="4"
-          placeholder="Write your SOP here..."
-          required
-          value={data[page - 1].sop}
-          onChange={handleSOPChange}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
-        {page > 1 && (
-          <button
-            type="button"
-            className="block w-full rounded-lg bg-gray-600 px-5 py-3 text-sm font-medium text-white"
-            onClick={handlePrevPage}
+    <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Preference {num} {num === 1 && <span className="text-red-500">*</span>}
+      </h3>
+      
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Select Project
+          </label>
+          <select
+            className="w-full rounded-lg border-gray-300 dark:border-gray-600 p-3 text-sm shadow-sm dark:bg-gray-800 dark:text-white"
+            onChange={handleProjectChange}
+            value={data[num - 1].project}
           >
-            Prev
-          </button>
-        )}
-        {page === 3 ? (
-          <button
-            type="button" // Changed from submit to button
-            className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
-            onClick={handleSubmitClick} // Only submit when clicked
-          >
-            Submit
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
-            onClick={handleNextPage}
-          >
-            Next
-          </button>
-        )}
-      </div>
-      {showConfirmPopup && (
-        <ConfirmationPopup onConfirm={handleConfirm} onCancel={handleCancel} />
-      )}
-    </div>
-  );
-};
-
-function ConfirmationPopup({ onConfirm, onCancel }) {
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm text-center">
-        <div className="text-indigo-600 dark:text-indigo-400 mb-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-12 h-12 mx-auto"
-          >
-            <path
-              fillRule="evenodd"
-              d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 15a1 1 0 110-2 1 1 0 010 2zm.75-4.75a.75.75 0 00-1.5 0V7a.75.75 0 001.5 0v5.25z"
-              clipRule="evenodd"
-            />
-          </svg>
+            <option value="">-- Select a project (optional) --</option>
+            {availableProjects.map(({ id, title }) => (
+              <option key={id} value={id}>
+                {title}
+              </option>
+            ))}
+          </select>
         </div>
-        <p className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-          Are you sure you want to submit your preferences?
-        </p>
-        <div className="flex justify-center gap-4">
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
-          >
-            Confirm
-          </button>
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-400 text-white rounded-lg"
-          >
-            Cancel
-          </button>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Statement of Purpose
+          </label>
+          <textarea
+            className="w-full rounded-lg border-gray-300 dark:border-gray-600 p-3 shadow-sm dark:bg-gray-800 dark:text-white"
+            rows="4"
+            placeholder="Explain why you want to work on this project..."
+            value={data[num - 1].sop}
+            onChange={handleSOPChange}
+          />
         </div>
       </div>
     </div>
