@@ -375,6 +375,17 @@ class MentorProfileView(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+            # If banner link is being changed, clear the cached image to force re-download
+            if 'banner_image_link' in request.data:
+                if project.banner_image_link != request.data['banner_image_link']:
+                    # Delete old cached file if it exists
+                    if project.banner_image:
+                        old_file_path = os.path.join(settings.MEDIA_ROOT, str(project.banner_image))
+                        if os.path.exists(old_file_path):
+                            os.remove(old_file_path)
+                    project.banner_image = ''  # Clear to force re-download
+                    project.save()
+
             serializer = ProjectSerializer(project, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
