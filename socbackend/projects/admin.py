@@ -72,7 +72,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('domain', 'general_category')
     list_per_page = 1000
     inlines = [RankListInline]
-    actions = ['export_projects_csv', 'link_main_mentors', 'link_co_mentors', 'download_banner_images']
+    actions = ['export_projects_csv', 'link_co_mentors', 'download_banner_images']
 
     # ---- Computed columns ----
 
@@ -131,77 +131,7 @@ class ProjectAdmin(admin.ModelAdmin):
             ])
         return response
 
-    @admin.action(description='Link MAIN mentors (from mentor field) to projects')
-    def link_main_mentors(self, request, queryset):
-        """
-        Links only the main mentor (from the 'mentor' field) to projects.
-        Creates DomainMembership and Mentor objects automatically.
-        Case-insensitive roll number matching.
-        """
-        from domains.models import DomainMembership
-        
-        linked_count = 0
-        not_found_count = 0
-        
-        for project in queryset.select_related('domain'):
-            # Extract main mentor roll (case-insensitive)
-            mentor_match = re.search(r'\((\w+)\)', project.mentor)
-            if mentor_match:
-                roll = mentor_match.group(1).strip().lower()
-            elif project.mentor and project.mentor.lower() != 'na':
-                roll = project.mentor.strip().lower()
-            else:
-                continue
-            
-            try:
-                user = CustomUser.objects.get(username=roll)
-                profile = UserProfile.objects.get(user=user)
-                
-                # Create DomainMembership if doesn't exist
-                membership, _ = DomainMembership.objects.get_or_create(
-                    user=user,
-                    domain=project.domain,
-                    role='mentor',
-                    defaults={'is_approved': True}
-                )
-                
-                # Create Mentor object if doesn't exist
-                mentor, created = Mentor.objects.get_or_create(
-                    user=profile,
-                    domain=project.domain,
-                    defaults={'season': '1'}
-                )
-                
-                # Link project
-                if project not in mentor.projects.all():
-                    mentor.projects.add(project)
-                    linked_count += 1
-                    self.message_user(
-                        request,
-                        f'✓ Linked main mentor {roll} to "{project.title}"'
-                    )
-                
-            except CustomUser.DoesNotExist:
-                not_found_count += 1
-                self.message_user(
-                    request,
-                    f'✗ Main mentor not found: {roll} for "{project.title}" (will auto-link when they register)',
-                    level='warning'
-                )
-            except UserProfile.DoesNotExist:
-                not_found_count += 1
-                self.message_user(
-                    request,
-                    f'✗ Profile not found: {roll}',
-                    level='warning'
-                )
-        
-        self.message_user(
-            request,
-            f'Main mentor linking complete: {linked_count} linked, {not_found_count} not found',
-            level='success' if not_found_count == 0 else 'warning'
-        )
-    
+
     @admin.action(description='Link CO-MENTORS (from co_mentor_info) to projects')
     def link_co_mentors(self, request, queryset):
         """
@@ -276,20 +206,29 @@ class ProjectAdmin(admin.ModelAdmin):
     def download_banner_images(self, request, queryset):
         """
         Downloads banner images from banner_image_link and saves to media/projects/
-        CLEARS existing banner images first, then re-downloads everything.
+        CLEARS existing banner_image field in database first, then re-downloads everything.
         Updates banner_image field with the local path.
         """
         projects_folder = os.path.join(settings.MEDIA_ROOT, 'projects')
         os.makedirs(projects_folder, exist_ok=True)
         
-        # STEP 1: Clear all existing banner images in the media folder
-        cleared_count = 0
+        # STEP 1: Clear banner_image field in database for ALL projects
+        all_projects = Project.objects.all()
+        cleared_db_count = all_projects.update(banner_image=None)
+        self.message_user(
+            request,
+            f'🗑️ Cleared banner_image field for {cleared_db_count} projects in database',
+            level='info'
+        )
+        
+        # STEP 2: Clear all existing banner image files in the media folder
+        cleared_files_count = 0
         for filename in os.listdir(projects_folder):
             file_path = os.path.join(projects_folder, filename)
             if os.path.isfile(file_path):
                 try:
                     os.remove(file_path)
-                    cleared_count += 1
+                    cleared_files_count += 1
                 except Exception as e:
                     self.message_user(
                         request,
@@ -297,14 +236,14 @@ class ProjectAdmin(admin.ModelAdmin):
                         level='warning'
                     )
         
-        if cleared_count > 0:
+        if cleared_files_count > 0:
             self.message_user(
                 request,
-                f'🗑️ Cleared {cleared_count} existing banner image(s) from media/projects/',
+                f'🗑️ Deleted {cleared_files_count} image file(s) from media/projects/',
                 level='info'
             )
         
-        # STEP 2: Download all banner images from links
+        # STEP 3: Download banner images from links for selected projects
         success_count = 0
         skip_count = 0
         error_count = 0
@@ -312,10 +251,6 @@ class ProjectAdmin(admin.ModelAdmin):
         for project in queryset:
             if not project.banner_image_link:
                 skip_count += 1
-                # Clear banner_image field if no link
-                if project.banner_image:
-                    project.banner_image = None
-                    project.save()
                 continue
             
             filename = f"{project.id}.png"
@@ -370,7 +305,7 @@ class ProjectAdmin(admin.ModelAdmin):
         
         self.message_user(
             request,
-            f'✅ Banner download complete: {success_count} downloaded, {skip_count} skipped, {error_count} errors',
+            f'✅ Banner download complete: {success_count} downloaded, {skip_count} skipped (no link), {error_count} errors',
             level='success' if error_count == 0 else 'warning'
         )
     
