@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domains', '0002_auto_previous'),  # Update this to your latest migration
+        ('domains', '0003_add_project_permissions'),
     ]
 
     operations = [
