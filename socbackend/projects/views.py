@@ -421,6 +421,57 @@ class MentorProfileView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def delete(self, request, project_id=None):
+        """Delete a project (only if domain allows deletion)."""
+        try:
+            if not project_id:
+                return Response({"error": "Project ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_profile = UserProfile.objects.get(user=request.user)
+            domain_slug = request.query_params.get("domain")
+            domain = get_domain_or_404(domain_slug) if domain_slug else None
+
+            if domain:
+                mentor = Mentor.objects.get(user=user_profile, domain=domain)
+            else:
+                mentor = Mentor.objects.filter(user=user_profile).first()
+                if not mentor:
+                    raise Mentor.DoesNotExist
+
+            project = Project.objects.get(id=project_id)
+
+            # Check if mentor owns this project
+            if project not in mentor.projects.all():
+                return Response(
+                    {"error": "You do not have permission to delete this project."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Check if domain allows deletion
+            if project.domain and not project.domain.project_deletion_open:
+                return Response(
+                    {"error": "Project deletion is not allowed in this domain. Contact domain manager."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            # Delete the project
+            project_title = project.title
+            project.delete()
+
+            return Response(
+                {"message": f"Project '{project_title}' deleted successfully."},
+                status=status.HTTP_200_OK
+            )
+
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Mentor.DoesNotExist:
+            return Response({"error": "Mentor profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except UserProfile.DoesNotExist:
+            return Response({"error": "User profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # ---------------------------------------------------------------------------
 # RankList Views — FIXED: project-level, no mentor FK

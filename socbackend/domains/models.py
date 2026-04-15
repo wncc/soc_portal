@@ -20,6 +20,7 @@ class Domain(models.Model):
     mentor_reg_open = models.BooleanField(default=False, help_text="Open for mentors to self-register (pending approval)")
     project_creation_open = models.BooleanField(default=True, help_text="Allow mentors to create new projects")
     project_editing_open = models.BooleanField(default=True, help_text="Allow mentors to edit existing projects")
+    project_deletion_open = models.BooleanField(default=False, help_text="Allow mentors to delete their projects")
     created_at = models.DateTimeField(auto_now_add=True)
     order = models.PositiveIntegerField(default=0, help_text="Display ordering (lower = first)")
 

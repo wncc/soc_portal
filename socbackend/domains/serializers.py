@@ -13,7 +13,7 @@ class DomainSerializer(serializers.ModelSerializer):
             "id", "slug", "name", "description",
             "cover_photo", "cover_photo_url",
             "is_active", "mentee_reg_open", "mentor_reg_open",
-            "project_creation_open", "project_editing_open",
+            "project_creation_open", "project_editing_open", "project_deletion_open",
             "order", "created_at", "member_count",
         ]
         read_only_fields = ["id", "created_at"]
