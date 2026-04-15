@@ -17,6 +17,7 @@ export default function DomainForm({ domain, onClose, onSaved }) {
     mentor_reg_open: false,
     project_creation_open: true,
     project_editing_open: true,
+    project_deletion_open: false,
   });
   const [coverFile, setCoverFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
@@ -35,6 +36,7 @@ export default function DomainForm({ domain, onClose, onSaved }) {
         mentor_reg_open: domain.mentor_reg_open || false,
         project_creation_open: domain.project_creation_open !== false,
         project_editing_open: domain.project_editing_open !== false,
+        project_deletion_open: domain.project_deletion_open || false,
       });
       if (domain.cover_photo_url) setCoverPreview(domain.cover_photo_url);
     }
@@ -222,6 +224,15 @@ export default function DomainForm({ domain, onClose, onSaved }) {
                     onChange={handleChange}
                   />
                   <span>✏️ Allow mentors to edit existing projects</span>
+                </label>
+                <label className="df-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="project_deletion_open"
+                    checked={form.project_deletion_open}
+                    onChange={handleChange}
+                  />
+                  <span>🗑️ Allow mentors to delete their projects</span>
                 </label>
               </div>
             </div>

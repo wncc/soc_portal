@@ -140,11 +140,14 @@ const EditProject = () => {
     <div className="lp-container">
       <div className="lp-box">
         <h1 className="lp-title">Edit {domainData?.name || 'SOC'} Project</h1>
+        <p className="lp-description">
+          Update your project details below.
+        </p>
         <form className="lp-form" onSubmit={handleSubmit}>
-          {/* Same exact form fields as in your add-project form */}
           <div className="lp-form-group">
             <label className="lp-label">Project Title *</label>
-            <input type="text" name="title" className="lp-input" value={formData.title} onChange={handleChange} required />
+            <p className="lp-help-text">We are looking for your hobby projects and ideas on your to-do list.</p>
+            <input type="text" name="title" className="lp-input" placeholder="Enter project title" value={formData.title} onChange={handleChange} required />
           </div>
 
           <div className="lp-form-group">
@@ -168,47 +171,53 @@ const EditProject = () => {
 
           <div className="lp-form-group">
             <label className="lp-label">Specific Category</label>
-            <input type="text" name="specific_category" className="lp-input" value={formData.specific_category} onChange={handleChange} />
+            <input type="text" name="specific_category" className="lp-input" placeholder="Enter specific category" value={formData.specific_category} onChange={handleChange} />
           </div>
 
           <div className="lp-form-group">
             <label className="lp-label">Number of mentees *</label>
-            <input type="number" name="mentee_max" className="lp-input" value={formData.mentee_max} onChange={handleChange} required />
+            <input type="number" name="mentee_max" className="lp-input" placeholder="Enter number of mentees" value={formData.mentee_max} onChange={handleChange} required min="1" />
           </div>
 
           <div className="lp-form-group">
             <label className="lp-label">Co-mentor(s)</label>
-            <input type="text" name="co_mentor_info" className="lp-input" value={formData.co_mentor_info} onChange={handleChange} />
+            <p className="lp-help-text">
+              If there are multiple co-mentors, add their names in this format: Name (roll No) separated by commas. Eg: John Doe (21b1111), Alice (22b2222), Bob (23b3333)
+            </p>
+            <input type="text" name="co_mentor_info" className="lp-input" placeholder="Enter co-mentors" value={formData.co_mentor_info} onChange={handleChange} />
           </div>
 
           <div className="lp-form-group">
             <label className="lp-label">Description *</label>
-            <textarea name="description" className="lp-textarea" rows="4" value={formData.description} onChange={handleChange} required />
+            <p className="lp-help-text">
+              Elaborate on the work and learning involved in the project. Suggest resources for mentees to gain context.
+            </p>
+            <textarea name="description" className="lp-textarea" placeholder="Enter project description" rows="4" value={formData.description} onChange={handleChange} required />
           </div>
 
           <div className="lp-form-group">
             <label className="lp-label">Proposed Timeline *</label>
-            <textarea name="timeline" className="lp-textarea" rows="4" value={formData.timeline} onChange={handleChange} required />
+            <textarea name="timeline" className="lp-textarea" placeholder="Enter week-wise timeline" rows="4" value={formData.timeline} onChange={handleChange} required />
           </div>
 
           <div className="lp-form-group">
             <label className="lp-label">Project Checkpoints *</label>
-            <textarea name="checkpoints" className="lp-textarea" rows="4" value={formData.checkpoints} onChange={handleChange} required />
+            <textarea name="checkpoints" className="lp-textarea" placeholder="Enter 5 major milestones" rows="4" value={formData.checkpoints} onChange={handleChange} required />
           </div>
 
           <div className="lp-form-group">
             <label className="lp-label">Prerequisites *</label>
-            <textarea name="prereuisites" className="lp-textarea" rows="4" value={formData.prereuisites} onChange={handleChange} required />
+            <textarea name="prereuisites" className="lp-textarea" placeholder="Describe prerequisites" rows="4" value={formData.prereuisites} onChange={handleChange} required />
           </div>
 
           <div className="lp-form-group">
-            <label className="lp-label">Weekly Meets *</label>
-            <input type="number" name="weekly_meets" className="lp-input" value={formData.weekly_meets} onChange={handleChange} required />
+            <label className="lp-label">How many weekly meets are you planning to conduct ? *</label>
+            <input type="number" name="weekly_meets" className="lp-input" placeholder="Write the approximate number per week" value={formData.weekly_meets} onChange={handleChange} required min="0" />
           </div>
 
           <div className="lp-form-group">
-            <label className="lp-label">Banner Image Link *</label>
-            <input type="url" name="banner_image_link" className="lp-input" value={formData.banner_image_link} onChange={handleChange} required />
+            <label className="lp-label">Banner Image Link (upload to Drive and share link with view access) *</label>
+            <input type="url" name="banner_image_link" className="lp-input" placeholder="Paste banner image link" value={formData.banner_image_link} onChange={handleChange} required />
           </div>
 
           <button type="submit" className="lp-submit-button">Update Project</button>

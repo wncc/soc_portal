@@ -127,10 +127,15 @@ header {
     line-height: 1.4;
   }
 
-  .edit_project_btn {
+  .project_actions {
+    display: flex;
+    gap: 8px;
     margin-top: 10px;
+  }
+
+  .edit_project_btn,
+  .delete_project_btn {
     padding: 8px 16px;
-    background-color: $dark_green;
     color: white;
     border: none;
     border-radius: 6px;
@@ -138,15 +143,29 @@ header {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    align-self: flex-start;
 
     &:hover {
-      background-color: darken($dark_green, 10%);
       transform: scale(1.05);
     }
 
     &:active {
       transform: scale(0.98);
+    }
+  }
+
+  .edit_project_btn {
+    background-color: $dark_green;
+
+    &:hover {
+      background-color: darken($dark_green, 10%);
+    }
+  }
+
+  .delete_project_btn {
+    background-color: #dc3545;
+
+    &:hover {
+      background-color: darken(#dc3545, 10%);
     }
   }
 }
@@ -253,4 +272,82 @@ header {
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Delete Modal */
+.delete_modal_overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete_modal {
+  background-color: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  h3 {
+    margin: 0 0 15px 0;
+    font-size: 24px;
+    color: #333;
+  }
+
+  p {
+    margin: 0 0 25px 0;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  .delete_modal_actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+    }
+
+    .cancel_btn {
+      background-color: #6c757d;
+      color: white;
+
+      &:hover {
+        background-color: darken(#6c757d, 10%);
+      }
+    }
+
+    .confirm_delete_btn {
+      background-color: #dc3545;
+      color: white;
+
+      &:hover {
+        background-color: darken(#dc3545, 10%);
+      }
+    }
+  }
 }

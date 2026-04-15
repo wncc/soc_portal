@@ -49,6 +49,7 @@ function LandingPage() {
   };
 
   const [showModal, setShowModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
     const fetchDomainData = async () => {
@@ -227,20 +228,34 @@ function LandingPage() {
                     <h3>{project.title}</h3>
                     <p>{project.general_category}</p>
                   </div>
-                  {domainData?.project_editing_open && (
-                    <button
-                      className="edit_project_btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(domain ? `/${domain}/mentor/edit-project` : '/mentor/edit-project', {
-                          state: { projectId: project.id }
-                        });
-                      }}
-                      title="Edit Project"
-                    >
-                      ✏️ Edit
-                    </button>
-                  )}
+                  <div className="project_actions">
+                    {domainData?.project_editing_open && (
+                      <button
+                        className="edit_project_btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(domain ? `/${domain}/mentor/edit-project` : '/mentor/edit-project', {
+                            state: { projectId: project.id }
+                          });
+                        }}
+                        title="Edit Project"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {domainData?.project_deletion_open && (
+                      <button
+                        className="delete_project_btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteConfirm(project.id);
+                        }}
+                        title="Delete Project"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
+                  </div>
                 </motion.div>
               ))}
               
@@ -277,6 +292,42 @@ function LandingPage() {
         </motion.div>
       )}
       {showModal && <PhoneUpdateModal onClose={() => setShowModal(false)} />}
+      
+      {deleteConfirm && (
+        <div className="delete_modal_overlay">
+          <div className="delete_modal">
+            <h3>Delete Project?</h3>
+            <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+            <div className="delete_modal_actions">
+              <button
+                className="cancel_btn"
+                onClick={() => setDeleteConfirm(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="confirm_delete_btn"
+                onClick={async () => {
+                  try {
+                    const endpoint = domain
+                      ? `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${deleteConfirm}?domain=${domain}`
+                      : `${process.env.REACT_APP_BACKEND_URL}/projects/mentor/profile/${deleteConfirm}`;
+                    
+                    await axios.delete(endpoint, axiosConfig);
+                    setProjects(projects.filter(p => p.id !== deleteConfirm));
+                    setDeleteConfirm(null);
+                  } catch (error) {
+                    console.error('Error deleting project:', error);
+                    alert('Failed to delete project');
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
