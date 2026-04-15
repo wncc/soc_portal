@@ -72,7 +72,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('domain', 'general_category')
     list_per_page = 1000
     inlines = [RankListInline]
-    actions = ['export_projects_csv', 'add_co_mentor_as_mentor', 'link_all_mentors', 'download_banner_images', 'clear_banner_images']
+    actions = ['export_projects_csv', 'link_main_mentors', 'link_co_mentors', 'download_banner_images']
 
     # ---- Computed columns ----
 
@@ -90,7 +90,7 @@ class ProjectAdmin(admin.ModelAdmin):
     def co_mentor_names_display(self, obj):
         if not obj.co_mentor_info or obj.co_mentor_info == 'NA':
             return '—'
-        matches = re.findall(r'([A-Za-z\s]+)\s\((\w+)\)', obj.co_mentor_info)
+        matches = re.findall(r'([A-Za-z\s]+)\s*\((\w+)\)', obj.co_mentor_info)
         return ', '.join(f'{n.strip()} ({r})' for n, r in matches) if matches else obj.co_mentor_info[:60]
     co_mentor_names_display.short_description = 'Co-Mentors'
 
@@ -102,71 +102,41 @@ class ProjectAdmin(admin.ModelAdmin):
         response['Content-Disposition'] = 'attachment; filename="projects.csv"'
         writer = csv.writer(response)
         writer.writerow([
-            'ID', 'Domain', 'Title', 'General Category', 'Specific Category',
-            'Mentee Max', 'Mentor Names', 'Mentor Rolls',
-            'Co-Mentor Names', 'Co-Mentor Rolls', 'Co-Mentor Info',
+            'ID', 'Domain Slug', 'Domain Name', 'Title', 'General Category', 'Specific Category',
+            'Mentee Max', 'Main Mentor (from form)', 'Linked Mentor Names', 'Linked Mentor Rolls', 'Linked Mentor Phones',
+            'Co-Mentor Info (from form)', 'Co-Mentor Names', 'Co-Mentor Rolls',
             'Weekly Meets', 'Description', 'Timeline', 'Checkpoints',
-            'Prerequisites', 'Banner Image Link', 'Code',
+            'Prerequisites', 'Banner Image Link', 'Banner Image Path', 'Code',
         ])
         for p in queryset.select_related('domain'):
             mentors = Mentor.objects.filter(projects=p).select_related('user')
             mentor_names = ', '.join(m.user.name for m in mentors) or '—'
             mentor_rolls = ', '.join(m.user.roll_number for m in mentors) or '—'
-            co_matches = re.findall(r'([A-Za-z\s]+)\s\((\w+)\)', p.co_mentor_info or '')
+            mentor_phones = ', '.join(m.user.phone_number for m in mentors) or '—'
+            co_matches = re.findall(r'([A-Za-z\s]+)\s*\((\w+)\)', p.co_mentor_info or '')
             co_names = ', '.join(n.strip() for n, _ in co_matches) or '—'
             co_rolls = ', '.join(r for _, r in co_matches) or '—'
             writer.writerow([
-                p.id, p.domain.slug if p.domain else '',
+                p.id, 
+                p.domain.slug if p.domain else '',
+                p.domain.name if p.domain else '',
                 p.title, p.general_category, p.specific_category, p.mentee_max,
-                mentor_names, mentor_rolls, co_names, co_rolls, p.co_mentor_info,
+                p.mentor,
+                mentor_names, mentor_rolls, mentor_phones,
+                p.co_mentor_info, co_names, co_rolls,
                 p.weekly_meets, p.description, p.timeline,
-                p.checkpoints, p.prereuisites, p.banner_image_link, p.code,
+                p.checkpoints, p.prereuisites, p.banner_image_link,
+                p.banner_image.name if p.banner_image else '',
+                p.code,
             ])
         return response
 
-    @admin.action(description='Link co-mentors listed in co_mentor_info as project mentors')
-    def add_co_mentor_as_mentor(self, request, queryset):
+    @admin.action(description='Link MAIN mentors (from mentor field) to projects')
+    def link_main_mentors(self, request, queryset):
         """
-        Updated for new architecture: no role field on CustomUser.
-        Looks up UserProfile by roll number and links to Mentor in same domain.
-        """
-        for project in queryset.select_related('domain'):
-            if not project.co_mentor_info or project.co_mentor_info == 'NA':
-                continue
-            matches = re.findall(r'([A-Za-z\s]+)\s\((\w+)\)', project.co_mentor_info)
-            for name, roll_number in matches:
-                roll_number = roll_number.strip().lower()
-                try:
-                    user = CustomUser.objects.get(username=roll_number)
-                    profile = UserProfile.objects.get(user=user)
-                    # Find or create mentor record in the same domain
-                    mentor, created = Mentor.objects.get_or_create(
-                        user=profile,
-                        domain=project.domain,
-                        defaults={'season': '1'},
-                    )
-                    if project not in mentor.projects.all():
-                        mentor.projects.add(project)
-                        self.message_user(
-                            request,
-                            f'✓ Co-mentor {name.strip()} ({roll_number}) linked to "{project.title}".'
-                        )
-                    else:
-                        self.message_user(
-                            request,
-                            f'~ {name.strip()} already linked to "{project.title}".'
-                        )
-                except CustomUser.DoesNotExist:
-                    self.message_user(request, f'✗ No user found for roll: {roll_number}')
-                except UserProfile.DoesNotExist:
-                    self.message_user(request, f'✗ No profile found for roll: {roll_number}')
-        self.message_user(request, 'Co-mentor linking complete.')
-    
-    @admin.action(description='Link ALL mentors (main + co-mentors) to projects')
-    def link_all_mentors(self, request, queryset):
-        """
-        Links both main mentors and co-mentors to projects.
+        Links only the main mentor (from the 'mentor' field) to projects.
         Creates DomainMembership and Mentor objects automatically.
+        Case-insensitive roll number matching.
         """
         from domains.models import DomainMembership
         
@@ -174,22 +144,85 @@ class ProjectAdmin(admin.ModelAdmin):
         not_found_count = 0
         
         for project in queryset.select_related('domain'):
-            rolls_to_link = []
-            
-            # Extract main mentor roll
+            # Extract main mentor roll (case-insensitive)
             mentor_match = re.search(r'\((\w+)\)', project.mentor)
             if mentor_match:
-                rolls_to_link.append(mentor_match.group(1).lower())
+                roll = mentor_match.group(1).strip().lower()
             elif project.mentor and project.mentor.lower() != 'na':
-                rolls_to_link.append(project.mentor.strip().lower())
+                roll = project.mentor.strip().lower()
+            else:
+                continue
             
-            # Extract co-mentor rolls
-            if project.co_mentor_info and project.co_mentor_info.upper() != 'NA':
-                co_matches = re.findall(r'\((\w+)\)', project.co_mentor_info)
-                rolls_to_link.extend([r.lower() for r in co_matches])
+            try:
+                user = CustomUser.objects.get(username=roll)
+                profile = UserProfile.objects.get(user=user)
+                
+                # Create DomainMembership if doesn't exist
+                membership, _ = DomainMembership.objects.get_or_create(
+                    user=user,
+                    domain=project.domain,
+                    role='mentor',
+                    defaults={'is_approved': True}
+                )
+                
+                # Create Mentor object if doesn't exist
+                mentor, created = Mentor.objects.get_or_create(
+                    user=profile,
+                    domain=project.domain,
+                    defaults={'season': '1'}
+                )
+                
+                # Link project
+                if project not in mentor.projects.all():
+                    mentor.projects.add(project)
+                    linked_count += 1
+                    self.message_user(
+                        request,
+                        f'✓ Linked main mentor {roll} to "{project.title}"'
+                    )
+                
+            except CustomUser.DoesNotExist:
+                not_found_count += 1
+                self.message_user(
+                    request,
+                    f'✗ Main mentor not found: {roll} for "{project.title}" (will auto-link when they register)',
+                    level='warning'
+                )
+            except UserProfile.DoesNotExist:
+                not_found_count += 1
+                self.message_user(
+                    request,
+                    f'✗ Profile not found: {roll}',
+                    level='warning'
+                )
+        
+        self.message_user(
+            request,
+            f'Main mentor linking complete: {linked_count} linked, {not_found_count} not found',
+            level='success' if not_found_count == 0 else 'warning'
+        )
+    
+    @admin.action(description='Link CO-MENTORS (from co_mentor_info) to projects')
+    def link_co_mentors(self, request, queryset):
+        """
+        Links only co-mentors (from co_mentor_info field) to projects.
+        Creates DomainMembership and Mentor objects automatically.
+        Case-insensitive roll number matching.
+        """
+        from domains.models import DomainMembership
+        
+        linked_count = 0
+        not_found_count = 0
+        
+        for project in queryset.select_related('domain'):
+            if not project.co_mentor_info or project.co_mentor_info.upper() == 'NA':
+                continue
             
-            # Link each mentor
-            for roll in rolls_to_link:
+            # Extract co-mentor rolls (case-insensitive)
+            co_matches = re.findall(r'\((\w+)\)', project.co_mentor_info)
+            
+            for roll in co_matches:
+                roll = roll.strip().lower()
                 try:
                     user = CustomUser.objects.get(username=roll)
                     profile = UserProfile.objects.get(user=user)
@@ -215,14 +248,14 @@ class ProjectAdmin(admin.ModelAdmin):
                         linked_count += 1
                         self.message_user(
                             request,
-                            f'✓ Linked {roll} to "{project.title}"'
+                            f'✓ Linked co-mentor {roll} to "{project.title}"'
                         )
                     
                 except CustomUser.DoesNotExist:
                     not_found_count += 1
                     self.message_user(
                         request,
-                        f'✗ User not found: {roll} (will auto-link when they register)',
+                        f'✗ Co-mentor not found: {roll} for "{project.title}" (will auto-link when they register)',
                         level='warning'
                     )
                 except UserProfile.DoesNotExist:
@@ -235,7 +268,7 @@ class ProjectAdmin(admin.ModelAdmin):
         
         self.message_user(
             request,
-            f'Linking complete: {linked_count} linked, {not_found_count} not found',
+            f'Co-mentor linking complete: {linked_count} linked, {not_found_count} not found',
             level='success' if not_found_count == 0 else 'warning'
         )
 
@@ -243,11 +276,35 @@ class ProjectAdmin(admin.ModelAdmin):
     def download_banner_images(self, request, queryset):
         """
         Downloads banner images from banner_image_link and saves to media/projects/
+        CLEARS existing banner images first, then re-downloads everything.
         Updates banner_image field with the local path.
         """
         projects_folder = os.path.join(settings.MEDIA_ROOT, 'projects')
         os.makedirs(projects_folder, exist_ok=True)
         
+        # STEP 1: Clear all existing banner images in the media folder
+        cleared_count = 0
+        for filename in os.listdir(projects_folder):
+            file_path = os.path.join(projects_folder, filename)
+            if os.path.isfile(file_path):
+                try:
+                    os.remove(file_path)
+                    cleared_count += 1
+                except Exception as e:
+                    self.message_user(
+                        request,
+                        f'⚠ Could not delete {filename}: {str(e)}',
+                        level='warning'
+                    )
+        
+        if cleared_count > 0:
+            self.message_user(
+                request,
+                f'🗑️ Cleared {cleared_count} existing banner image(s) from media/projects/',
+                level='info'
+            )
+        
+        # STEP 2: Download all banner images from links
         success_count = 0
         skip_count = 0
         error_count = 0
@@ -255,29 +312,37 @@ class ProjectAdmin(admin.ModelAdmin):
         for project in queryset:
             if not project.banner_image_link:
                 skip_count += 1
+                # Clear banner_image field if no link
+                if project.banner_image:
+                    project.banner_image = None
+                    project.save()
                 continue
             
             filename = f"{project.id}.png"
             file_path = os.path.join(projects_folder, filename)
             relative_file_path = f"projects/{filename}"
             
-            # Skip if already downloaded
-            if os.path.exists(file_path):
-                if not project.banner_image:
-                    project.banner_image = relative_file_path
-                    project.save()
-                skip_count += 1
-                continue
-            
             try:
                 file_url = project.banner_image_link
                 
-                # Convert Google Drive links
+                # Convert Google Drive links to direct download format
                 if 'drive.google.com' in file_url:
-                    match = file_url.split('/d/')[-1].split('/')[0]
-                    file_url = f'https://drive.google.com/uc?export=download&id={match}'
+                    # Handle different Google Drive URL formats
+                    if '/file/d/' in file_url:
+                        file_id = file_url.split('/file/d/')[-1].split('/')[0]
+                    elif '/d/' in file_url:
+                        file_id = file_url.split('/d/')[-1].split('/')[0]
+                    else:
+                        # Try to extract ID from other formats
+                        import urllib.parse
+                        parsed = urllib.parse.urlparse(file_url)
+                        query = urllib.parse.parse_qs(parsed.query)
+                        file_id = query.get('id', [None])[0]
+                    
+                    if file_id:
+                        file_url = f'https://drive.google.com/uc?export=download&id={file_id}'
                 
-                response = requests.get(file_url, stream=True, timeout=10)
+                response = requests.get(file_url, stream=True, timeout=15, allow_redirects=True)
                 if response.status_code != 200:
                     self.message_user(
                         request,
@@ -305,13 +370,11 @@ class ProjectAdmin(admin.ModelAdmin):
         
         self.message_user(
             request,
-            f'Banner download complete: {success_count} downloaded, {skip_count} skipped, {error_count} errors'
+            f'✅ Banner download complete: {success_count} downloaded, {skip_count} skipped, {error_count} errors',
+            level='success' if error_count == 0 else 'warning'
         )
     
-    @admin.action(description='Clear banner images for selected projects')
-    def clear_banner_images(self, request, queryset):
-        queryset.update(banner_image=None)
-        self.message_user(request, f'Cleared banner images for {queryset.count()} projects.')
+
 
 
 # ===========================================================================

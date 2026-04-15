@@ -43,9 +43,9 @@ def parse_spreadsheet_data(raw_data, delimiter=None):
 def extract_mentor_info(mentor_str):
     """
     Extract mentor name and roll from formats like:
-    - "John Doe (21b1234)"
-    - "21b1234"
-    Returns (name, roll) or (None, roll)
+    - "John Doe (21b1234)" or "Partyaksh Bhardwaja (23b2401)"
+    - "21b1234" or "23B2401"
+    Returns (name, roll) - roll is always lowercase for case-insensitive matching
     """
     match = re.match(r'([A-Za-z\s]+)\s*\((\w+)\)', mentor_str.strip())
     if match:

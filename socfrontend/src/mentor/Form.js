@@ -207,7 +207,7 @@ const Form = () => {
           <div className="lp-form-group">
             <label className="lp-label">Co-mentor(s)</label>
             <p className="lp-help-text">
-              If there are multiple co-mentors, add their names in this format: Name (roll No) separated by commas.
+              If there are multiple co-mentors, add their names in this format: Name (roll No) separated by commas. Eg: John Doe (21b1111), Alice (22b2222), Bob (23b3333)
             </p>
             <input
               type="text"

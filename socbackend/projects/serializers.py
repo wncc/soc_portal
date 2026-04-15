@@ -23,7 +23,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         } for m in mentors]
     
     def get_co_mentor_details(self, obj):
-        """Parse co_mentor_info to extract details"""
+        """Parse co_mentor_info to extract details (case-insensitive roll matching)"""
         import re
         if not obj.co_mentor_info or obj.co_mentor_info == 'NA':
             return []
@@ -31,7 +31,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         matches = re.findall(r'([A-Za-z\s]+)\s*\((\w+)\)', obj.co_mentor_info)
         co_mentors = []
         for name, roll in matches:
-            # Try to get phone number from UserProfile
+            # Try to get phone number from UserProfile (case-insensitive)
             try:
                 from accounts.models import CustomUser, UserProfile
                 user = CustomUser.objects.get(username=roll.strip().lower())
