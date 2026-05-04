@@ -122,85 +122,45 @@ export default function Projects() {
       </div>
 
       <div className="pt-8 flex flex-wrap items-center justify-center gap-4">
-        <div className="inline-flex rounded-md shadow-sm" role="group">
-          <button
-            onClick={() => {
-              handleFilterChange("All");
-              setActive("b1");
-            }}
-            className={`w-40 px-4 py-2 text-sm font-medium ${
-              active === "b1" ? "text-white" : "text-gray-900"
-            } ${
-              active === "b1" ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-            } border border-gray-500 rounded-s-lg hover:bg-indigo-600 hover:text-white`}
-          >
-            ALL
-          </button>
-          <button
-            onClick={() => {
-              handleFilterChange("Machine Learning");
-              setActive("b2");
-            }}
-            className={`w-40 px-4 py-2 text-sm font-medium ${
-              active === "b2" ? "text-white" : "text-gray-900"
-            } ${
-              active === "b2" ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-            } border border-gray-500 hover:bg-indigo-600 hover:text-white`}
-          >
-            Machine Learning
-          </button>
-          <button
-            onClick={() => {
-              handleFilterChange("Development");
-              setActive("b3");
-            }}
-            className={`w-40 px-4 py-2 text-sm font-medium ${
-              active === "b3" ? "text-white" : "text-gray-900"
-            } ${
-              active === "b3" ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-            } border border-gray-500 hover:bg-indigo-600 hover:text-white`}
-          >
-            Development
-          </button>
-          <button
-            onClick={() => {
-              handleFilterChange("Blockchain");
-              setActive("b4");
-            }}
-            className={`w-40 px-4 py-2 text-sm font-medium ${
-              active === "b4" ? "text-white" : "text-gray-900"
-            } ${
-              active === "b4" ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-            } border border-gray-500 hover:bg-indigo-600 hover:text-white`}
-          >
-            Blockchain
-          </button>
-          <button
-            onClick={() => {
-              handleFilterChange("Competitive Programming");
-              setActive("b5");
-            }}
-            className={`w-40 px-4 py-2 text-sm font-medium ${
-              active === "b5" ? "text-white" : "text-gray-900"
-            } ${
-              active === "b5" ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-            } border border-gray-500 hover:bg-indigo-600 hover:text-white`}
-          >
-            Competitive Programming
-          </button>
-          <button
-            onClick={() => {
-              handleFilterChange("Others");
-              setActive("b6");
-            }}
-            className={`w-40 px-4 py-2 text-sm font-medium ${
-              active === "b6" ? "text-white" : "text-gray-900"
-            } ${
-              active === "b6" ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-            } border border-gray-500 rounded-e-lg hover:bg-indigo-600 hover:text-white`}
-          >
-            Others
-          </button>
+        <div className="inline-flex flex-wrap rounded-md shadow-sm" role="group">
+          {[
+            { id: 'b1', label: 'ALL', value: 'All' },
+            { id: 'b2', label: 'Machine Learning', value: 'Machine Learning' },
+            { id: 'b3', label: 'Development', value: 'Development' },
+            { id: 'b4', label: 'Competitive Programming', value: 'Competitive Programming' },
+            { id: 'b5', label: 'Blockchain', value: 'Blockchain' },
+            { id: 'b6', label: 'Quant / Finance', value: 'Quant / Finance' },
+            { id: 'b7', label: 'Robotics / Hardware', value: 'Robotics / Hardware' },
+            { id: 'b8', label: 'Mathematics', value: 'Mathematics' },
+            { id: 'b9', label: 'Physics', value: 'Physics' },
+            { id: 'b10', label: 'Engineering', value: 'Engineering' },
+            { id: 'b11', label: 'Astronomy and Astrophysics', value: 'Astronomy and Astrophysics, and Planetary Science' },
+            { id: 'b12', label: 'Biology and Biotechnology', value: 'Biology, Biotechnology and Biophysics' },
+            { id: 'b13', label: 'Computer Science', value: 'Computer Science' },
+            { id: 'b14', label: 'Applied Science & Humanities', value: 'Applied Science, Humanities, and Miscellaneous' },
+            { id: 'b15', label: 'Energy Science', value: 'Energy Science' },
+            { id: 'b16', label: 'Chemistry and Material Science', value: 'Chemistry and Material Science' },
+            { id: 'b17', label: 'Others', value: 'Others' }
+          ].map((btn, index, array) => (
+            <button
+              key={btn.id}
+              onClick={() => {
+                handleFilterChange(btn.value);
+                setActive(btn.id);
+              }}
+              className={`px-4 py-2 text-sm font-medium ${
+                active === btn.id ? "text-white" : "text-gray-900"
+              } ${
+                active === btn.id ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
+              } border border-gray-500 ${
+                index === 0 ? "rounded-s-lg" : ""
+              } ${
+                index === array.length - 1 ? "rounded-e-lg" : ""
+              } hover:bg-indigo-600 hover:text-white`}
+            >
+              {btn.label}
+            </button>
+          ))}
         </div>
         <input
           type="text"
