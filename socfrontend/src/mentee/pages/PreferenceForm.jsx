@@ -612,6 +612,8 @@ export default function PreferenceForm() {
   const [errorMsg, setErrorMsg] = useState('');
   const { domain } = useParams();
   const navigate = useNavigate();
+  const [domainSettings, setDomainSettings] = useState({ max_preferences: 3 });
+  const [data, setData] = useState([]);
 
   useEffect(() => {
     const endpoint = domain
@@ -624,6 +626,40 @@ export default function PreferenceForm() {
       .catch((error) => console.error('Error fetching projects:', error));
   }, [domain]);
 
+  // Fetch domain settings to get max_preferences
+  useEffect(() => {
+    if (domain) {
+      api.get(`${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`)
+        .then((response) => {
+          setDomainSettings(response.data);
+          // Initialize data array based on max_preferences
+          const maxPrefs = response.data.max_preferences || 3;
+          const initialData = Array.from({ length: maxPrefs }, (_, i) => ({
+            project: '',
+            sop: '',
+            preference: i + 1
+          }));
+          setData(initialData);
+        })
+        .catch((error) => {
+          console.error('Error fetching domain settings:', error);
+          // Fallback to 3 preferences
+          setData([
+            { project: '', sop: '', preference: 1 },
+            { project: '', sop: '', preference: 2 },
+            { project: '', sop: '', preference: 3 },
+          ]);
+        });
+    } else {
+      // Default to 3 preferences if no domain
+      setData([
+        { project: '', sop: '', preference: 1 },
+        { project: '', sop: '', preference: 2 },
+        { project: '', sop: '', preference: 3 },
+      ]);
+    }
+  }, [domain]);
+
   useEffect(() => {
     const endpoint = domain
       ? `${process.env.REACT_APP_BACKEND_URL}/projects/preference/?domain=${domain}`
@@ -634,12 +670,6 @@ export default function PreferenceForm() {
       .then((response) => setUserPreference(response.data))
       .catch((error) => console.error('Error fetching preferences:', error));
   }, [domain]);
-
-  const [data, setData] = useState([
-    { project: '', sop: '', preference: 1 },
-    { project: '', sop: '', preference: 2 },
-    { project: '', sop: '', preference: 3 },
-  ]);
 
   if (userPreference.length > 0) {
     return <Navigate to={domain ? `/${domain}/PreferenceFormFilled` : '/PreferenceFormFilled'} />;
@@ -730,7 +760,7 @@ export default function PreferenceForm() {
             Preference Form
           </h1>
           <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-8">
-            Fill 1, 2, or all 3 preferences. At least one is required.
+            Fill at least 1 preference (maximum {domainSettings.max_preferences || 3} allowed).
           </p>
 
           {errorMsg && (
@@ -740,10 +770,10 @@ export default function PreferenceForm() {
           )}
 
           <div className="space-y-6">
-            {[1, 2, 3].map((num) => (
+            {data.map((_, num) => (
               <PreferenceCard
                 key={num}
-                num={num}
+                num={num + 1}
                 data={data}
                 setData={setData}
                 details={details}

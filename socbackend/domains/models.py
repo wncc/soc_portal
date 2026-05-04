@@ -21,6 +21,8 @@ class Domain(models.Model):
     project_creation_open = models.BooleanField(default=True, help_text="Allow mentors to create new projects")
     project_editing_open = models.BooleanField(default=True, help_text="Allow mentors to edit existing projects")
     project_deletion_open = models.BooleanField(default=False, help_text="Allow mentors to delete their projects")
+    show_mentor_details = models.BooleanField(default=True, help_text="Show mentor/co-mentor names and phone numbers to mentees")
+    max_preferences = models.PositiveIntegerField(default=3, help_text="Maximum number of preferences mentees can fill")
     created_at = models.DateTimeField(auto_now_add=True)
     order = models.PositiveIntegerField(default=0, help_text="Display ordering (lower = first)")
 

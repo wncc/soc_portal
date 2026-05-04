@@ -72,6 +72,15 @@ class Project(models.Model):
         ("Competitive Programming", "Competitive Programming"),
         ("Quant / Finance", "Quant / Finance"),
         ("Robotics / Hardware", "Robotics / Hardware"),
+        ("Mathematics", "Mathematics"),
+        ("Physics", "Physics"),
+        ("Engineering", "Engineering"),
+        ("Astronomy and Astrophysics, and Planetary Science", "Astronomy and Astrophysics, and Planetary Science"),
+        ("Biology, Biotechnology and Biophysics", "Biology, Biotechnology and Biophysics"),
+        ("Computer Science", "Computer Science"),
+        ("Applied Science, Humanities, and Miscellaneous", "Applied Science, Humanities, and Miscellaneous"),
+        ("Energy Science", "Energy Science"),
+        ("Chemistry and Material Science", "Chemistry and Material Science"),
         ("Others", "Others"),
     )
 

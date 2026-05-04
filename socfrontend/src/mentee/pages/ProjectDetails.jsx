@@ -28,6 +28,7 @@ export default function ProjectDetails(props) {
   ProjectId = parseInt(ProjectId);
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [domainSettings, setDomainSettings] = useState({ show_mentor_details: true });
 
   useEffect(() => {
     api.get(`${process.env.REACT_APP_BACKEND_URL}/projects/${ProjectId}/`)
@@ -49,6 +50,19 @@ export default function ProjectDetails(props) {
         console.error('Error fetching card image:', error);
       });
   }, []);
+
+  // Fetch domain settings
+  useEffect(() => {
+    if (domain) {
+      api.get(`${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`)
+        .then((response) => {
+          setDomainSettings(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching domain settings:', error);
+        });
+    }
+  }, [domain]);
 
   const [Added, setAdded] = useState();
   useEffect(() => {
@@ -135,38 +149,42 @@ export default function ProjectDetails(props) {
             <div className="rounded-lg lg:col-span-2 h-75">
                         
               <div className="grid grid-cols-1 gap-1 lg:grid-cols-2 lg:gap-8">
-                <div className="h-12 rounded-lg">
-                  <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Mentors:</h4>
-                  <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
-                    {details.mentor_details && details.mentor_details.length > 0 ? (
-                      details.mentor_details.map((mentor, idx) => (
-                        <li key={idx} className="mb-2">
-                          <p className="font-semibold">{mentor.name} ({mentor.roll_number})</p>
-                          <p className="text-sm text-gray-600"> {mentor.phone_number}</p>
+                {domainSettings.show_mentor_details && (
+                  <div className="h-12 rounded-lg">
+                    <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Mentors:</h4>
+                    <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
+                      {details.mentor_details && details.mentor_details.length > 0 ? (
+                        details.mentor_details.map((mentor, idx) => (
+                          <li key={idx} className="mb-2">
+                            <p className="font-semibold">{mentor.name} ({mentor.roll_number})</p>
+                            <p className="text-sm text-gray-600"> {mentor.phone_number}</p>
+                          </li>
+                        ))
+                      ) : (
+                        <p>{details.mentor}</p>
+                      )}
+                    </ul>
+                  </div>
+                )}
+                {domainSettings.show_mentor_details && (
+                  <div className="h-28 rounded-lg">
+                    <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Co-Mentors:</h4>
+                    <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
+                      {details.co_mentor_details && details.co_mentor_details.length > 0 ? (
+                        details.co_mentor_details.map((coMentor, idx) => (
+                          <li key={idx} className="mb-2">
+                            <p className="font-semibold">{coMentor.name} ({coMentor.roll_number})</p>
+                            <p className="text-sm text-gray-600"> {coMentor.phone_number}</p>
+                          </li>
+                        ))
+                      ) : (
+                        <li>
+                          <p dangerouslySetInnerHTML={{ __html: details.co_mentor_info.replace(/\\r\\n/g, '<br>') }} />
                         </li>
-                      ))
-                    ) : (
-                      <p>{details.mentor}</p>
-                    )}
-                  </ul>
-                </div>
-                <div className="h-28 rounded-lg">
-                  <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Co-Mentors:</h4>
-                  <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
-                    {details.co_mentor_details && details.co_mentor_details.length > 0 ? (
-                      details.co_mentor_details.map((coMentor, idx) => (
-                        <li key={idx} className="mb-2">
-                          <p className="font-semibold">{coMentor.name} ({coMentor.roll_number})</p>
-                          <p className="text-sm text-gray-600"> {coMentor.phone_number}</p>
-                        </li>
-                      ))
-                    ) : (
-                      <li>
-                        <p dangerouslySetInnerHTML={{ __html: details.co_mentor_info.replace(/\\r\\n/g, '<br>') }} />
-                      </li>
-                    )}
-                  </ul>
-                </div>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
                 <div className="h-10 rounded-lg ">

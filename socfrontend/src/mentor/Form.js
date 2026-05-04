@@ -159,7 +159,24 @@ const Form = () => {
           <div className="lp-form-group">
             <label className="lp-label">Project Category *</label>
             <div className="lp-radio-group">
-              {['Machine Learning', 'Development', 'Competitive Programming', 'Blockchain', 'Others'].map((category) => (
+              {[
+                'Machine Learning',
+                'Development',
+                'Competitive Programming',
+                'Blockchain',
+                'Quant / Finance',
+                'Robotics / Hardware',
+                'Mathematics',
+                'Physics',
+                'Engineering',
+                'Astronomy and Astrophysics, and Planetary Science',
+                'Biology, Biotechnology and Biophysics',
+                'Computer Science',
+                'Applied Science, Humanities, and Miscellaneous',
+                'Energy Science',
+                'Chemistry and Material Science',
+                'Others'
+              ].map((category) => (
                 <label key={category}>
                   <input
                     type="radio"

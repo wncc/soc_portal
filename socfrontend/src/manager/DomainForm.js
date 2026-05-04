@@ -18,6 +18,8 @@ export default function DomainForm({ domain, onClose, onSaved }) {
     project_creation_open: true,
     project_editing_open: true,
     project_deletion_open: false,
+    show_mentor_details: true,
+    max_preferences: 3,
   });
   const [coverFile, setCoverFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
@@ -37,6 +39,8 @@ export default function DomainForm({ domain, onClose, onSaved }) {
         project_creation_open: domain.project_creation_open !== false,
         project_editing_open: domain.project_editing_open !== false,
         project_deletion_open: domain.project_deletion_open || false,
+        show_mentor_details: domain.show_mentor_details !== false,
+        max_preferences: domain.max_preferences || 3,
       });
       if (domain.cover_photo_url) setCoverPreview(domain.cover_photo_url);
     }
@@ -214,7 +218,7 @@ export default function DomainForm({ domain, onClose, onSaved }) {
                     checked={form.project_creation_open}
                     onChange={handleChange}
                   />
-                  <span>📝 Allow mentors to create new projects</span>
+                  <span> Allow mentors to create new projects</span>
                 </label>
                 <label className="df-checkbox-label">
                   <input
@@ -223,7 +227,7 @@ export default function DomainForm({ domain, onClose, onSaved }) {
                     checked={form.project_editing_open}
                     onChange={handleChange}
                   />
-                  <span>✏️ Allow mentors to edit existing projects</span>
+                  <span> Allow mentors to edit existing projects</span>
                 </label>
                 <label className="df-checkbox-label">
                   <input
@@ -232,8 +236,36 @@ export default function DomainForm({ domain, onClose, onSaved }) {
                     checked={form.project_deletion_open}
                     onChange={handleChange}
                   />
-                  <span>🗑️ Allow mentors to delete their projects</span>
+                  <span> Allow mentors to delete their projects</span>
                 </label>
+              </div>
+            </div>
+
+            <div className="df-field">
+              <label className="df-label">Mentee Portal Settings</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                <label className="df-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="show_mentor_details"
+                    checked={form.show_mentor_details}
+                    onChange={handleChange}
+                  />
+                  <span> Show mentor/co-mentor names and phone numbers to mentees</span>
+                </label>
+                <div className="df-field" style={{ marginTop: '8px' }}>
+                  <label className="df-label">Maximum Preferences</label>
+                  <input
+                    className="df-input"
+                    name="max_preferences"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={form.max_preferences}
+                    onChange={handleChange}
+                  />
+                  <small className="df-hint">Number of preferences mentees can fill (1-10)</small>
+                </div>
               </div>
             </div>
           </div>
