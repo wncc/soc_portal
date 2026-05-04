@@ -205,45 +205,13 @@ class ProjectAdmin(admin.ModelAdmin):
     @admin.action(description='Download banner images from links for selected projects')
     def download_banner_images(self, request, queryset):
         """
-        Downloads banner images from banner_image_link and saves to media/projects/
-        CLEARS existing banner_image field in database first, then re-downloads everything.
+        Downloads banner images from banner_image_link for SELECTED projects only.
+        Clears and re-downloads only for the selected projects.
         Updates banner_image field with the local path.
         """
         projects_folder = os.path.join(settings.MEDIA_ROOT, 'projects')
         os.makedirs(projects_folder, exist_ok=True)
         
-        # STEP 1: Clear banner_image field in database for ALL projects
-        all_projects = Project.objects.all()
-        cleared_db_count = all_projects.update(banner_image=None)
-        self.message_user(
-            request,
-            f'🗑️ Cleared banner_image field for {cleared_db_count} projects in database',
-            level='info'
-        )
-        
-        # STEP 2: Clear all existing banner image files in the media folder
-        cleared_files_count = 0
-        for filename in os.listdir(projects_folder):
-            file_path = os.path.join(projects_folder, filename)
-            if os.path.isfile(file_path):
-                try:
-                    os.remove(file_path)
-                    cleared_files_count += 1
-                except Exception as e:
-                    self.message_user(
-                        request,
-                        f'⚠ Could not delete {filename}: {str(e)}',
-                        level='warning'
-                    )
-        
-        if cleared_files_count > 0:
-            self.message_user(
-                request,
-                f'🗑️ Deleted {cleared_files_count} image file(s) from media/projects/',
-                level='info'
-            )
-        
-        # STEP 3: Download banner images from links for selected projects
         success_count = 0
         skip_count = 0
         error_count = 0
@@ -252,6 +220,19 @@ class ProjectAdmin(admin.ModelAdmin):
             if not project.banner_image_link:
                 skip_count += 1
                 continue
+            
+            # Delete old banner image file for THIS project only
+            if project.banner_image:
+                old_file_path = os.path.join(settings.MEDIA_ROOT, str(project.banner_image))
+                if os.path.exists(old_file_path):
+                    try:
+                        os.remove(old_file_path)
+                    except Exception as e:
+                        self.message_user(
+                            request,
+                            f'⚠ Could not delete old image for "{project.title}": {str(e)}',
+                            level='warning'
+                        )
             
             filename = f"{project.id}.png"
             file_path = os.path.join(projects_folder, filename)
