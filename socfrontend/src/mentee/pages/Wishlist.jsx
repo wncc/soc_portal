@@ -12,6 +12,7 @@ export default function Wishlist() {
   const [isLoading, setIsLoading] = useState(true);
   const [domainSettings, setDomainSettings] = useState({ mentee_portal_access: true });
   const [searchQuery, setSearchQuery] = useState('');
+  const [showScroll, setShowScroll] = useState(false);
   const { domain } = useParams();
   const navigate = useNavigate();
 
@@ -52,6 +53,18 @@ export default function Wishlist() {
     fetchWishlist(); // Call the memoized fetch function
   }, [fetchWishlist]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 200) {
+        setShowScroll(true);
+      } else {
+        setShowScroll(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const [filterValue, setFilterValue] = useState('All');
 
   const filteredProjects = useMemo(() => {
@@ -67,6 +80,10 @@ export default function Wishlist() {
 
   const handleFilterChange = (value) => {
     setFilterValue(value);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const [active, setActive] = useState('b1');
@@ -265,27 +282,48 @@ export default function Wishlist() {
             </div>
           </div>
           {isLoading ? (
-            <p>Loading...</p>
+            <div className="h-screen flex justify-center items-center">
+              <div className="flex gap-2">
+                <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+                <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+                <div className="w-5 h-5 rounded-full animate-pulse bg-blue-600" />
+              </div>
+            </div>
           ) : (
             <div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 py-20">
-              {filteredProjects.map((project, index) => (
-                <div key={index}>
-                  <ProjectCard
-                    ProjectId={project.id}
-                    link={project.banner_image}
-                    title={project.title}
-                    general_category={project.general_category}
-                    isInWishlist={details.some(
-                      (item) => item.id === project.id,
-                    )}
-                    onWishlistChange={fetchWishlist}
-                    domain={domain}
-                  />
-                </div>
-              ))}
+              {filteredProjects.map((project, index) => {
+                let imageUrl = project.banner_image;
+                if (imageUrl && !imageUrl.startsWith('http')) {
+                  imageUrl = `${process.env.REACT_APP_API_URL}${imageUrl}`;
+                }
+                return (
+                  <div key={index}>
+                    <ProjectCard
+                      ProjectId={project.id}
+                      link={imageUrl}
+                      title={project.title}
+                      general_category={project.general_category}
+                      isInWishlist={details.some(
+                        (item) => item.id === project.id,
+                      )}
+                      onWishlistChange={fetchWishlist}
+                      domain={domain}
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
         </>
+      )}
+
+      {showScroll && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-10 right-10 bg-indigo-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-indigo-700 transition-all"
+        >
+          ↑ Go to Top
+        </button>
       )}
     </section>
   );
