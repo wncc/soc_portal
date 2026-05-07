@@ -283,6 +283,12 @@ class MentorProfileView(APIView):
 
             # Get mentor profile — scoped to domain if provided
             if domain:
+                # Check if mentor portal access is enabled for this domain
+                if not domain.mentor_portal_access:
+                    return Response(
+                        {"error": "Mentor portal access is currently disabled for this domain."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
                 mentor = Mentor.objects.get(user=user_profile, domain=domain)
             else:
                 mentor = Mentor.objects.filter(user=user_profile).first()

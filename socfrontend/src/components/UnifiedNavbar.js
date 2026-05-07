@@ -9,6 +9,7 @@ export default function UnifiedNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [memberships, setMemberships] = useState([]);
+  const [domains, setDomains] = useState({});
   const [isManager, setIsManager] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   
@@ -35,6 +36,17 @@ export default function UnifiedNavbar() {
         .then((res) => {
           setMemberships(res.data.memberships || []);
           setIsManager(res.data.is_manager || false);
+        })
+        .catch(() => {});
+      
+      // Fetch domain details to check mentor_portal_access
+      api.get(`${BACKEND}/domains/`)
+        .then((res) => {
+          const domainMap = {};
+          res.data.forEach(d => {
+            domainMap[d.slug] = d;
+          });
+          setDomains(domainMap);
         })
         .catch(() => {});
     }
@@ -183,32 +195,42 @@ export default function UnifiedNavbar() {
                           </div>
                         )}
 
-                        {memberships.filter(m => m.is_approved && m.domain).map((m, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setIsProfileOpen(false);
-                              if (m.role === 'mentor') {
-                                navigate(`/${m.domain}/mentor/home`);
-                              } else if (m.role === 'mentee') {
-                                navigate(`/${m.domain}/current_projects`);
-                              }
-                            }}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                {getDomainName(m.domain)}
-                              </span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${getRoleBadgeClass(m.role)}`}>
-                                {m.role}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {m.role === 'mentor' ? 'View your projects' : 'Browse projects'}
-                            </p>
-                          </button>
-                        ))}
+                        {memberships.filter(m => m.is_approved && m.domain).map((m, idx) => {
+                          const domainInfo = domains[m.domain];
+                          const canAccessMentorPortal = m.role !== 'mentor' || (domainInfo && domainInfo.mentor_portal_access !== false);
+                          
+                          // Don't show mentor memberships if portal access is disabled
+                          if (m.role === 'mentor' && !canAccessMentorPortal) {
+                            return null;
+                          }
+                          
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                setIsProfileOpen(false);
+                                if (m.role === 'mentor') {
+                                  navigate(`/${m.domain}/mentor/home`);
+                                } else if (m.role === 'mentee') {
+                                  navigate(`/${m.domain}/current_projects`);
+                                }
+                              }}
+                              className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {getDomainName(m.domain)}
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded-full ${getRoleBadgeClass(m.role)}`}>
+                                  {m.role}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {m.role === 'mentor' ? 'View your projects' : 'Browse projects'}
+                              </p>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

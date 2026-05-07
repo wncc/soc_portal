@@ -15,6 +15,7 @@ export default function DomainForm({ domain, onClose, onSaved }) {
     is_active: true,
     mentee_reg_open: false,
     mentor_reg_open: false,
+    mentor_portal_access: true,
     project_creation_open: true,
     project_editing_open: true,
     project_deletion_open: false,
@@ -36,6 +37,7 @@ export default function DomainForm({ domain, onClose, onSaved }) {
         is_active: domain.is_active !== false,
         mentee_reg_open: domain.mentee_reg_open || false,
         mentor_reg_open: domain.mentor_reg_open || false,
+        mentor_portal_access: domain.mentor_portal_access !== false,
         project_creation_open: domain.project_creation_open !== false,
         project_editing_open: domain.project_editing_open !== false,
         project_deletion_open: domain.project_deletion_open || false,
@@ -205,6 +207,24 @@ export default function DomainForm({ domain, onClose, onSaved }) {
                   />
                   <span>⏳ Mentor Registration Open (requires approval)</span>
                 </label>
+              </div>
+            </div>
+
+            <div className="df-field">
+              <label className="df-label">Mentor Portal Access</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                <label className="df-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="mentor_portal_access"
+                    checked={form.mentor_portal_access}
+                    onChange={handleChange}
+                  />
+                  <span>🔓 Allow mentors to access mentor portal</span>
+                </label>
+                <small className="df-hint" style={{ marginLeft: '24px', color: '#6b7280' }}>
+                  When disabled, mentors cannot view their projects or access mentor features. Their mentor role remains but is hidden.
+                </small>
               </div>
             </div>
 
