@@ -118,70 +118,73 @@ def bulk_import_projects(domain, rows, request):
     
     print(f"DEBUG: Starting import of {len(rows)} rows into domain {domain.name}")
     
+    # Process each row individually with its own transaction
     for idx, row in enumerate(rows, start=2):  # Start from 2 (header is row 1)
         try:
-            # Validate required fields
-            title = row.get('title', '').strip()
-            if not title:
-                errors.append(f"Row {idx}: Missing title")
-                continue
-            
-            mentee_max = row.get('mentee_max', '').strip()
-            if not mentee_max:
-                errors.append(f"Row {idx}: Missing mentee_max")
-                continue
-            
-            mentor_str = row.get('mentor', '').strip()
-            if not mentor_str:
-                errors.append(f"Row {idx}: Missing mentor")
-                continue
-            
-            print(f"DEBUG: Creating project '{title}' with mentor '{mentor_str}'")
-            
-            # Create project
-            project = Project.objects.create(
-                domain=domain,
-                title=title,
-                general_category=row.get('general_category', 'Others').strip() or 'Others',
-                specific_category=row.get('specific_category', 'NA').strip() or 'NA',
-                mentee_max=mentee_max,
-                mentor=mentor_str,
-                co_mentor_info=row.get('co_mentors', 'NA').strip() or 'NA',
-                weekly_meets=row.get('weekly_meets', '0').strip() or '0',
-                description=row.get('description', 'NA').strip() or 'NA',
-                timeline=row.get('timeline', 'NA').strip() or 'NA',
-                checkpoints=row.get('checkpoints', 'NA').strip() or 'NA',
-                prereuisites=row.get('prerequisites', 'NA').strip() or 'NA',
-                banner_image_link=row.get('banner_image_link', '').strip() or None,
-            )
-            
-            print(f"DEBUG: Project created with ID {project.id}")
-            
-            # Link main mentor
-            mentor_name, mentor_roll = extract_mentor_info(mentor_str)
-            print(f"DEBUG: Extracted mentor roll: {mentor_roll}")
-            
-            mentor_obj, created, error = get_or_create_mentor(mentor_roll, domain, request)
-            if mentor_obj:
-                mentor_obj.projects.add(project)
-                print(f"DEBUG: Mentor linked successfully")
-            else:
-                # Don't fail - just log warning, mentor can be linked later when they register
-                errors.append(f"Row {idx} ({title}): Mentor not linked - {error}. Project created, mentor can be linked later.")
-                print(f"DEBUG: Mentor not found but project created. Will link when mentor registers.")
-            
-            # Link co-mentors
-            co_mentors = parse_co_mentors(row.get('co_mentors', ''))
-            for co_name, co_roll in co_mentors:
-                co_mentor_obj, created, error = get_or_create_mentor(co_roll, domain, request)
-                if co_mentor_obj:
-                    co_mentor_obj.projects.add(project)
+            with transaction.atomic():
+                # Validate required fields
+                title = row.get('title', '').strip()
+                if not title:
+                    errors.append(f"Row {idx}: Missing title")
+                    continue
+                
+                mentee_max = row.get('mentee_max', '').strip()
+                if not mentee_max:
+                    errors.append(f"Row {idx}: Missing mentee_max")
+                    continue
+                
+                mentor_str = row.get('mentor', '').strip()
+                if not mentor_str:
+                    errors.append(f"Row {idx}: Missing mentor")
+                    continue
+                
+                print(f"DEBUG: Creating project '{title}' with mentor '{mentor_str}'")
+                
+                # Create project (let database auto-assign ID)
+                project = Project(
+                    domain=domain,
+                    title=title,
+                    general_category=row.get('general_category', 'Others').strip() or 'Others',
+                    specific_category=row.get('specific_category', 'NA').strip() or 'NA',
+                    mentee_max=mentee_max,
+                    mentor=mentor_str,
+                    co_mentor_info=row.get('co_mentors', 'NA').strip() or 'NA',
+                    weekly_meets=row.get('weekly_meets', '0').strip() or '0',
+                    description=row.get('description', 'NA').strip() or 'NA',
+                    timeline=row.get('timeline', 'NA').strip() or 'NA',
+                    checkpoints=row.get('checkpoints', 'NA').strip() or 'NA',
+                    prereuisites=row.get('prerequisites', 'NA').strip() or 'NA',
+                    banner_image_link=row.get('banner_image_link', '').strip() or None,
+                )
+                project.save()
+                
+                print(f"DEBUG: Project created with ID {project.id}")
+                
+                # Link main mentor
+                mentor_name, mentor_roll = extract_mentor_info(mentor_str)
+                print(f"DEBUG: Extracted mentor roll: {mentor_roll}")
+                
+                mentor_obj, created, error = get_or_create_mentor(mentor_roll, domain, request)
+                if mentor_obj:
+                    mentor_obj.projects.add(project)
+                    print(f"DEBUG: Mentor linked successfully")
                 else:
-                    # Don't fail - just log warning
-                    errors.append(f"Row {idx} ({title}) co-mentor: Not linked - {error}. Will link when they register.")
-            
-            success_count += 1
-            print(f"DEBUG: Row {idx} completed successfully")
+                    # Don't fail - just log warning, mentor can be linked later when they register
+                    errors.append(f"Row {idx} ({title}): Mentor not linked - {error}. Project created, mentor can be linked later.")
+                    print(f"DEBUG: Mentor not found but project created. Will link when mentor registers.")
+                
+                # Link co-mentors
+                co_mentors = parse_co_mentors(row.get('co_mentors', ''))
+                for co_name, co_roll in co_mentors:
+                    co_mentor_obj, created, error = get_or_create_mentor(co_roll, domain, request)
+                    if co_mentor_obj:
+                        co_mentor_obj.projects.add(project)
+                    else:
+                        # Don't fail - just log warning
+                        errors.append(f"Row {idx} ({title}) co-mentor: Not linked - {error}. Will link when they register.")
+                
+                success_count += 1
+                print(f"DEBUG: Row {idx} completed successfully")
             
         except Exception as e:
             import traceback
@@ -189,6 +192,8 @@ def bulk_import_projects(domain, rows, request):
             errors.append(error_msg)
             print(f"DEBUG ERROR: {error_msg}")
             print(f"DEBUG TRACEBACK: {traceback.format_exc()}")
+            # Continue to next row instead of failing entire import
+            continue
     
     print(f"DEBUG: Import completed. Success: {success_count}, Errors: {len(errors)}")
     return success_count, errors
