@@ -436,7 +436,8 @@ export default function SummerOfTech({ authToken }) {
     // If they don't have roles, show "Apply" options
     const availableOptions = [];
     
-    if (roles.includes('mentor')) {
+    // Only show mentor portal option if mentor_portal_access is enabled
+    if (roles.includes('mentor') && domain.mentor_portal_access !== false) {
       availableOptions.push({ role: 'mentor', action: 'open', label: 'Open Mentor Portal' });
     } else if (domain.mentor_reg_open) {
       availableOptions.push({ role: 'mentor', action: 'apply', label: 'Apply as Mentor' });
@@ -1156,7 +1157,13 @@ function DomainCard({ domain, myRoles, authToken, onClick }) {
         {/* My role badges in this domain */}
         {myRoles.length > 0 && (
           <div className="sot-card-role-badges">
-            {myRoles.map((role) => (
+            {myRoles.filter(role => {
+              // Hide mentor badge if mentor portal access is disabled
+              if (role === 'mentor' && domain.mentor_portal_access === false) {
+                return false;
+              }
+              return true;
+            }).map((role) => (
               <span key={role} className={`sot-card-role-badge sot-card-role-${role}`}>
                 {role}
               </span>
