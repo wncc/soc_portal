@@ -483,47 +483,32 @@ class MenteePreferencesAdmin(admin.ModelAdmin):
     @admin.action(description='Export selected preferences to CSV')
     def export_preferences_csv(self, request, queryset):
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="mentee_preferences_summary.csv"'
+        response['Content-Disposition'] = 'attachment; filename="mentee_preferences_detailed.csv"'
         writer = csv.writer(response)
-        header = ['Mentee Roll No', 'Mentee Name', 'Domain']
-        for i in range(1, 4):
-            header.extend([f'Project {i} Title', f'ID {i}', f'Pref {i}'])
-        writer.writerow(header)
+        writer.writerow([
+            'Mentee Roll No', 'Mentee Name', 'Department', 'Year', 'Phone', 'Domain',
+            'Project ID', 'Project Title', 'General Category', 'Specific Category',
+            'Mentor', 'Co-Mentors', 'Mentee Max', 'Preference Number', 'SOP'
+        ])
 
-        # Group by mentee
-        mentee_pref_map = defaultdict(list)
-        for pref in queryset:
-            mentee_pref_map[pref.mentee_id].append(pref)
-
-        for mentee_id, prefs in mentee_pref_map.items():
-            prefs_sorted = sorted(prefs, key=lambda x: x.preference)[:3]
-            m = prefs_sorted[0].mentee
-            domain = m.domain.slug if m.domain else ''
-            row = [m.user.roll_number, m.user.name, domain]
-            for p in prefs_sorted:
-                row.extend([p.project.title, p.project.id, p.preference])
-            # Pad to 3 prefs
-            while len(row) < 3 + 3 * 3:
-                row.extend(['', '', ''])
-            writer.writerow(row)
-
-        # Project summary
-        writer.writerow([])
-        writer.writerow(['--- Project Summary ---'])
-        writer.writerow(['Project ID', 'Project Title', 'Domain', 'Unique Applicants', 'Max Mentees'])
-        project_counts = defaultdict(set)
-        for pref in queryset:
-            project_counts[pref.project_id].add(pref.mentee_id)
-        for pid, mentee_set in project_counts.items():
-            try:
-                p = Project.objects.select_related('domain').get(id=pid)
-                writer.writerow([
-                    pid, p.title,
-                    p.domain.slug if p.domain else '',
-                    len(mentee_set), p.mentee_max,
-                ])
-            except Project.DoesNotExist:
-                pass
+        for pref in queryset.select_related('mentee__user', 'mentee__domain', 'project').order_by('mentee__user__roll_number', 'preference'):
+            writer.writerow([
+                pref.mentee.user.roll_number,
+                pref.mentee.user.name,
+                pref.mentee.user.department,
+                pref.mentee.user.year,
+                pref.mentee.user.phone_number,
+                pref.mentee.domain.slug if pref.mentee.domain else '',
+                pref.project.id,
+                pref.project.title,
+                pref.project.general_category,
+                pref.project.specific_category,
+                pref.project.mentor,
+                pref.project.co_mentor_info,
+                pref.project.mentee_max,
+                pref.preference,
+                pref.sop,
+            ])
         return response
 
     @admin.action(description='Count unique mentees in selected preferences')
