@@ -258,20 +258,26 @@ export default function ProjectDetails(props) {
                 <dd className="text-gray-700 sm:col-span-2">{details.prereuisites}</dd>
               </div>
 
-              <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-                <dt className="text-2xl text-indigo-600 sm:text-3xl">Timeline</dt>
-                <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.timeline.replace(/\\r\\n/g, '<br>') }} /></dd>
-              </div>
+              {domainSettings.show_mentor_details && (
+                <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-2xl text-indigo-600 sm:text-3xl">Timeline</dt>
+                  <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.timeline.replace(/\\r\\n/g, '<br>') }} /></dd>
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-                <dt className="text-2xl text-indigo-600 sm:text-3xl">Checkpoints</dt>
-                <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.checkpoints.replace(/\\r\\n/g, '<br>') }} /></dd>
-              </div>
+              {domainSettings.show_mentor_details && (
+                <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-2xl text-indigo-600 sm:text-3xl">Checkpoints</dt>
+                  <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.checkpoints.replace(/\\r\\n/g, '<br>') }} /></dd>
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
-                <dt className="text-2xl text-indigo-600 sm:text-3xl">Number of Weekly Meets Approximately</dt>
-                <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.weekly_meets.replace(/\\r\\n/g, '<br>') }} /></dd>
-              </div>
+              {domainSettings.show_mentor_details && (
+                <div className="grid grid-cols-1 gap-1 py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-2xl text-indigo-600 sm:text-3xl">Number of Weekly Meets Approximately</dt>
+                  <dd className="text-gray-700 sm:col-span-2"><p dangerouslySetInnerHTML={{ __html: details.weekly_meets.replace(/\\r\\n/g, '<br>') }} /></dd>
+                </div>
+              )}
             </dl>
           </div>
         </div>}

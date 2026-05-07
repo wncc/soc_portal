@@ -11,6 +11,7 @@ export default function Wishlist() {
   const [details, setDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [domainSettings, setDomainSettings] = useState({ mentee_portal_access: true });
+  const [searchQuery, setSearchQuery] = useState('');
   const { domain } = useParams();
   const navigate = useNavigate();
 
@@ -54,11 +55,15 @@ export default function Wishlist() {
   const [filterValue, setFilterValue] = useState('All');
 
   const filteredProjects = useMemo(() => {
-    return details.filter(
-      (project) =>
-        project.general_category.includes(filterValue) || filterValue === 'All',
-    );
-  }, [details, filterValue]);
+    return details.filter((project) => {
+      const matchesCategory =
+        filterValue === 'All' || project.general_category.includes(filterValue);
+      const matchesSearch =
+        !searchQuery ||
+        project.title?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [details, filterValue, searchQuery]);
 
   const handleFilterChange = (value) => {
     setFilterValue(value);
@@ -212,123 +217,72 @@ export default function Wishlist() {
         </>
       ) : (
         <>
-          <div className="pt-8 flex items-center justify-center ">
-            <div
-              className="inline-flex sm:flex-wrap rounded-md shadow-sm"
-              role="group"
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  handleFilterChange('All');
-                  setActive('b1');
-                }}
-                className={`w-40 px-4 py-2 text-sm font-medium ${
-                  active === 'b1' ? 'text-white' : 'text-gray-900'
-                } ${
-                  active === 'b1' ? 'bg-indigo-600' : 'bg-white'
-                } border border-gray-500 rounded-s-lg hover:bg-indigo-600 hover:text-white focus:z-10 focus:ring-2  `}
-              >
-                ALL
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleFilterChange('Machine Learning');
-                  setActive('b2');
-                }}
-                className={`w-40 px-4 py-2 text-sm font-medium ${
-                  active === 'b2' ? 'text-white' : 'text-gray-900'
-                } ${
-                  active === 'b2' ? 'bg-indigo-600' : 'bg-white'
-                } border border-gray-500 hover:bg-indigo-600 hover:text-white focus:z-10 focus:ring-2`}
-              >
-                Machine Learning
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleFilterChange('Development');
-                  setActive('b3');
-                }}
-                className={`w-40 px-4 py-2 text-sm font-medium ${
-                  active === 'b3' ? 'text-white' : 'text-gray-900'
-                } ${
-                  active === 'b3' ? 'bg-indigo-600' : 'bg-white'
-                } border border-gray-500 hover:bg-indigo-600 hover:text-white focus:z-10 focus:ring-2 `}
-              >
-                Development
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleFilterChange('Blockchain');
-                  setActive('b4');
-                }}
-                className={`w-40 px-4 py-2 text-sm font-medium ${
-                  active === 'b4' ? 'text-white' : 'text-gray-900'
-                } ${
-                  active === 'b4' ? 'bg-indigo-600' : 'bg-white'
-                } border border-gray-500 hover:bg-indigo-600 hover:text-white focus:z-10 focus:ring-2 `}
-              >
-                Blockchain
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleFilterChange('Competitive Programming');
-                  setActive('b5');
-                }}
-                className={`w-40 px-4 py-2 text-sm font-medium ${
-                  active === 'b5' ? 'text-white' : 'text-gray-900'
-                } ${
-                  active === 'b5' ? 'bg-indigo-600' : 'bg-white'
-                } border border-gray-500 hover:bg-indigo-600 hover:text-white focus:z-10 focus:ring-2 `}
-              >
-                Competitive Programming
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  handleFilterChange('Others');
-                  setActive('b6');
-                }}
-                className={`w-40 px-4 py-2 text-sm font-medium ${
-                  active === 'b6' ? 'text-white' : 'text-gray-900'
-                } ${
-                  active === 'b6' ? 'bg-indigo-600' : 'bg-white'
-                } border border-gray-500 rounded-e-lg hover:bg-indigo-600 hover:text-white focus:z-10 focus:ring-2 focus:ring-blue-700 `}
-              >
-                Others
-              </button>
+          <div className="pt-8 px-6 max-w-screen-xl mx-auto">
+            <div className="flex flex-wrap gap-2 items-center justify-center mb-4">
+              {[
+                { id: 'b1', label: 'ALL', value: 'All' },
+                { id: 'b2', label: 'Machine Learning', value: 'Machine Learning' },
+                { id: 'b3', label: 'Development', value: 'Development' },
+                { id: 'b4', label: 'Competitive Programming', value: 'Competitive Programming' },
+                { id: 'b5', label: 'Blockchain', value: 'Blockchain' },
+                { id: 'b6', label: 'Quant / Finance', value: 'Quant / Finance' },
+                { id: 'b7', label: 'Robotics / Hardware', value: 'Robotics / Hardware' },
+                { id: 'b8', label: 'Mathematics', value: 'Mathematics' },
+                { id: 'b9', label: 'Physics', value: 'Physics' },
+                { id: 'b10', label: 'Engineering', value: 'Engineering' },
+                { id: 'b11', label: 'Astronomy and Astrophysics', value: 'Astronomy and Astrophysics, and Planetary Science' },
+                { id: 'b12', label: 'Biology and Biotechnology', value: 'Biology, Biotechnology and Biophysics' },
+                { id: 'b13', label: 'Computer Science', value: 'Computer Science' },
+                { id: 'b14', label: 'Applied Science & Humanities', value: 'Applied Science, Humanities, and Miscellaneous' },
+                { id: 'b15', label: 'Energy Science', value: 'Energy Science' },
+                { id: 'b16', label: 'Chemistry and Material Science', value: 'Chemistry and Material Science' },
+                { id: 'b17', label: 'Others', value: 'Others' }
+              ].map((btn) => (
+                <button
+                  key={btn.id}
+                  onClick={() => {
+                    handleFilterChange(btn.value);
+                    setActive(btn.id);
+                  }}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    active === btn.id 
+                      ? "bg-indigo-600 text-white" 
+                      : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-indigo-600 hover:text-white"
+                  }`}
+                >
+                  {btn.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-center">
+              <input
+                type="text"
+                placeholder="Search by title"
+                className="w-full max-w-md px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
           {isLoading ? (
             <p>Loading...</p>
           ) : (
             <div className="px-24 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8 py-20">
-              {filteredProjects.map((project, index) => {
-                // console.log(project.banner_image);
-                // if (project.banner_image && !project.banner_image.includes('socb.tech-iitb.org')) {
-                if (project.banner_image && !project.banner_image.includes(':8000')) {
-                  project.banner_image = `${process.env.REACT_APP_API_URL}${project.banner_image}`;
-                }
-                return (
-                  <div key={index}>
-                    <ProjectCard
-                      ProjectId={project.id}
-                      link={project.banner_image}
-                      title={project.title}
-                      general_category={project.general_category}
-                      isInWishlist={details.some(
-                        (item) => item.id === project.id,
-                      )}
-                      onWishlistChange={fetchWishlist}
-                      domain={domain}
-                    />
-                  </div>
-                );
-              })}
+              {filteredProjects.map((project, index) => (
+                <div key={index}>
+                  <ProjectCard
+                    ProjectId={project.id}
+                    link={project.banner_image}
+                    title={project.title}
+                    general_category={project.general_category}
+                    isInWishlist={details.some(
+                      (item) => item.id === project.id,
+                    )}
+                    onWishlistChange={fetchWishlist}
+                    domain={domain}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </>
