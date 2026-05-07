@@ -187,15 +187,17 @@ export default function ProjectDetails(props) {
                 )}
               </div>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-8">
-                <div className="h-10 rounded-lg ">
-                  <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Mentees:</h4>
-                  <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
-                    <li>
-                      {/* <p>20+</p> */}
-                      <p>{details.mentee_max}</p>
-                    </li>
-                  </ul>
-                </div>
+                {domainSettings.show_mentor_details && (
+                  <div className="h-10 rounded-lg ">
+                    <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Mentees:</h4>
+                    <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">
+                      <li>
+                        {/* <p>20+</p> */}
+                        <p>{details.mentee_max}</p>
+                      </li>
+                    </ul>
+                  </div>
+                )}
                 <div className="h-28 rounded-lg">
                   <h4 className=" pt-5 text-2xl text-indigo-400 sm:text-3xl">Category:</h4>
                   <ul className="pl-8 sm:pl-2 md:pl-8 lg:pl-20">

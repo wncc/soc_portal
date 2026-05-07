@@ -9,11 +9,25 @@ export default function Projects() {
   const [wishlist, setWishlist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showScroll, setShowScroll] = useState(false);
+  const [domainSettings, setDomainSettings] = useState({ mentee_portal_access: true });
   const navigate = useNavigate();
   const { domain } = useParams();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch domain settings
+  useEffect(() => {
+    if (domain) {
+      api.get(`${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`)
+        .then((response) => {
+          setDomainSettings(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching domain settings:', error);
+        });
+    }
+  }, [domain]);
 
   useEffect(() => {
     const endpoint = domain 
@@ -97,6 +111,24 @@ export default function Projects() {
 
   return (
     <section className="project-card min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
+      {!domainSettings.mentee_portal_access ? (
+        <div className="flex items-center justify-center min-h-[calc(100vh-72px)]">
+          <div className="text-center p-8 bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md">
+            <div className="text-6xl mb-4">🔒</div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Mentee Portal Closed</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              The mentee portal for this domain is currently not accessible. Please check back later or contact the domain manager.
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* Quick Navigation Bar */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-3 px-6">
         <div className="max-w-screen-xl mx-auto flex gap-4">
@@ -203,6 +235,8 @@ export default function Projects() {
         >
           ↑ Go to Top
         </button>
+      )}
+        </>
       )}
     </section>
   );

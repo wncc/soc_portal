@@ -19,6 +19,7 @@ class Domain(models.Model):
     mentee_reg_open = models.BooleanField(default=False, help_text="Open for mentees to self-register")
     mentor_reg_open = models.BooleanField(default=False, help_text="Open for mentors to self-register (pending approval)")
     mentor_portal_access = models.BooleanField(default=True, help_text="Allow mentors to access mentor portal and view their projects")
+    mentee_portal_access = models.BooleanField(default=True, help_text="Allow mentees to access mentee portal (projects, wishlist, preferences)")
     project_creation_open = models.BooleanField(default=True, help_text="Allow mentors to create new projects")
     project_editing_open = models.BooleanField(default=True, help_text="Allow mentors to edit existing projects")
     project_deletion_open = models.BooleanField(default=False, help_text="Allow mentors to delete their projects")

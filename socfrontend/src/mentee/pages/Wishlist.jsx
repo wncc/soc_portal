@@ -10,8 +10,22 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 export default function Wishlist() {
   const [details, setDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [domainSettings, setDomainSettings] = useState({ mentee_portal_access: true });
   const { domain } = useParams();
   const navigate = useNavigate();
+
+  // Fetch domain settings
+  useEffect(() => {
+    if (domain) {
+      api.get(`${process.env.REACT_APP_BACKEND_URL}/domains/${domain}/`)
+        .then((response) => {
+          setDomainSettings(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching domain settings:', error);
+        });
+    }
+  }, [domain]);
 
   const fetchWishlist = useCallback(() => {
     setIsLoading(true);
@@ -51,6 +65,29 @@ export default function Wishlist() {
   };
 
   const [active, setActive] = useState('b1');
+  
+  if (!domainSettings.mentee_portal_access) {
+    return (
+      <section className="project-card dark:bg-gray-800 dark:text-white">
+        <div className="flex items-center justify-center min-h-[calc(100vh-72px)]">
+          <div className="text-center p-8 bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md">
+            <div className="text-6xl mb-4">🔒</div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Mentee Portal Closed</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              The mentee portal for this domain is currently not accessible. Please check back later or contact the domain manager.
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  
   return (
     <section className="project-card dark:bg-gray-800 dark:text-white">
       {/* Quick Navigation Bar */}

@@ -612,7 +612,7 @@ export default function PreferenceForm() {
   const [errorMsg, setErrorMsg] = useState('');
   const { domain } = useParams();
   const navigate = useNavigate();
-  const [domainSettings, setDomainSettings] = useState({ max_preferences: 3 });
+  const [domainSettings, setDomainSettings] = useState({ max_preferences: 3, mentee_portal_access: true });
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -673,6 +673,28 @@ export default function PreferenceForm() {
 
   if (userPreference.length > 0) {
     return <Navigate to={domain ? `/${domain}/PreferenceFormFilled` : '/PreferenceFormFilled'} />;
+  }
+
+  if (!domainSettings.mentee_portal_access) {
+    return (
+      <div className="form min-h-[calc(100vh-72px)] dark:bg-gray-800 dark:text-white">
+        <div className="flex items-center justify-center min-h-[calc(100vh-72px)]">
+          <div className="text-center p-8 bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md">
+            <div className="text-6xl mb-4">🔒</div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Mentee Portal Closed</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              The mentee portal for this domain is currently not accessible. Please check back later or contact the domain manager.
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (submitted) {
