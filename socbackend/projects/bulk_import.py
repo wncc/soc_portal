@@ -7,7 +7,7 @@ import csv
 import io
 import re
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, connection
 
 from accounts.models import UserProfile, CustomUser
 from .models import Project, Mentor
@@ -118,6 +118,15 @@ def bulk_import_projects(domain, rows, request):
     
     print(f"DEBUG: Starting import of {len(rows)} rows into domain {domain.name}")
     
+    # Reset PostgreSQL sequence to avoid primary key conflicts
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT setval(pg_get_serial_sequence('projects_project', 'id'), 
+                         COALESCE((SELECT MAX(id) FROM projects_project), 0) + 1, 
+                         false);
+        """)
+    print(f"DEBUG: Reset sequence for projects_project table")
+    
     # Process each row individually with its own transaction
     for idx, row in enumerate(rows, start=2):  # Start from 2 (header is row 1)
         try:
@@ -140,8 +149,8 @@ def bulk_import_projects(domain, rows, request):
                 
                 print(f"DEBUG: Creating project '{title}' with mentor '{mentor_str}'")
                 
-                # Create project (let database auto-assign ID)
-                project = Project(
+                # Create project using create() to avoid ID conflicts
+                project = Project.objects.create(
                     domain=domain,
                     title=title,
                     general_category=row.get('general_category', 'Others').strip() or 'Others',
@@ -156,7 +165,6 @@ def bulk_import_projects(domain, rows, request):
                     prereuisites=row.get('prerequisites', 'NA').strip() or 'NA',
                     banner_image_link=row.get('banner_image_link', '').strip() or None,
                 )
-                project.save()
                 
                 print(f"DEBUG: Project created with ID {project.id}")
                 
