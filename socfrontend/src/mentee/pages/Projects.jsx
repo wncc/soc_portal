@@ -153,8 +153,8 @@ export default function Projects() {
         </div>
       </div>
 
-      <div className="pt-8 flex flex-wrap items-center justify-center gap-4">
-        <div className="inline-flex flex-wrap rounded-md shadow-sm" role="group">
+      <div className="pt-8 px-6 max-w-screen-xl mx-auto">
+        <div className="flex flex-wrap gap-2 items-center justify-center mb-4">
           {[
             { id: 'b1', label: 'ALL', value: 'All' },
             { id: 'b2', label: 'Machine Learning', value: 'Machine Learning' },
@@ -173,34 +173,32 @@ export default function Projects() {
             { id: 'b15', label: 'Energy Science', value: 'Energy Science' },
             { id: 'b16', label: 'Chemistry and Material Science', value: 'Chemistry and Material Science' },
             { id: 'b17', label: 'Others', value: 'Others' }
-          ].map((btn, index, array) => (
+          ].map((btn) => (
             <button
               key={btn.id}
               onClick={() => {
                 handleFilterChange(btn.value);
                 setActive(btn.id);
               }}
-              className={`px-4 py-2 text-sm font-medium ${
-                active === btn.id ? "text-white" : "text-gray-900"
-              } ${
-                active === btn.id ? "bg-indigo-600" : "bg-white dark:bg-slate-400"
-              } border border-gray-500 ${
-                index === 0 ? "rounded-s-lg" : ""
-              } ${
-                index === array.length - 1 ? "rounded-e-lg" : ""
-              } hover:bg-indigo-600 hover:text-white`}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                active === btn.id 
+                  ? "bg-indigo-600 text-white" 
+                  : "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-indigo-600 hover:text-white"
+              }`}
             >
               {btn.label}
             </button>
           ))}
         </div>
-        <input
-          type="text"
-          placeholder="Search by title"
-          className="px-4 py-2 border border-gray-300 rounded dark:bg-gray-800 dark:text-white"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="flex justify-center">
+          <input
+            type="text"
+            placeholder="Search by title"
+            className="w-full max-w-md px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       {isLoading ? (
