@@ -59,6 +59,8 @@ INSTALLED_APPS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://wncc-soc.tech-iitb.org",
+    "https://itc-sot.tech-iitb.org",
+    "https://www.itc-sot.tech-iitb.org",
     "https://www.wncc-soc.tech-iitb.org",
     "https://socb.tech-iitb.org",
     "https://www.socb.tech-iitb.org",
@@ -70,6 +72,8 @@ CSRF_TRUSTED_ORIGINS = [
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "https://wncc-soc.tech-iitb.org",
+    "https://itc-sot.tech-iitb.org",
+    "https://www.itc-sot.tech-iitb.org",
     "https://www.wncc-soc.tech-iitb.org",
     "https://itc.gymkhana.iitb.ac.in",
     "http://localhost:3000",
