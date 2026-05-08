@@ -72,7 +72,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('domain', 'general_category')
     list_per_page = 1000
     inlines = [RankListInline]
-    actions = ['export_projects_csv', 'link_co_mentors', 'download_banner_images']
+    actions = ['export_projects_csv', 'link_co_mentors', 'download_banner_images', 'clear_banner_images']
 
     # ---- Computed columns ----
 
@@ -288,6 +288,42 @@ class ProjectAdmin(admin.ModelAdmin):
             request,
             f'✅ Banner download complete: {success_count} downloaded, {skip_count} skipped (no link), {error_count} errors',
             level='success' if error_count == 0 else 'warning'
+        )
+    
+    @admin.action(description='Clear banner images for selected projects')
+    def clear_banner_images(self, request, queryset):
+        """
+        Clears both banner_image and banner_image_link fields for selected projects.
+        Also deletes the physical image files from disk.
+        """
+        cleared_count = 0
+        deleted_files = 0
+        
+        for project in queryset:
+            # Delete physical file if exists
+            if project.banner_image:
+                file_path = os.path.join(settings.MEDIA_ROOT, str(project.banner_image))
+                if os.path.exists(file_path):
+                    try:
+                        os.remove(file_path)
+                        deleted_files += 1
+                    except Exception as e:
+                        self.message_user(
+                            request,
+                            f'⚠ Could not delete file for "{project.title}": {str(e)}',
+                            level='warning'
+                        )
+            
+            # Clear both fields
+            project.banner_image = None
+            project.banner_image_link = None
+            project.save()
+            cleared_count += 1
+        
+        self.message_user(
+            request,
+            f'✅ Cleared banner images: {cleared_count} projects updated, {deleted_files} files deleted',
+            level='success'
         )
     
 

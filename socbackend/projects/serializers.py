@@ -7,20 +7,39 @@ from accounts.serializers import UserProfileSerializer
 class ProjectSerializer(serializers.ModelSerializer):
     mentor_details = serializers.SerializerMethodField()
     co_mentor_details = serializers.SerializerMethodField()
+    has_banner = serializers.SerializerMethodField()
     
     class Meta:
         model = Project
         fields = "__all__"
         read_only_fields = ["season"]
     
+    def get_has_banner(self, obj):
+        """Check if project has a banner image"""
+        return bool(obj.banner_image or obj.banner_image_link)
+    
     def get_mentor_details(self, obj):
-        """Get linked mentor objects with phone numbers"""
+        """Get only the main mentor from the mentor field"""
+        import re
+        
+        # Extract roll number from mentor field
+        match = re.search(r'\((\w+)\)', obj.mentor)
+        if not match:
+            return []
+        
+        mentor_roll = match.group(1).strip().lower()
+        
+        # Find this mentor in M2M relationship
         mentors = Mentor.objects.filter(projects=obj).select_related('user')
-        return [{
-            'name': m.user.name,
-            'roll_number': m.user.roll_number,
-            'phone_number': m.user.phone_number
-        } for m in mentors]
+        for m in mentors:
+            if m.user.roll_number.lower() == mentor_roll:
+                return [{
+                    'name': m.user.name,
+                    'roll_number': m.user.roll_number,
+                    'phone_number': m.user.phone_number
+                }]
+        
+        return []
     
     def get_co_mentor_details(self, obj):
         """Parse co_mentor_info to extract details (case-insensitive roll matching)"""
@@ -51,9 +70,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class BasicProjectSerializer(serializers.ModelSerializer):
+    has_banner = serializers.SerializerMethodField()
+    
     class Meta:
         model = Project
-        fields = ["id", "title", "general_category", "banner_image", "banner_image_link", "domain"]
+        fields = ["id", "title", "general_category", "banner_image", "banner_image_link", "domain", "has_banner"]
+    
+    def get_has_banner(self, obj):
+        """Check if project has a banner image"""
+        return bool(obj.banner_image or obj.banner_image_link)
 
 
 class MenteePreferenceSerializer(serializers.ModelSerializer):

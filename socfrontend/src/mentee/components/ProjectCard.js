@@ -86,11 +86,17 @@ export default function ProjectCard(props) {
     <div>
       <article className="overflow-hidden rounded-lg shadow transition hover:shadow-lg">
         <Link to={projectDetailLink}>
-          <img
-            alt={props.title}
-            src={props.link}
-            className="h-56 w-full object-contain"
-          />
+          {props.link ? (
+            <img
+              alt={props.title}
+              src={props.link}
+              className="h-56 w-full object-contain"
+            />
+          ) : (
+            <div className="h-56 w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white text-2xl font-bold">{props.title.substring(0, 2).toUpperCase()}</span>
+            </div>
+          )}
         </Link>
         <Link to={projectDetailLink}>
           <div className="bg-rgb(17, 24, 39) p-4 sm:p-6">

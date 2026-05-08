@@ -142,11 +142,12 @@ export default function ProjectDetails(props) {
             </div>
           </div>
           <div className="grid grid-cols-1 pb-10 gap-4 lg:grid-cols-3 lg:gap-8">
-            <div className="h-56 rounded-lg">
-              {/* <img alt="" src="https://itc.gymkhana.iitb.ac.in/wncc/assets/images/soc/2023/item221.jpg" className="h-75 w-full object-cover"/> */}
-              <img alt="" src={details.banner_image} className="h-56 w-full object-contain"/>
-            </div>
-            <div className="rounded-lg lg:col-span-2 h-75">
+            {(details.banner_image || details.banner_image_link) && (
+              <div className="h-56 rounded-lg">
+                <img alt="" src={details.banner_image} className="h-56 w-full object-contain"/>
+              </div>
+            )}
+            <div className={`rounded-lg ${(details.banner_image || details.banner_image_link) ? 'lg:col-span-2' : 'lg:col-span-3'} h-75`}>
                         
               <div className="grid grid-cols-1 gap-1 lg:grid-cols-2 lg:gap-8">
                 {domainSettings.show_mentor_details && (
