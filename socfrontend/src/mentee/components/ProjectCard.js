@@ -84,7 +84,9 @@ export default function ProjectCard(props) {
 
   return (
     <div>
-      <article className="overflow-hidden rounded-lg shadow transition hover:shadow-lg">
+      <article className={`overflow-hidden rounded-lg shadow transition hover:shadow-lg ${
+        !props.link ? 'border-l-4 border-indigo-500 dark:border-indigo-400' : ''
+      }`}>
         {props.link && (
           <Link to={projectDetailLink}>
             <img
@@ -94,21 +96,10 @@ export default function ProjectCard(props) {
             />
           </Link>
         )}
-        {!props.link && (
-          <Link to={projectDetailLink}>
-            <div className="h-32 w-full bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center border-b-2 border-indigo-100 dark:border-gray-600">
-              <div className="text-center px-4">
-                <div className="text-indigo-400 dark:text-indigo-300 mb-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 mx-auto">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </Link>
-        )}
         <Link to={projectDetailLink}>
-          <div className="bg-rgb(17, 24, 39) p-4 sm:p-6">
+          <div className={`bg-rgb(17, 24, 39) p-4 sm:p-6 ${
+            !props.link ? 'pt-6' : ''
+          }`}>
             <h3 className="mt-0.5 text-lg line-clamp-1 text-gray-900 dark:text-white">
               Project ID: {props.ProjectId}
             </h3>
