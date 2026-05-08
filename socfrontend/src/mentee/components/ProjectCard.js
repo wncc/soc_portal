@@ -84,7 +84,7 @@ export default function ProjectCard(props) {
 
   return (
     <div>
-      <article className="overflow-hidden rounded-lg shadow transition hover:shadow-lg">
+      <article className="overflow-hidden rounded-lg border-2 border-gray-300 dark:border-gray-700 shadow transition hover:shadow-lg">
         {props.link && (
           <Link to={projectDetailLink}>
             <img
