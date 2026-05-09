@@ -1184,9 +1184,9 @@ function DomainCard({ domain, myRoles, authToken, onClick }) {
         </p>
 
         <div className="sot-card-footer">
-          <span className="sot-card-count">
+         {/* <span className="sot-card-count">
             {domain.member_count} member{domain.member_count !== 1 ? 's' : ''}
-          </span>
+          </span> */}
           
           {/* Registration status badges */}
           <div className="sot-card-reg-status">
