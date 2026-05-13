@@ -140,7 +140,7 @@ function LandingPage() {
         </motion.div>
       </motion.header>
 
-      <div className="dropdown_wrapper">
+      <div className="info_flex_wrapper">
         <section className="mentor_info_container">
           <div
             className="mentor_info_header"
@@ -199,6 +199,36 @@ function LandingPage() {
               </ul>
             </div>
           )}
+        </section>
+
+        <section className="additional_details_container">
+          <h2>📌 Additional Details</h2>
+
+          <div className="additional_details_content">
+
+            <div className="detail_item">
+              <h4>Mentor Queries Group</h4>
+
+              <a
+                href="https://chat.whatsapp.com/Df7itVMOgXG25fZJxAg626"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whatsapp_link"
+              >
+                Join WhatsApp Group
+              </a>
+            </div>
+
+            <div className="detail_item">
+              <h4>Ranklist Deadline</h4>
+
+              <p>
+                All mentors are requested to submit their ranklists by
+                <strong> 15th May EOD</strong>.
+              </p>
+            </div>
+
+          </div>
         </section>
       </div>
 
